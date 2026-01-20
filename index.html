@@ -1,28 +1,420 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Project Phantom</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-    }
-    iframe {
-      width: 100%;
-      height: 100vh;
-      border: none;
-    }
-  </style>
-</head>
-<body>
-
-  <iframe
-    src="https://www.canva.com/design/DAG-7XK1_OM/hUDnNwqb3AF2AxmcFPpjRw/view?embed"
-    allowfullscreen>
-  </iframe>
-
-</body>
+<!doctype html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>PHANTOM | Autonomous Environmental Monitoring</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Manrope:wght@300;400;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#22c3c3",
+              "background-light": "#f4f3f1",
+              "background-dark": "#121616",
+              "background-surface": "#1D2222",
+              "accent-sand": "#C4BF9D",
+              "accent-green": "#4A5844",
+            },
+            fontFamily: {
+              display: ["Space Grotesk", "sans-serif"],
+              body: ["Manrope", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.125rem",
+              sm: "0.125rem",
+              md: "0.25rem",
+              lg: "0.5rem",
+              full: "9999px",
+            },
+            backgroundImage: {
+              "grid-pattern":
+                "linear-gradient(to right, #222 1px, transparent 1px), linear-gradient(to bottom, #222 1px, transparent 1px)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        font-family: "Space Grotesk", sans-serif;
+      }
+      .technical-border-bottom {
+        position: relative;
+      }
+      .technical-border-bottom::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          #22c3c3 50%,
+          transparent 100%
+        );
+        opacity: 0.3;
+      }
+      .bg-grid-overlay {
+        background-size: 40px 40px;
+        mask-image: linear-gradient(
+          to bottom,
+          transparent,
+          10% black,
+          90% black,
+          transparent
+        );
+      }
+      .invert-white {
+        filter: invert(1) brightness(2);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark text-white overflow-x-hidden min-h-screen flex flex-col md:flex-row"
+  >
+    <header
+      class="md:hidden flex items-center justify-between px-6 py-4 bg-background-surface border-b border-[#274545] z-50 fixed w-full top-0 left-0"
+    >
+      <div class="flex items-center gap-3">
+        <img
+          alt="PHANTOM Logo"
+          class="h-8 w-8 object-contain invert-white opacity-90"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2o3LIVBa8gl6r1Tz55FYw8y-6nAQ8D6TNeXZNeJv9Os5_gGkJsKq5zdIDYpk3YxLY67fQhwF8wyEb6aU0ABiq_oDWI6rmXgD20r_EYeVLh5o_YDhiwwPUkYIfZm-S45K89HSp9c5nhRl0_thHgOEL4pY4ygCMXKUJTp0vqo3oRGv6YI2xGiqTMCbCcr2Nfww7-vxqoajjw9rzHgHwf1m2uCowbTLVbziQfMbpDiJxlCL-UG4TNY0LO5ABTkPMmqAJZfs-1UX_CwY"
+        />
+        <span class="font-bold text-lg tracking-wide">PHANTOM</span>
+      </div>
+      <button class="text-white p-2">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </header>
+    <aside
+      class="hidden md:flex flex-col justify-between w-64 h-screen fixed left-0 top-0 bg-background-surface border-r border-[#274545] z-40 py-8 px-6"
+    >
+      <div class="flex items-center gap-3 text-white mb-10">
+        <div
+          class="w-10 h-10 flex items-center justify-center rounded border border-[#274545] bg-[#121616] overflow-hidden p-1.5"
+        >
+          <img
+            alt="PHANTOM Logo"
+            class="w-full h-full object-contain invert-white"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFpQfm5TeacvhIqW-__FUO1Fp0J4zLH63iUYEZfuxjsU5S-cLsFnQyPWn7SFYUatfarUh8sLU46xk31Rc3GCd-wUmqGWui1DTZeM_U_yOq4TFujgQnWScwaH5PFjR3YyxfBcMZayui9TJIKlRROXc-t9IY-amTDIAGj9Fy39pILPTPcKRkqhmWIRK6zZ71RKam_tIFIUGKAQdKQLOc0GkP0CjzP88Szs_afno3VrjSeIZxYE_LGNuoa6VXksAoRg9WnqajL5YjYtM"
+          />
+        </div>
+        <h2 class="text-xl font-bold tracking-tight">PHANTOM</h2>
+      </div>
+      <nav class="flex flex-col gap-6 flex-1">
+        <a
+          class="group flex items-center gap-3 text-sm text-white font-medium pl-3 border-l-2 border-primary transition-colors duration-300"
+          href="index.html"
+        >
+          <span class="font-mono text-xs text-primary">01.</span>
+          <span class="tracking-wide">Vision</span>
+        </a>
+        <a
+          class="group flex items-center gap-3 text-sm text-[#9CA3AF] hover:text-primary transition-colors duration-300"
+          href="design.html"
+        >
+          <span
+            class="font-mono text-xs text-[#4B5563] group-hover:text-primary/50"
+            >02.</span
+          >
+          <span class="tracking-wide">Drone Specs</span>
+        </a>
+        <a
+          class="group flex items-center gap-3 text-sm text-[#9CA3AF] hover:text-primary transition-colors duration-300"
+          href="objectives.html"
+        >
+          <span
+            class="font-mono text-xs text-[#4B5563] group-hover:text-primary/50"
+            >03.</span
+          >
+          <span class="tracking-wide">Environment</span>
+        </a>
+        <a
+          class="group flex items-center gap-3 text-sm text-[#9CA3AF] hover:text-primary transition-colors duration-300"
+          href="sensors.html"
+        >
+          <span
+            class="font-mono text-xs text-[#4B5563] group-hover:text-primary/50"
+            >04.</span
+          >
+          <span class="tracking-wide">Mission Data</span>
+        </a>
+        <a
+          class="group flex items-center gap-3 text-sm text-[#9CA3AF] hover:text-primary transition-colors duration-300"
+          href="outcomes.html"
+        >
+          <span
+            class="font-mono text-xs text-[#4B5563] group-hover:text-primary/50"
+            >05.</span
+          >
+          <span class="tracking-wide">Outcomes</span>
+        </a>
+      </nav>
+      <div class="flex flex-col gap-4 mt-auto">
+        <div class="flex gap-4">
+          <a
+            class="text-[#4B5563] hover:text-primary transition-colors"
+            href="#"
+            ><span class="material-symbols-outlined text-sm">terminal</span></a
+          >
+          <a
+            class="text-[#4B5563] hover:text-primary transition-colors"
+            href="#"
+            ><span class="material-symbols-outlined text-sm">share</span></a
+          >
+        </div>
+        <p class="text-[10px] text-[#4B5563] font-mono leading-relaxed">
+          STATUS: ONLINE<br />
+          LOC: UAE / DXB
+        </p>
+      </div>
+    </aside>
+    <main class="relative flex-1 md:ml-64 flex flex-col min-h-screen">
+      <div
+        class="relative h-screen w-full flex flex-col justify-end pb-12 md:pb-20 px-6 md:px-16 overflow-hidden"
+      >
+        <div
+          class="absolute inset-0 z-0 bg-cover bg-center"
+          data-alt="Cinematic high contrast desert landscape with dunes meeting mangrove water"
+          style="
+            background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuAPBTEpLh7XJPZocvk6YeJl-l1K3dELS4Z5KZhmKOfOD3n00wg2fudxS4cVW_xePPTiiOHtLV2aUjlLbtLEk5yVwCfndw7SQSoQrROFGOmoI3L7gu_AClB3crPTaB1bC-hmWm-nEFlcvh60XkYZmsY-107Xd-9HWi8Amr-epkeci2s-8z3MajcPgh1ivaOM7N1abazA3uU3KFZycxXxmwPmepa-ypkFQ9d0bJIYl72l6VFuTjKBuIRceCDvklTnT8Cx7O4y_i2BYec&quot;);
+          "
+        >
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-[#121616] via-[#121616]/60 to-transparent"
+          ></div>
+          <div
+            class="absolute inset-0 bg-[#121616]/40 mix-blend-multiply"
+          ></div>
+          <div
+            class="absolute inset-0 bg-grid-pattern opacity-[0.05] pointer-events-none"
+          ></div>
+        </div>
+        <div
+          class="absolute top-24 right-6 md:top-10 md:right-10 z-10 hidden md:block"
+        >
+          <div
+            class="flex flex-col items-end gap-1 text-accent-sand opacity-60"
+          >
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-mono tracking-widest"
+                >SYS.MONITOR</span
+              >
+              <span
+                class="w-2 h-2 rounded-full bg-primary animate-pulse"
+              ></span>
+            </div>
+            <div class="text-[10px] font-mono">LAT: 25.2048° N</div>
+            <div class="text-[10px] font-mono">LNG: 55.2708° E</div>
+          </div>
+        </div>
+        <div class="relative z-10 max-w-4xl w-full">
+          <div
+            class="inline-flex items-center gap-2 px-3 py-1 mb-6 border border-accent-sand/30 rounded bg-[#121616]/50 backdrop-blur-sm"
+          >
+            <span class="w-1.5 h-1.5 bg-accent-sand rounded-full"></span>
+            <span
+              class="text-[10px] md:text-xs font-mono text-accent-sand uppercase tracking-wider"
+            >
+              Conceptual Research // Design Project
+            </span>
+          </div>
+          <h1
+            class="text-6xl md:text-8xl lg:text-9xl font-bold tracking-[-0.03em] leading-[0.9] text-white mb-6 md:mb-8 font-display uppercase"
+          >
+            PHANTOM
+          </h1>
+          <div
+            class="flex flex-col md:flex-row md:items-end gap-8 md:gap-16 border-l-2 border-primary pl-6"
+          >
+            <div class="max-w-md">
+              <h2
+                class="text-lg md:text-xl font-body font-light text-gray-200 leading-relaxed"
+              >
+                Autonomous Solar Drone for <br class="hidden md:block" />UAE
+                Environmental Monitoring.
+              </h2>
+            </div>
+            <a
+              href="design.html"
+              class="group flex items-center justify-center gap-3 h-12 px-6 bg-primary/10 hover:bg-primary/20 border border-primary text-primary text-sm font-bold uppercase tracking-wider transition-all duration-300 backdrop-blur-md rounded-sm"
+            >
+              <span>Explore The Mission</span>
+              <span
+                class="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform"
+                >arrow_forward</span
+              >
+            </a>
+          </div>
+        </div>
+        <div
+          class="absolute bottom-6 right-6 md:bottom-10 md:right-10 z-10 flex items-center gap-4"
+        >
+          <span class="text-xs font-mono text-gray-500 hidden md:block"
+            >SCROLL TO EXPLORE</span
+          >
+          <div
+            class="w-[1px] h-16 bg-gradient-to-b from-primary to-transparent"
+          ></div>
+        </div>
+        <div
+          class="absolute bottom-10 left-10 md:left-24 text-primary/20 pointer-events-none hidden md:block"
+        >
+          <span class="material-symbols-outlined text-4xl font-thin"
+            >filter_center_focus</span
+          >
+        </div>
+      </div>
+      <section
+        class="relative bg-background-dark py-16 md:py-24 border-t border-[#274545]"
+      >
+        <div class="container mx-auto px-6 md:px-16">
+          <div
+            class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12"
+          >
+            <h3 class="text-2xl md:text-3xl font-bold text-white mb-4 md:mb-0">
+              Technical Specifications
+            </h3>
+            <div class="flex gap-2">
+              <span class="h-[1px] w-8 bg-gray-600 self-center"></span>
+              <span class="text-sm text-gray-400 font-mono"
+                >LIVE TELEMETRY ESTIMATES</span
+              >
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              class="group relative p-8 rounded bg-[#1D2222] border border-[#274545] hover:border-primary/50 transition-colors duration-300"
+            >
+              <div
+                class="absolute top-4 right-4 text-[#274545] group-hover:text-primary/20 transition-colors"
+              >
+                <span class="material-symbols-outlined text-3xl"
+                  >solar_power</span
+                >
+              </div>
+              <p class="text-gray-400 text-sm font-mono mb-2">
+                SOLAR EFFICIENCY
+              </p>
+              <p class="text-4xl font-bold text-white tracking-tight mb-2">
+                98.5<span class="text-primary text-lg">%</span>
+              </p>
+              <p class="text-xs text-gray-500">
+                Peak absorption rate during daylight operations.
+              </p>
+              <div
+                class="absolute bottom-0 left-0 w-full h-[2px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"
+              ></div>
+            </div>
+            <div
+              class="group relative p-8 rounded bg-[#1D2222] border border-[#274545] hover:border-primary/50 transition-colors duration-300"
+            >
+              <div
+                class="absolute top-4 right-4 text-[#274545] group-hover:text-primary/20 transition-colors"
+              >
+                <span class="material-symbols-outlined text-3xl">flight</span>
+              </div>
+              <p class="text-gray-400 text-sm font-mono mb-2">FLIGHT RANGE</p>
+              <p class="text-4xl font-bold text-white tracking-tight mb-2">
+                2500<span class="text-primary text-lg"> km</span>
+              </p>
+              <p class="text-xs text-gray-500">
+                Autonomous range without recharging.
+              </p>
+              <div
+                class="absolute bottom-0 left-0 w-full h-[2px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"
+              ></div>
+            </div>
+            <div
+              class="group relative p-8 rounded bg-[#1D2222] border border-[#274545] hover:border-primary/50 transition-colors duration-300"
+            >
+              <div
+                class="absolute top-4 right-4 text-[#274545] group-hover:text-primary/20 transition-colors"
+              >
+                <span class="material-symbols-outlined text-3xl">sensors</span>
+              </div>
+              <p class="text-gray-400 text-sm font-mono mb-2">DATA POINTS</p>
+              <p class="text-4xl font-bold text-white tracking-tight mb-2">
+                4TB<span class="text-primary text-lg"> /day</span>
+              </p>
+              <p class="text-xs text-gray-500">
+                High-fidelity spectral imaging processing.
+              </p>
+              <div
+                class="absolute bottom-0 left-0 w-full h-[2px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <footer
+        class="bg-background-surface border-t border-[#274545] py-12 px-6 md:px-16"
+      >
+        <div
+          class="flex flex-col md:flex-row justify-between items-center md:items-start gap-8"
+        >
+          <div class="text-center md:text-left">
+            <h4 class="text-white font-bold text-lg mb-2">PHANTOM PROJECT</h4>
+            <p class="text-gray-500 text-sm max-w-xs">
+              Pioneering sustainable autonomous surveillance for the
+              preservation of fragile ecosystems.
+            </p>
+          </div>
+          <div class="flex gap-8">
+            <a
+              class="text-gray-400 hover:text-primary text-sm transition-colors"
+              href="#"
+              >Privacy</a
+            >
+            <a
+              class="text-gray-400 hover:text-primary text-sm transition-colors"
+              href="#"
+              >Research Data</a
+            >
+            <a
+              class="text-gray-400 hover:text-primary text-sm transition-colors"
+              href="#"
+              >Contact</a
+            >
+          </div>
+          <div class="flex gap-4">
+            <a
+              class="w-10 h-10 flex items-center justify-center rounded border border-[#274545] text-gray-400 hover:text-primary hover:border-primary transition-all"
+              href="#"
+            >
+              <span class="material-symbols-outlined text-sm"
+                >alternate_email</span
+              >
+            </a>
+            <a
+              class="w-10 h-10 flex items-center justify-center rounded border border-[#274545] text-gray-400 hover:text-primary hover:border-primary transition-all"
+              href="#"
+            >
+              <span class="material-symbols-outlined text-sm">hub</span>
+            </a>
+          </div>
+        </div>
+        <div
+          class="mt-12 pt-8 border-t border-[#274545] flex justify-between text-xs text-gray-600 font-mono"
+        >
+          <span>© 2024 DUBAI FUTURE LABS. CONCEPTUAL DESIGN.</span>
+          <span>V.1.0.4</span>
+        </div>
+      </footer>
+    </main>
+  </body>
 </html>
