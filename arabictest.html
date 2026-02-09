@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arabic Language Master</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --primary: #007AFF;
+            --secondary: #5856D6;
+            --success: #34C759;
+            --error: #FF3B30;
+            --bg: #F2F2F7;
+            --text: #000000;
+            --text-secondary: #8E8E93;
+            --card-bg: #FFFFFF;
+            --border: #E5E5EA;
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text);
+        }
+
+        .container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            max-width: 700px;
+            width: 100%;
+            padding: 48px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        h1 { 
+            text-align: center; 
+            font-size: 2.25rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        /* Menu Styles */
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 40px;
+            font-weight: 500;
+        }
+
+        .menu-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 16px; 
+        }
+
+        .mode-card {
+            padding: 32px 24px;
+            border: 1.5px solid var(--border);
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--card-bg);
+        }
+
+        .mode-card:hover { 
+            border-color: var(--primary); 
+            background: rgba(0, 122, 255, 0.03);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 122, 255, 0.12);
+        }
+
+        .mode-card:active {
+            transform: scale(0.98);
+        }
+
+        .mode-card .icon { 
+            font-size: 2.5em; 
+            display: block; 
+            margin-bottom: 12px; 
+        }
+
+        .mode-card h3 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        .mode-card p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Quiz UI */
+        .timer { 
+            text-align: center; 
+            font-size: 1rem; 
+            font-weight: 600; 
+            color: var(--text-secondary); 
+            margin-bottom: 16px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .progress-bar { 
+            width: 100%; 
+            height: 4px; 
+            background: var(--border); 
+            border-radius: 2px; 
+            margin-bottom: 40px; 
+            overflow: hidden; 
+        }
+
+        .progress-fill { 
+            height: 100%; 
+            background: var(--primary); 
+            width: 0%; 
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            border-radius: 2px;
+        }
+
+        .question-box { 
+            text-align: center; 
+            margin-bottom: 32px; 
+        }
+
+        .q-label { 
+            font-size: 0.8125rem; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            color: var(--text-secondary); 
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .q-word { 
+            font-size: 2.75rem; 
+            font-weight: 800; 
+            margin: 16px 0; 
+            color: var(--text);
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 1.125rem;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            text-align: center;
+            outline: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--card-bg);
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        input:focus { 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1); 
+        }
+
+        input::placeholder {
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 24px;
+            padding: 16px;
+            font-size: 1.0625rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            background: var(--primary);
+            color: white;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: -0.2px;
+        }
+
+        button:hover { 
+            opacity: 0.9; 
+            transform: scale(0.995);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* Results Table */
+        .results-screen { 
+            display: none; 
+        }
+
+        .score-display {
+            text-align: center;
+            margin: 32px 0;
+        }
+
+        .score-number {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--success);
+            letter-spacing: -1px;
+        }
+
+        .score-label {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 24px; 
+            font-size: 0.9375rem; 
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        th { 
+            text-align: left; 
+            padding: 14px 16px; 
+            background: var(--bg);
+            color: var(--text-secondary); 
+            font-weight: 600;
+            font-size: 0.8125rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        td { 
+            padding: 14px 16px; 
+            border-bottom: 1px solid var(--border);
+            background: var(--card-bg);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .correct { 
+            color: var(--success); 
+            font-weight: 600; 
+        }
+
+        .incorrect { 
+            color: var(--error); 
+            font-weight: 600; 
+        }
+
+        .active { 
+            display: block !important; 
+        }
+
+        .hidden { 
+            display: none; 
+        }
+
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 12px;
+        }
+
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .table-container::-webkit-scrollbar-track {
+            background: var(--bg);
+            border-radius: 4px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* Arabic Keyboard */
+        .arabic-keyboard {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1a1a1a;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            cursor: move;
+            user-select: none;
+            display: none;
+        }
+
+        .keyboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #333;
+        }
+
+        .keyboard-title {
+            color: #fff;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .keyboard-close {
+            background: #333;
+            border: none;
+            color: #fff;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin: 0;
+        }
+
+        .keyboard-close:hover {
+            background: #444;
+        }
+
+        .keyboard-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 6px;
+        }
+
+        .key-btn {
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            color: #fff;
+            padding: 10px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.125rem;
+            transition: all 0.15s;
+            min-width: 40px;
+        }
+
+        .key-btn:hover {
+            background: #3a3a3a;
+            transform: translateY(-1px);
+        }
+
+        .key-btn:active {
+            transform: scale(0.95);
+        }
+
+        .key-space {
+            grid-column: span 6;
+        }
+
+        .key-backspace {
+            grid-column: span 2;
+            font-size: 0.875rem;
+        }
+
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-emoji {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--error);
+            margin-bottom: 12px;
+        }
+
+        .modal-message {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: 1rem;
+        }
+
+        .modal-btn {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: auto;
+            margin: 0;
+        }
+
+        .modal-btn:hover {
+            opacity: 0.9;
+        }
+
+        .modal-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .timer-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="start-screen" class="active">
+        <h1>Arabic Exam</h1>
+        <div class="menu-grid">
+            <div class="mode-card" onclick="initQuiz('vocab')">
+                <h3>Translation</h3>
+                <p>Arabic ↔ English</p>
+            </div>
+            <div class="mode-card" onclick="initQuiz('grammar')">
+                <h3>GAE</h3>
+                <p>Singular ↔ Plural</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="quiz-screen" class="hidden">
+        <div class="timer" id="timer">0.00s</div>
+        <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+        
+        <div class="question-box">
+            <div class="q-label" id="q-type">Translate</div>
+            <div class="q-word" id="q-word">Word</div>
+        </div>
+
+        <input type="text" id="answer-input" autocomplete="off" placeholder="Type your answer...">
+        <button onclick="handleNext()">Submit Answer</button>
+    </div>
+
+    <div id="results-screen" class="hidden">
+        <h1>Great Job!</h1>
+        <div class="score-display">
+            <div class="score-number" id="score-number">0/0</div>
+            <div class="score-label">Questions Answered</div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Word</th>
+                        <th>Your Answer</th>
+                        <th>Correct</th>
+                    </tr>
+                </thead>
+                <tbody id="results-table"></tbody>
+            </table>
+        </div>
+        <button onclick="location.reload()">Try Another Mode</button>
+    </div>
+</div>
+
+<!-- Arabic Keyboard -->
+<div class="arabic-keyboard" id="arabicKeyboard">
+    <div class="keyboard-header">
+        <span class="keyboard-title">⌨️ Arabic Keyboard</span>
+        <button class="keyboard-close" onclick="toggleKeyboard()">✕</button>
+    </div>
+    <div class="keyboard-grid">
+        <button class="key-btn" onclick="insertChar('ض')">ض</button>
+        <button class="key-btn" onclick="insertChar('ص')">ص</button>
+        <button class="key-btn" onclick="insertChar('ث')">ث</button>
+        <button class="key-btn" onclick="insertChar('ق')">ق</button>
+        <button class="key-btn" onclick="insertChar('ف')">ف</button>
+        <button class="key-btn" onclick="insertChar('غ')">غ</button>
+        <button class="key-btn" onclick="insertChar('ع')">ع</button>
+        <button class="key-btn" onclick="insertChar('ه')">ه</button>
+        <button class="key-btn" onclick="insertChar('خ')">خ</button>
+        <button class="key-btn" onclick="insertChar('ح')">ح</button>
+
+        <button class="key-btn" onclick="insertChar('ش')">ش</button>
+        <button class="key-btn" onclick="insertChar('س')">س</button>
+        <button class="key-btn" onclick="insertChar('ي')">ي</button>
+        <button class="key-btn" onclick="insertChar('ب')">ب</button>
+        <button class="key-btn" onclick="insertChar('ل')">ل</button>
+        <button class="key-btn" onclick="insertChar('ا')">ا</button>
+        <button class="key-btn" onclick="insertChar('ت')">ت</button>
+        <button class="key-btn" onclick="insertChar('ن')">ن</button>
+        <button class="key-btn" onclick="insertChar('م')">م</button>
+        <button class="key-btn" onclick="insertChar('ك')">ك</button>
+
+        <button class="key-btn" onclick="insertChar('ء')">ء</button>
+        <button class="key-btn" onclick="insertChar('ؤ')">ؤ</button>
+        <button class="key-btn" onclick="insertChar('ر')">ر</button>
+        <button class="key-btn" onclick="insertChar('ى')">ى</button>
+        <button class="key-btn" onclick="insertChar('ة')">ة</button>
+        <button class="key-btn" onclick="insertChar('و')">و</button>
+        <button class="key-btn" onclick="insertChar('ز')">ز</button>
+        <button class="key-btn" onclick="insertChar('ظ')">ظ</button>
+        <button class="key-btn" onclick="insertChar('ط')">ط</button>
+        <button class="key-btn" onclick="insertChar('د')">د</button>
+
+        <button class="key-btn" onclick="insertChar('ذ')">ذ</button>
+        <button class="key-btn" onclick="insertChar('ج')">ج</button>
+        <button class="key-btn key-space" onclick="insertChar(' ')">Space</button>
+        <button class="key-btn key-backspace" onclick="backspace()">⌫ Back</button>
+    </div>
+</div>
+
+
+<div class="modal-overlay" id="cheatModal">
+    <div class="modal-content">
+        <div class="modal-title">Stop copying gng 😵‍💫🥀</div>
+        <button class="modal-btn" id="modalCloseBtn" disabled onclick="closeModal()">
+            Close (<span id="countdown">3</span>s)
+        </button>
+    </div>
+</div>
+
+<script>
+// DATA SETS
+const vocabData = [
+    { ar: 'التدخين', en: 'smoking' },
+    { ar: 'الإدمان', en: 'addiction' },
+    { ar: 'المخدرات', en: 'drugs' },
+    { ar: 'القمار', en: 'gambling' },
+    { ar: 'السيجارة', en: 'the cigarette' },
+    { ar: 'الدخان', en: 'smoke' },
+    { ar: 'أمراض القلب', en: 'heart disease' },
+    { ar: 'السرطان', en: 'cancer' },
+    { ar: 'مواقع التواصل الاجتماعي', en: 'social media' },
+    { ar: 'المواقع المفيدة', en: 'useful sites' },
+    { ar: 'الفكرة', en: 'the idea' },
+    { ar: 'تلويث', en: 'pollution' },
+    { ar: 'المدينة المستدامة', en: 'the sustainable city' },
+    { ar: 'البصمة الكربونية', en: 'carbon footprint' },
+    { ar: 'الوقود الأحفوري', en: 'fossil fuels' },
+    { ar: 'سهل المنال', en: 'easy come' }
+];
+
+const grammarData = [
+    { singular: 'أزمة', plural: 'أزمات' },
+    { singular: 'علاقة', plural: 'علاقات' },
+    { singular: 'مشكلة', plural: 'مشكلات' },
+    { singular: 'ساعة', plural: 'ساعات' },
+    { singular: 'سيجارة', plural: 'سجائر' },
+    { singular: 'عائلة', plural: 'عائلات' },
+    { singular: 'وقت', plural: 'أوقات' },
+    { singular: 'يوم', plural: 'أيام' },
+    { singular: 'وسيلة', plural: 'وسائل' },
+    { singular: 'بيئة', plural: 'بيئات' },
+    { singular: 'بلد', plural: 'بلاد' },
+    { singular: 'محطة', plural: 'محطات' },
+    { singular: 'سيارة', plural: 'سيارات' },
+    { singular: 'طاقة', plural: 'طاقات' },
+    { singular: 'دولة', plural: 'دول' },
+    { singular: 'غرفة', plural: 'غرف' },
+    { singular: 'نوع', plural: 'أنواع' },
+    { singular: 'صديق', plural: 'أصدقاء' },
+    { singular: 'رائحة', plural: 'روائح' },
+    { singular: 'مكان', plural: 'أماكن' },
+    { singular: 'موقع', plural: 'مواقع' }
+];
+
+let currentQuestions = [];
+let currentIndex = 0;
+let results = [];
+let timerInterval;
+let startTime;
+let quizActive = false;
+
+// Keyboard functionality
+let isDragging = false;
+let currentX;
+let currentY;
+let initialX;
+let initialY;
+let xOffset = 0;
+let yOffset = 0;
+
+const keyboard = document.getElementById('arabicKeyboard');
+
+keyboard.addEventListener('mousedown', dragStart);
+document.addEventListener('mousemove', drag);
+document.addEventListener('mouseup', dragEnd);
+
+function dragStart(e) {
+    if (e.target.closest('.keyboard-close') || e.target.closest('.key-btn')) return;
+    
+    initialX = e.clientX - xOffset;
+    initialY = e.clientY - yOffset;
+    isDragging = true;
+}
+
+function drag(e) {
+    if (isDragging) {
+        e.preventDefault();
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+        xOffset = currentX;
+        yOffset = currentY;
+        setTranslate(currentX, currentY, keyboard);
+    }
+}
+
+function dragEnd(e) {
+    initialX = currentX;
+    initialY = currentY;
+    isDragging = false;
+}
+
+function setTranslate(xPos, yPos, el) {
+    el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+}
+
+function toggleKeyboard() {
+    const kb = document.getElementById('arabicKeyboard');
+    kb.style.display = kb.style.display === 'none' ? 'block' : 'none';
+}
+
+function insertChar(char) {
+    const input = document.getElementById('answer-input');
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const text = input.value;
+    input.value = text.substring(0, start) + char + text.substring(end);
+    input.selectionStart = input.selectionEnd = start + char.length;
+    input.focus();
+}
+
+function backspace() {
+    const input = document.getElementById('answer-input');
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const text = input.value;
+    if (start !== end) {
+        input.value = text.substring(0, start) + text.substring(end);
+        input.selectionStart = input.selectionEnd = start;
+    } else if (start > 0) {
+        input.value = text.substring(0, start - 1) + text.substring(start);
+        input.selectionStart = input.selectionEnd = start - 1;
+    }
+    input.focus();
+}
+
+window.addEventListener('blur', function() {
+    if (quizActive) {
+        showCheatModal();
+    }
+});
+
+function showCheatModal() {
+    const modal = document.getElementById('cheatModal');
+    const btn = document.getElementById('modalCloseBtn');
+    const countdownEl = document.getElementById('countdown');
+    
+    modal.style.display = 'flex';
+    btn.disabled = true;
+    
+    let countdown = 3;
+    countdownEl.textContent = countdown;
+    
+    const interval = setInterval(() => {
+        countdown--;
+        countdownEl.textContent = countdown;
+        
+        if (countdown <= 0) {
+            clearInterval(interval);
+            btn.disabled = false;
+            btn.textContent = 'Close';
+        }
+    }, 1000);
+}
+
+function closeModal() {
+    document.getElementById('cheatModal').style.display = 'none';
+}
+
+function normalize(str) {
+    return str.toLowerCase()
+        .replace(/[أإآ]/g, 'ا')
+        .replace(/ة/g, 'ه')
+        .replace(/ى/g, 'ي')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function initQuiz(mode) {
+    const rawData = mode === 'vocab' ? vocabData : grammarData;
+    
+    currentQuestions = rawData.map(item => {
+        const isReverse = Math.random() > 0.5;
+        if(mode === 'vocab') {
+            return {
+                prompt: isReverse ? item.en : item.ar,
+                answer: isReverse ? item.ar : item.en,
+                label: isReverse ? 'Translate to Arabic' : 'Translate to English'
+            };
+        } else {
+            return {
+                prompt: isReverse ? item.plural : item.singular,
+                answer: isReverse ? item.singular : item.plural,
+                label: isReverse ? 'Write the Singular' : 'Write the Plural'
+            };
+        }
+    }).sort(() => Math.random() - 0.5);
+
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('quiz-screen').classList.add('active');
+    document.getElementById('arabicKeyboard').style.display = 'block';
+    quizActive = true;
+    startQuestion();
+}
+
+function startQuestion() {
+    const q = currentQuestions[currentIndex];
+    document.getElementById('q-type').textContent = q.label;
+    document.getElementById('q-word').textContent = q.prompt;
+    document.getElementById('answer-input').value = '';
+    document.getElementById('answer-input').focus();
+    
+    const progress = (currentIndex / currentQuestions.length) * 100;
+    document.getElementById('progress').style.width = `${progress}%`;
+
+    startTime = Date.now();
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        const diff = (Date.now() - startTime) / 1000;
+        document.getElementById('timer').textContent = diff.toFixed(2) + 's';
+    }, 100);
+}
+
+function handleNext() {
+    const userVal = document.getElementById('answer-input').value;
+    const q = currentQuestions[currentIndex];
+    
+    const isCorrect = normalize(userVal) === normalize(q.answer);
+    
+    results.push({
+        prompt: q.prompt,
+        user: userVal,
+        correct: q.answer,
+        status: isCorrect
+    });
+
+    currentIndex++;
+    if(currentIndex < currentQuestions.length) {
+        startQuestion();
+    } else {
+        showResults();
+    }
+}
+
+function showResults() {
+    clearInterval(timerInterval);
+    quizActive = false;
+    document.getElementById('quiz-screen').classList.remove('active');
+    document.getElementById('results-screen').classList.add('active');
+    document.getElementById('arabicKeyboard').style.display = 'none';
+    
+    const score = results.filter(r => r.status).length;
+    document.getElementById('score-number').textContent = `${score}/${results.length}`;
+    
+    const tableBody = document.getElementById('results-table');
+    tableBody.innerHTML = results.map(r => `
+        <tr>
+            <td>${r.prompt}</td>
+            <td class="${r.status ? 'correct' : 'incorrect'}">${r.user || 'N/A'}</td>
+            <td>${r.correct}</td>
+        </tr>
+    `).join('');
+}
+
+document.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' && document.getElementById('quiz-screen').classList.contains('active')) {
+        handleNext();
+    }
+});
+</script>
+</body>
+</html>
