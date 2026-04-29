@@ -3,118 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="icon.png">
 <title>PHANTOM — 3D Experience</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:#050505;--white:#fff;--w60:rgba(255,255,255,0.6);
-    --w50:rgba(255,255,255,0.5);--w30:rgba(255,255,255,0.3);
-    --w20:rgba(255,255,255,0.2);--w10:rgba(255,255,255,0.1);
-    --w08:rgba(255,255,255,0.08);--w04:rgba(255,255,255,0.04);
-    --border:rgba(255,255,255,0.07);
-    --sans:'Space Grotesk',sans-serif;--mono:'Space Mono',monospace;
-  }
+  :root{--bg:#030303;--w50:rgba(255,255,255,.5);--w30:rgba(255,255,255,.3);--w20:rgba(255,255,255,.2);--border:rgba(255,255,255,.07);--sans:'Space Grotesk',sans-serif;--mono:'Space Mono',monospace;}
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
   html{overflow-x:hidden;}
   body{background:var(--bg);color:#fff;font-family:var(--sans);cursor:none;overflow-x:hidden;}
-
-  /* ── CURSOR ── */
-  #cur-dot{position:fixed;top:0;left:0;z-index:9999;pointer-events:none;mix-blend-mode:difference;width:8px;height:8px;background:#fff;border-radius:50%;transform:translate(-50%,-50%);transition:transform .1s;}
-  #cur-ring{position:fixed;top:0;left:0;z-index:9998;pointer-events:none;mix-blend-mode:difference;width:36px;height:36px;border:1px solid rgba(255,255,255,.6);border-radius:50%;transform:translate(-50%,-50%);transition:width .2s,height .2s,border-color .2s;}
-  body:has(a:hover) #cur-ring,body:has(button:hover) #cur-ring{width:56px;height:56px;border-color:#fff;}
-
-  /* ── NAV ── */
-  nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:20px 48px;background:rgba(5,5,5,.55);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
+  #cur-dot{position:fixed;top:0;left:0;z-index:9999;pointer-events:none;mix-blend-mode:difference;width:8px;height:8px;background:#fff;border-radius:50%;transform:translate(-50%,-50%);}
+  #cur-ring{position:fixed;top:0;left:0;z-index:9998;pointer-events:none;mix-blend-mode:difference;width:36px;height:36px;border:1px solid rgba(255,255,255,.5);border-radius:50%;transform:translate(-50%,-50%);transition:width .2s,height .2s;}
+  body:has(a:hover) #cur-ring{width:52px;height:52px;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:20px 48px;background:rgba(3,3,3,.6);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
   .nl{font-family:var(--mono);font-size:18px;font-weight:700;letter-spacing:.2em;color:#fff;text-decoration:none;display:flex;align-items:center;gap:10px;}
-  .nlm{width:28px;height:28px;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:10px;}
+  .nlm{width:28px;height:28px;display:block;object-fit:contain;}
   .nlinks{display:flex;gap:36px;list-style:none;}
   .nlinks a{color:var(--w50);text-decoration:none;font-size:13px;letter-spacing:.1em;text-transform:uppercase;transition:color .2s;}
   .nlinks a:hover,.nlinks a.active{color:#fff;}
-  .ncta{background:#fff;color:#050505;padding:10px 24px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;}
-
-  /* ── CANVAS ── */
+  .ncta{background:#fff;color:#030303;padding:10px 24px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;}
   #c{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;}
-
-  /* ── SCROLL PANELS ── */
   #sc{position:relative;z-index:10;}
   .panel{height:100vh;display:flex;align-items:center;padding:0 80px;pointer-events:none;}
-  .panel.right{justify-content:flex-end;}
-  .panel.center{justify-content:center;}
-
-  /* ── TEXT BOX ── */
-  .box{background:rgba(5,5,5,.76);backdrop-filter:blur(20px);border:1px solid var(--border);padding:44px 40px;max-width:400px;pointer-events:auto;position:relative;}
-  .box::before{content:'';position:absolute;top:0;left:0;width:28px;height:2px;background:rgba(255,255,255,.45);}
-  .hl{font-family:var(--mono);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--w30);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
-  .hl::before{content:'';width:14px;height:1px;background:var(--w30);}
-  .pt{font-size:clamp(26px,3.5vw,48px);font-weight:700;line-height:1.0;letter-spacing:-.04em;margin-bottom:14px;}
-  .pd{font-size:14px;line-height:1.7;color:var(--w50);}
-  .ps{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap;}
-  .pv{border:1px solid var(--border);padding:11px 14px;background:rgba(5,5,5,.5);}
-  .pv-n{font-family:var(--mono);font-size:19px;font-weight:700;display:block;margin-bottom:2px;}
-  .pv-l{font-size:9px;color:rgba(255,255,255,.35);letter-spacing:.12em;text-transform:uppercase;}
-
-  /* ── PROGRESS ── */
-  #pb{position:fixed;top:0;left:0;width:0%;height:2px;background:#fff;z-index:300;}
-
-  /* ── SCROLL HINT ── */
-  #sh{position:fixed;bottom:36px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--w30);text-transform:uppercase;transition:opacity .6s;}
-  .sl{width:1px;height:32px;background:var(--w20);overflow:hidden;position:relative;}
+  .panel.right{justify-content:flex-end;}.panel.center{justify-content:center;}
+  .box{background:rgba(3,3,3,.78);backdrop-filter:blur(22px);border:1px solid var(--border);padding:40px 36px;max-width:380px;pointer-events:auto;position:relative;}
+  .box::before{content:'';position:absolute;top:0;left:0;width:24px;height:1.5px;background:rgba(255,255,255,.4);}
+  .hl{font-family:var(--mono);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--w30);margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+  .hl::before{content:'';width:12px;height:1px;background:var(--w30);}
+  .pt{font-size:clamp(24px,3.2vw,44px);font-weight:700;line-height:1.0;letter-spacing:-.04em;margin-bottom:12px;}
+  .pd{font-size:13px;line-height:1.7;color:var(--w50);}
+  .ps{margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;}
+  .pv{border:1px solid var(--border);padding:10px 14px;background:rgba(3,3,3,.5);}
+  .pv-n{font-family:var(--mono);font-size:18px;font-weight:700;display:block;margin-bottom:2px;}
+  .pv-l{font-size:9px;color:rgba(255,255,255,.35);letter-spacing:.1em;text-transform:uppercase;}
+  #pb{position:fixed;top:0;left:0;width:0%;height:1.5px;background:#fff;z-index:300;}
+  #sh{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--w30);text-transform:uppercase;transition:opacity .6s;}
+  .sl{width:1px;height:28px;background:var(--w20);overflow:hidden;position:relative;}
   .sl::after{content:'';position:absolute;top:-100%;left:0;width:100%;height:100%;background:#fff;animation:drop 2s ease-in-out infinite;}
   @keyframes drop{0%{top:-100%}100%{top:200%}}
-
-  /* ── SECTION DOTS ── */
-  #dots{position:fixed;right:44px;top:50%;transform:translateY(-50%);z-index:200;display:flex;flex-direction:column;gap:12px;}
-  .dot{width:6px;height:6px;border-radius:50%;border:1px solid var(--w30);background:transparent;transition:background .3s,border-color .3s,transform .3s;cursor:pointer;pointer-events:auto;}
-  .dot.active{background:#fff;border-color:#fff;transform:scale(1.4);}
-
-  /* ── HUD ── */
-  #hud{position:fixed;bottom:36px;right:48px;z-index:200;font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--w30);text-align:right;line-height:2.1;}
-  .hv{color:rgba(255,255,255,.65);}
-
-  /* ── SECTION BG LABEL ── */
-  #bglabel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;font-family:var(--mono);font-size:clamp(80px,14vw,190px);font-weight:700;letter-spacing:-.05em;color:rgba(255,255,255,.022);white-space:nowrap;user-select:none;}
-
-  /* ── SCANLINES ── */
-  #scan{position:fixed;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px);}
-
-  /* ── CROSSHAIR ── */
-  #xhair{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;pointer-events:none;opacity:.1;}
-
-  /* ── FINAL ── */
-  .fcta{pointer-events:auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:36px;}
-  .ft{font-size:clamp(52px,9vw,118px);font-weight:700;letter-spacing:-.05em;line-height:.88;}
-  .fl{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
-  .bp{background:#fff;color:#050505;padding:16px 40px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;transition:transform .2s;display:inline-block;}
-  .bp:hover{transform:translateY(-2px);}
-  .bs{border:1px solid var(--w20);color:#fff;padding:16px 40px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;transition:border-color .2s;display:inline-block;}
+  #dots{position:fixed;right:40px;top:50%;transform:translateY(-50%);z-index:200;display:flex;flex-direction:column;gap:12px;}
+  .dot{width:5px;height:5px;border-radius:50%;border:1px solid var(--w30);background:transparent;transition:all .3s;cursor:pointer;pointer-events:auto;}
+  .dot.active{background:#fff;border-color:#fff;transform:scale(1.5);}
+  #hud{position:fixed;bottom:32px;right:44px;z-index:200;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--w30);text-align:right;line-height:2;}
+  .hv{color:rgba(255,255,255,.6);}
+  #bgl{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;font-family:var(--mono);font-size:clamp(80px,13vw,180px);font-weight:700;letter-spacing:-.05em;color:rgba(255,255,255,.018);white-space:nowrap;user-select:none;}
+  #scan{position:fixed;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.018) 2px,rgba(0,0,0,.018) 4px);}
+  .fcta{pointer-events:auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:32px;}
+  .ft{font-size:clamp(48px,8vw,110px);font-weight:700;letter-spacing:-.05em;line-height:.88;}
+  .fl{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+  .bp{background:#fff;color:#030303;padding:14px 36px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;display:inline-block;}
+  .bs{border:1px solid var(--w20);color:#fff;padding:14px 36px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;display:inline-block;transition:border-color .2s;}
   .bs:hover{border-color:#fff;}
-
-  @media(max-width:768px){
-    nav{padding:16px 20px;}.nlinks{display:none;}
-    .panel{padding:0 20px;}.box{max-width:100%;padding:28px 22px;}
-    #dots,#hud{display:none;}
-  }
+  @media(max-width:768px){nav{padding:16px 20px;}.nlinks{display:none;}.panel{padding:0 20px;}.box{max-width:100%;padding:24px 20px;}#dots,#hud{display:none;}}
 </style>
+<base target="_blank">
 </head>
 <body>
-
-<div id="cur-dot"></div>
-<div id="cur-ring"></div>
-<div id="pb"></div>
-<div id="scan"></div>
-
-<svg id="xhair" width="56" height="56" viewBox="0 0 56 56">
-  <line x1="28" y1="0" x2="28" y2="20" stroke="white" stroke-width="1"/>
-  <line x1="28" y1="36" x2="28" y2="56" stroke="white" stroke-width="1"/>
-  <line x1="0" y1="28" x2="20" y2="28" stroke="white" stroke-width="1"/>
-  <line x1="36" y1="28" x2="56" y2="28" stroke="white" stroke-width="1"/>
-  <circle cx="28" cy="28" r="5" fill="none" stroke="white" stroke-width="1"/>
-</svg>
-
+<div id="cur-dot"></div><div id="cur-ring"></div>
+<div id="pb"></div><div id="scan"></div>
 <canvas id="c"></canvas>
+<div id="bgl">PHANTOM</div>
 
 <nav>
-  <a href="index.html" class="nl"><div class="nlm">P</div>PHANTOM</a>
+  <a href="index.html" class="nl"><img src="icon.png" alt="PHANTOM" class="nlm">PHANTOM</a>
   <ul class="nlinks">
     <li><a href="index.html">Overview</a></li>
     <li><a href="technology.html">Technology</a></li>
@@ -143,97 +93,84 @@
   <div>SYS&nbsp;<span class="hv" id="h-sys">INIT</span></div>
 </div>
 
-<div id="bglabel">PHANTOM</div>
-
 <div id="sh"><span>Scroll</span><div class="sl"></div></div>
 
-<!-- SCROLL PANELS -->
 <div id="sc">
   <div class="panel center">
-    <div class="box" style="max-width:560px;text-align:center;">
-      <div class="hl" style="justify-content:center;">Interactive 3D · Real-Time WebGL</div>
-      <h1 class="pt" style="font-size:clamp(50px,7vw,84px);">PHANTOM<br>UAV</h1>
-      <p class="pd" style="max-width:100%;">Scroll to explore every system of the Phantom platform — fuselage, solar wings, pusher propulsion, and onboard AI — rendered live in three dimensions.</p>
+    <div class="box" style="max-width:520px;text-align:center;">
+      <div class="hl" style="justify-content:center;">Real-Time Wireframe · WebGL</div>
+      <h1 class="pt" style="font-size:clamp(46px,6vw,78px);">PHANTOM<br>UAV</h1>
+      <p class="pd" style="max-width:100%;">Scroll to explore the Phantom's smooth rounded fuselage, swept mid-wing configuration, twin vertical stabilizers, and rear pusher propulsion.</p>
     </div>
   </div>
-
   <div class="panel">
     <div class="box">
-      <div class="hl">01 — Fuselage</div>
-      <h2 class="pt">Oval Body.<br>Maximum<br>Volume.</h2>
-      <p class="pd">The Phantom's distinctive oval cross-section maximises internal volume for avionics, battery, and payload while minimising wetted area. Carbon fibre primary structure. 10-year service life.</p>
+      <div class="hl">01 — Rounded Fuselage</div>
+      <h2 class="pt">Smooth.<br>Organic.<br>Aerodynamic.</h2>
+      <p class="pd">Fully rounded fuselage with no sharp edges. Smooth nose contour blends seamlessly into the canopy and tail section. Optimized for minimal drag and maximum internal volume.</p>
       <div class="ps">
-        <div class="pv"><span class="pv-n">6g</span><span class="pv-l">Load Factor</span></div>
+        <div class="pv"><span class="pv-n">Cd 0.19</span><span class="pv-l">Drag Coeff</span></div>
         <div class="pv"><span class="pv-n">10yr</span><span class="pv-l">Service Life</span></div>
       </div>
     </div>
   </div>
-
   <div class="panel right">
     <div class="box">
-      <div class="hl">02 — Solar Wings</div>
-      <h2 class="pt">Straight Wing.<br>Infinite<br>Range.</h2>
-      <p class="pd">High-aspect straight wings with full-span solar laminate. 480W average harvest. 250W surplus over cruise load. Wings connect via QRAM in under 3 minutes — six different configurations available.</p>
+      <div class="hl">02 — Swept Mid Wings</div>
+      <h2 class="pt">Mid Mount.<br>Low Sweep.<br>Clean.</h2>
+      <p class="pd">Mid-mounted swept wings with smooth rounded blend into fuselage. Modest span for high-speed efficiency. Rounded wingtips reduce induced drag. NACA 1410 airfoil profile.</p>
       <div class="ps">
-        <div class="pv"><span class="pv-n">480W</span><span class="pv-l">Solar Avg</span></div>
-        <div class="pv"><span class="pv-n">6</span><span class="pv-l">Wing Types</span></div>
-        <div class="pv"><span class="pv-n">∞</span><span class="pv-l">Daylight</span></div>
+        <div class="pv"><span class="pv-n">28°</span><span class="pv-l">Sweep</span></div>
+        <div class="pv"><span class="pv-n">2.8x</span><span class="pv-l">Span Ratio</span></div>
       </div>
     </div>
   </div>
-
   <div class="panel">
     <div class="box">
-      <div class="hl">03 — V-Tail</div>
-      <h2 class="pt">Ruddervators.<br>One Surface.<br>Two Axes.</h2>
-      <p class="pd">Butterfly V-tail eliminates conventional horizontal stabiliser. Each ruddervator provides combined pitch-and-yaw authority. Lower wetted area, reduced interference drag vs. conventional empennage.</p>
+      <div class="hl">03 — Twin Vertical Stabilizers</div>
+      <h2 class="pt">Twin Tail.<br>Redundant.<br>Stable.</h2>
+      <p class="pd">Twin swept vertical stabilizers mounted on the rear fuselage with slight outward cant. Provides redundant yaw authority and improved stability in all flight regimes.</p>
       <div class="ps">
-        <div class="pv"><span class="pv-n">±30°</span><span class="pv-l">Deflection</span></div>
-        <div class="pv"><span class="pv-n">−18%</span><span class="pv-l">Drag vs Conv.</span></div>
+        <div class="pv"><span class="pv-n">±25°</span><span class="pv-l">Rudder</span></div>
       </div>
     </div>
   </div>
-
   <div class="panel right">
     <div class="box">
       <div class="hl">04 — Pusher Propulsion</div>
-      <h2 class="pt">Rear Engine.<br>Clean<br>Airframe.</h2>
-      <p class="pd">Pusher configuration keeps propwash clear of all sensors and payload. Three-blade variable-pitch propeller on thrust-vectoring gimbal: 0–90° pitch for vertical launch, ±25° yaw for hover control.</p>
+      <h2 class="pt">Rear Mount.<br>Sensor-Clear<br>Airflow.</h2>
+      <p class="pd">Pusher configuration keeps all propwash away from nose sensors. 3-blade prop on compact motor mount at extreme tail. Clean airflow across the entire airframe.</p>
       <div class="ps">
-        <div class="pv"><span class="pv-n">90°</span><span class="pv-l">Gimbal Pitch</span></div>
-        <div class="pv"><span class="pv-n">3-blade</span><span class="pv-l">Variable Pitch</span></div>
+        <div class="pv"><span class="pv-n">90°</span><span class="pv-l">Gimbal</span></div>
+        <div class="pv"><span class="pv-n">3-blade</span><span class="pv-l">Prop</span></div>
       </div>
     </div>
   </div>
-
   <div class="panel">
     <div class="box">
-      <div class="hl">05 — Landing Gear</div>
-      <h2 class="pt">Tricycle<br>Gear. Any<br>Surface.</h2>
-      <p class="pd">Fixed tricycle undercarriage with shock-absorbing composite legs. Nose wheel plus two main gear. Slope tolerance ±5°. Rough surface capability. No runway required with VTOL module.</p>
+      <div class="hl">05 — Nose Payload</div>
+      <h2 class="pt">Forward<br>Camera.<br>Clean View.</h2>
+      <p class="pd">Forward-facing camera aperture integrated into the rounded nose. Unobstructed field of view with no propwash interference. Gimballed sensor mount for stabilized imaging.</p>
       <div class="ps">
-        <div class="pv"><span class="pv-n">±5°</span><span class="pv-l">Slope Tol.</span></div>
-        <div class="pv"><span class="pv-n">3-pt</span><span class="pv-l">Tricycle</span></div>
+        <div class="pv"><span class="pv-n">360°</span><span class="pv-l">FOV</span></div>
+        <div class="pv"><span class="pv-n">97%</span><span class="pv-l">AI Precision</span></div>
       </div>
     </div>
   </div>
-
   <div class="panel right">
     <div class="box">
       <div class="hl">06 — Mercury AI</div>
-      <h2 class="pt">40 TOPS.<br>5-Second<br>Loop.</h2>
-      <p class="pd">NVIDIA Jetson Orin Nano — 67g, 15W — runs real-time 3D reconstruction, YOLOv8 object detection at 97% precision, and swarm coordination protocols simultaneously.</p>
+      <h2 class="pt">40 TOPS.<br>Edge<br>Intelligence.</h2>
+      <p class="pd">NVIDIA Jetson Orin Nano — 67g, 15W. Real-time 3D reconstruction, YOLOv8 detection, swarm mesh. Onboard thinking at 30,000 feet.</p>
       <div class="ps">
         <div class="pv"><span class="pv-n">40</span><span class="pv-l">TOPS</span></div>
-        <div class="pv"><span class="pv-n">97%</span><span class="pv-l">Precision</span></div>
-        <div class="pv"><span class="pv-n">67g</span><span class="pv-l">Module Mass</span></div>
+        <div class="pv"><span class="pv-n">5s</span><span class="pv-l">Loop</span></div>
       </div>
     </div>
   </div>
-
   <div class="panel center">
     <div class="fcta">
-      <div class="ft">ONE UAV.<br>EVERY<br>MISSION.</div>
+      <div class="ft">ONE UAV.<br>INFINITE<br>MISSIONS.</div>
       <div class="fl">
         <a href="index.html" class="bp">Full Overview</a>
         <a href="technology.html" class="bs">Technology →</a>
@@ -249,496 +186,599 @@
 'use strict';
 
 // ── CURSOR ──
-const curDot  = document.getElementById('cur-dot');
-const curRing = document.getElementById('cur-ring');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
-(function aC(){
-  curDot.style.left=mx+'px'; curDot.style.top=my+'px';
-  rx+=(mx-rx)*0.14; ry+=(my-ry)*0.14;
-  curRing.style.left=rx+'px'; curRing.style.top=ry+'px';
-  requestAnimationFrame(aC);
-})();
+const curDot=document.getElementById('cur-dot');
+const curRing=document.getElementById('cur-ring');
+let cmx=0,cmy=0,crx=0,cry=0;
+document.addEventListener('mousemove',e=>{cmx=e.clientX;cmy=e.clientY;});
+(function aC(){curDot.style.left=cmx+'px';curDot.style.top=cmy+'px';crx+=(cmx-crx)*.14;cry+=(cmy-cry)*.14;curRing.style.left=crx+'px';curRing.style.top=cry+'px';requestAnimationFrame(aC);})();
 
 // ── RENDERER ──
-const canvas = document.getElementById('c');
-const renderer = new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
 renderer.setSize(window.innerWidth,window.innerHeight);
-renderer.shadowMap.enabled = true;
-
-const scene  = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(40,window.innerWidth/window.innerHeight,0.05,300);
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(38,window.innerWidth/window.innerHeight,.05,500);
 camera.position.set(0,1.5,10);
+window.addEventListener('resize',()=>{renderer.setSize(window.innerWidth,window.innerHeight);camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();});
+scene.add(new THREE.AmbientLight(0xffffff,.04));
 
-window.addEventListener('resize',()=>{
-  renderer.setSize(window.innerWidth,window.innerHeight);
-  camera.aspect=window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
+// ══════════════════════════════════════════════
+// WIREFRAME MATERIALS
+// ══════════════════════════════════════════════
+const M0=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:1.0});
+const M1=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.75});
+const M2=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.30});
+const M3=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.12});
+
+function mkLine(pts,mat){
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(pts.flat()),3));
+  return new THREE.Line(g,mat||M1);
+}
+function mkLoop(pts,mat){return mkLine([...pts,pts[0]],mat);}
+function mkEllipse(cx,cy,cz,rx,ry,plane,n,mat){
+  const pts=[];const N=n||32;
+  for(let i=0;i<=N;i++){const a=i/N*Math.PI*2;const c=Math.cos(a),s=Math.sin(a);
+    if(plane==='YZ') pts.push([cx,cy+s*ry,cz+c*rx]);
+    else if(plane==='XZ') pts.push([cx+c*rx,cy,cz+s*ry]);
+    else pts.push([cx+c*rx,cy+s*ry,cz]);}
+  return mkLine(pts,mat);
+}
+
+// ══════════════════════════════════════════════
+// NACA 1410 AIRFOIL DATA
+// ══════════════════════════════════════════════
+const NACA1410 = [
+  [0.00000,0.00000],[0.01174,0.01639],[0.02398,0.02297],[0.04870,0.03194],
+  [0.07358,0.03837],[0.09854,0.04338],[0.14861,0.05062],[0.19880,0.05531],
+  [0.24907,0.05809],[0.29937,0.05940],[0.40000,0.05836],[0.50025,0.05385],
+  [0.60042,0.04692],[0.70051,0.03804],[0.80049,0.02741],[0.90034,0.01513],
+  [0.95021,0.00832],[1.00000,0.00105],
+  [1.00000,-0.00105],[0.94979,-0.00512],[0.89966,-0.00901],[0.79951,-0.01629],
+  [0.69949,-0.02304],[0.59958,-0.02914],[0.49975,-0.03439],[0.40000,-0.03936],
+  [0.30063,-0.04064],[0.25093,-0.04091],[0.20120,-0.04031],[0.15139,-0.03844],
+  [0.10146,-0.03462],[0.07642,-0.03157],[0.05130,-0.02726],[0.02602,-0.02055],
+  [0.01326,-0.01515],[0.00000,0.00000]
+];
+
+function getNACA1410(chord) {
+  return NACA1410.map(p=>[p[0]*chord,p[1]*chord]);
+}
+
+// ══════════════════════════════════════════════
+// ATOMRC-STYLE UAV
+// Smooth rounded fuselage, modest swept wings, twin tail
+// Coordinate: X = nose(+) → tail(-), Y = up, Z = right(+)
+// Total length ≈ 4.8 units, wingspan ≈ 5.0 units (modest!)
+// ══════════════════════════════════════════════
+const UAV=new THREE.Group();
+
+// ─────────────────────────────────────────────
+// DIMENSIONS (matching reference proportions)
+const L=4.8;           // fuselage length
+const FUSE_MAX_R=0.42; // max fuselage radius (wider, rounder)
+const FUSE_Y=0.0;      // fuselage centerline at origin
+const WS=2.5;          // half-span (MODERATE — wings not huge)
+const WING_ROOT_CHORD=1.4;
+const WING_TIP_CHORD=0.75;
+const WING_SWEEP=26*Math.PI/180; // modest sweep
+const DIHEDRAL=2.5*Math.PI/180;  // very slight
+const N=40;
+
+// ─────────────────────────────────────────────
+// 1. FUSELAGE — Very smooth, rounded, organic shape
+// Like a smooth egg with a canopy bump
+
+// Cross-section radius function — smooth all around
+function fuseRadius(t){
+  // t: 0=nose, 1=tail
+  if(t<0.08) return FUSE_MAX_R*0.15*Math.pow(t/0.08,0.7);  // rounded nose
+  if(t<0.35) return FUSE_MAX_R*(0.15+0.85*Math.pow((t-0.08)/0.27,0.4)); // widen smoothly
+  if(t<0.65) return FUSE_MAX_R*(1.0-0.05*Math.sin((t-0.35)/0.3*Math.PI)); // flat max
+  if(t<0.88) return FUSE_MAX_R*(0.95-0.2*(t-0.65)/0.23); // gentle taper
+  return FUSE_MAX_R*0.75*Math.pow(1-(t-0.88)/0.12,1.3); // tail
+}
+
+// Height profile (canopy bump on top)
+function fuseHeight(t){
+  if(t<0.08) return FUSE_MAX_R*0.2*Math.pow(t/0.08,0.8);
+  if(t<0.30) return FUSE_MAX_R*(0.2+0.8*Math.pow((t-0.08)/0.22,0.5));
+  if(t<0.55) return FUSE_MAX_R*(1.0+0.12*Math.sin((t-0.30)/0.25*Math.PI)); // canopy bump
+  if(t<0.80) return FUSE_MAX_R*(1.05-0.15*(t-0.55)/0.25);
+  return FUSE_MAX_R*0.90*Math.pow(1-(t-0.80)/0.20,1.1);
+}
+
+// Width profile (slightly wider than tall for stability)
+function fuseWidth(t){
+  if(t<0.08) return FUSE_MAX_R*0.18*Math.pow(t/0.08,0.7);
+  if(t<0.35) return FUSE_MAX_R*(0.18+0.82*Math.pow((t-0.08)/0.27,0.4));
+  if(t<0.65) return FUSE_MAX_R*0.98;
+  if(t<0.88) return FUSE_MAX_R*(0.98-0.15*(t-0.65)/0.23);
+  return FUSE_MAX_R*0.83*Math.pow(1-(t-0.88)/0.12,1.2);
+}
+
+// Build fuselage with smooth cross-sections
+const fuseStations=[0.02,0.06,0.10,0.15,0.20,0.28,0.36,0.44,0.52,0.60,0.68,0.76,0.84,0.90,0.95];
+const fuseXPositions=[];
+
+fuseStations.forEach((t,idx)=>{
+  const x=2.3-t*L;
+  fuseXPositions.push(x);
+  const h=fuseHeight(t);
+  const w=fuseWidth(t);
+  const r=fuseRadius(t);
+
+  // Smooth oval cross-section
+  const ring=[];const nr=28;
+  for(let i=0;i<=nr;i++){
+    const a=i/nr*Math.PI*2;
+    // Smooth oval: slightly flattened bottom, rounded top
+    let yy=Math.sin(a)*h;
+    let zz=Math.cos(a)*w;
+    // Round the corners more
+    const cornerSmooth=0.92;
+    if(Math.abs(zz)>w*0.7 && yy>0) yy*=cornerSmooth;
+    ring.push([x, yy, zz]);
+  }
+  const bright=(idx>=4&&idx<=8);
+  UAV.add(mkLine(ring,bright?M0:M2));
 });
 
-// ── LIGHTS ──
-scene.add(new THREE.AmbientLight(0xffffff,0.22));
-const key=new THREE.DirectionalLight(0xffffff,1.5); key.position.set(5,9,7); key.castShadow=true; scene.add(key);
-const fill=new THREE.DirectionalLight(0xffffff,0.5); fill.position.set(-6,3,5); scene.add(fill);
-const rim=new THREE.DirectionalLight(0xffffff,0.55); rim.position.set(1,-5,-6); scene.add(rim);
-const top=new THREE.DirectionalLight(0xffffff,0.35); top.position.set(0,10,-2); scene.add(top);
+// Longitudinal lines — smooth curves along fuselage
+// Top center line
+const topLine=[];
+for(let i=0;i<=N;i++){
+  const t=i/N;
+  const x=2.3-t*L;
+  topLine.push([x, fuseHeight(t)*0.85, 0]);
+}
+UAV.add(mkLine(topLine,M1));
 
-// ── MATERIALS ──
-const mBody  = new THREE.MeshPhongMaterial({color:0x1c1c1c,shininess:90, specular:0x888888});
-const mDark  = new THREE.MeshPhongMaterial({color:0x0e0e0e,shininess:40, specular:0x444444});
-const mEdge  = new THREE.MeshPhongMaterial({color:0x2e2e2e,shininess:200,specular:0xffffff});
-const mSolar = new THREE.MeshPhongMaterial({color:0x06060f,shininess:350,specular:0x3333bb,emissive:0x010108});
-const mGlass = new THREE.MeshPhongMaterial({color:0x050512,shininess:500,specular:0xffffff,transparent:true,opacity:0.88});
-const mProp  = new THREE.MeshPhongMaterial({color:0x181818,shininess:140,specular:0x999999});
-const mGear  = new THREE.MeshPhongMaterial({color:0x111111,shininess:80, specular:0x555555});
-const mWire  = new THREE.MeshBasicMaterial({color:0x555555,wireframe:true,transparent:true,opacity:0.07});
-const mLine  = new THREE.MeshPhongMaterial({color:0x303030,shininess:300,specular:0xffffff});
+// Bottom center line
+const botLine=[];
+for(let i=0;i<=N;i++){
+  const t=i/N;
+  const x=2.3-t*L;
+  botLine.push([x, -fuseHeight(t)*0.75, 0]);
+}
+UAV.add(mkLine(botLine,M1));
 
-// ══════════════════════════════════════════════════════════
-//  PHANTOM UAV — faithful to 4-view blueprint
-//  Coordinate convention: X = nose→tail (+X = nose)
-//  Y = up, Z = right wing
-// ══════════════════════════════════════════════════════════
-const UAV = new THREE.Group();
+// Side lines (left and right)
+for(const S of[1,-1]){
+  const sideLine=[];
+  for(let i=0;i<=N;i+=2){
+    const t=i/N;
+    const x=2.3-t*L;
+    sideLine.push([x, 0, fuseWidth(t)*S*0.7]);
+  }
+  UAV.add(mkLine(sideLine,M2));
+}
 
-// ─────────────────────────────────────────────────────────
-// 1. FUSELAGE  — thick oval cross-section, teardrop plan
-//    Side view: very tall/thick oval, rounded nose, tapers to tail
-//    Top view:  wide ellipse, narrows to tail
-// ─────────────────────────────────────────────────────────
-// Build via LatheGeometry (rotated around Y), then squash in Z to oval
-const fusPts = [];
-// nose→tail in local Y (we'll rotate later): tip at top, tail at bottom
-fusPts.push(new THREE.Vector2(0,     2.10));  // nose tip
-fusPts.push(new THREE.Vector2(0.18,  1.80));
-fusPts.push(new THREE.Vector2(0.52,  1.30));
-fusPts.push(new THREE.Vector2(0.72,  0.70));
-fusPts.push(new THREE.Vector2(0.78,  0.10));  // widest — slightly forward of centre
-fusPts.push(new THREE.Vector2(0.74, -0.50));
-fusPts.push(new THREE.Vector2(0.62, -1.10));
-fusPts.push(new THREE.Vector2(0.44, -1.65));
-fusPts.push(new THREE.Vector2(0.22, -2.00));
-fusPts.push(new THREE.Vector2(0.06, -2.22));
-fusPts.push(new THREE.Vector2(0,    -2.30));  // tail tip
+// Nose closure — very rounded
+UAV.add(mkLine([[2.3,0,0],[2.3-fuseHeight(0)*0.3,fuseHeight(0)*0.5,0]],M0));
+UAV.add(mkLine([[2.3,0,0],[2.3-fuseHeight(0)*0.3,-fuseHeight(0)*0.4,0]],M0));
+UAV.add(mkLine([[2.3,0,0],[2.3-fuseWidth(0)*0.3,0,fuseWidth(0)*0.5]],M0));
+UAV.add(mkLine([[2.3,0,0],[2.3-fuseWidth(0)*0.3,0,-fuseWidth(0)*0.5]],M0));
 
-const fusGeo  = new THREE.LatheGeometry(fusPts,32);
-const fusMesh = new THREE.Mesh(fusGeo, mBody);
-// Rotate so nose → +X (world), squash in Z to get horizontal oval
-fusMesh.rotation.z = Math.PI/2;   // nose now points +X
-fusMesh.scale.set(1, 0.68, 1);    // flatten height (Y) to get oval side profile
-UAV.add(fusMesh);
+// Nose camera (small, integrated)
+UAV.add(mkEllipse(2.25,0,0,.03,.025,'YZ',10,M0));
 
-// Fuselage wireframe shell (shown in section 1)
-const fusWire = new THREE.Mesh(fusGeo, mWire);
-fusWire.rotation.z = Math.PI/2;
-fusWire.scale.set(1,0.68,1);
-fusWire.visible = false;
-UAV.add(fusWire);
+// Canopy outline — smooth bubble shape
+const canopyPts=[];
+for(let i=0;i<=20;i++){
+  const a=i/20*Math.PI;
+  const cx=1.4-Math.cos(a)*0.55;
+  const cy=fuseHeight(0.35)+Math.sin(a)*0.18;
+  canopyPts.push([cx, cy, 0]);
+}
+UAV.add(mkLine(canopyPts,M1));
+// Canopy side views
+for(const S of[1,-1]){
+  const canSide=[];
+  for(let i=0;i<=20;i++){
+    const a=i/20*Math.PI;
+    const cx=1.4-Math.cos(a)*0.55;
+    const cy=fuseHeight(0.35)+Math.sin(a)*0.15;
+    const cz=S*0.12*Math.sin(a);
+    canSide.push([cx, cy, cz]);
+  }
+  UAV.add(mkLine(canSide,M2));
+}
 
-// Canopy / cockpit hump — top of fuselage, centre-forward
-// Elongated dome sitting on top
-const canGeo  = new THREE.SphereGeometry(0.46,20,14,0,Math.PI*2,0,Math.PI*0.55);
-const canMesh = new THREE.Mesh(canGeo, mGlass);
-canMesh.scale.set(1.6, 1.0, 1.1);
-canMesh.position.set(0.5, 0.44, 0);
-UAV.add(canMesh);
+// ─────────────────────────────────────────────
+// 2. MID-MOUNTED SWEPT WINGS — modest size, smooth blend
+// Wings attach at mid-fuselage with smooth rounded transition
+// Rounded wingtips (not sharp!)
+// ─────────────────────────────────────────────
 
-// Canopy frame ring
-const cfGeo  = new THREE.TorusGeometry(0.46,0.025,8,28);
-const cfMesh = new THREE.Mesh(cfGeo, mEdge);
-cfMesh.scale.set(1.6,1.0,1.1);
-cfMesh.position.set(0.5,0.44,0);
-UAV.add(cfMesh);
+function makeWing(side){
+  const S=side;
+  const NS=24;
 
-// Belly flat underside (payload bay door area)
-const bellyGeo  = new THREE.BoxGeometry(2.2,0.05,0.9);
-const bellyMesh = new THREE.Mesh(bellyGeo, mDark);
-bellyMesh.position.set(0.2,-0.48,0);
-UAV.add(bellyMesh);
+  // Wing root at mid-fuselage
+  const ROOT_X=0.6;  // LE x position
+  const ROOT_Z=S*0.38; // where wing meets fuselage (modest!)
+  const ROOT_Y=-0.05; // slightly below center
 
-// Ventral sensor/turret
-const turGeo  = new THREE.SphereGeometry(0.18,16,12);
-const turMesh = new THREE.Mesh(turGeo, mGlass);
-turMesh.scale.set(1,0.7,1);
-turMesh.position.set(0.7,-0.55,0);
-UAV.add(turMesh);
+  // Wing tip — modest span
+  const TIP_X=ROOT_X-1.1; // swept back
+  const TIP_Z=S*WS;       // modest span
+  const TIP_Y=ROOT_Y+(WS-0.38)*Math.tan(DIHEDRAL);
 
-// ─────────────────────────────────────────────────────────
-// 2. STRAIGHT WINGS  — high-aspect, mid-mounted, slight dihedral
-//    Top view: straight, almost no sweep, slight taper at tip
-// ─────────────────────────────────────────────────────────
-function makeWing(side) {
-  const g = new THREE.Group();
+  const LE=[],TE=[],MID=[];
 
-  // Wing planform — slight taper root→tip
-  const shape = new THREE.Shape();
-  const span  = 3.6;            // half-span
-  const rootC = 0.90;           // root chord
-  const tipC  = 0.62;           // tip chord
-  shape.moveTo( rootC*0.35, 0);          // root LE
-  shape.lineTo( tipC*0.35,  side*span);  // tip LE
-  shape.lineTo(-tipC*0.65,  side*span);  // tip TE
-  shape.lineTo(-rootC*0.65, 0);          // root TE
-  shape.closePath();
+  for(let i=0;i<=NS;i++){
+    const u=i/NS;
+    // Smooth spanwise position
+    const z=ROOT_Z+(TIP_Z-ROOT_Z)*u;
+    // LE sweep
+    const leX=ROOT_X+(TIP_X-ROOT_X)*u;
+    // TE — slight taper
+    const chord=WING_ROOT_CHORD-(WING_ROOT_CHORD-WING_TIP_CHORD)*u;
+    const teX=leX-chord;
+    // Dihedral
+    const y=ROOT_Y+(TIP_Y-ROOT_Y)*u;
 
-  const extS = {depth:0.048, bevelEnabled:true, bevelThickness:0.009,bevelSize:0.009,bevelSegments:2};
-  const wGeo = new THREE.ExtrudeGeometry(shape,extS);
-
-  const wing = new THREE.Mesh(wGeo, mBody);
-  wing.rotation.x = -Math.PI/2;
-  g.add(wing);
-
-  // Wing wireframe
-  const ww = new THREE.Mesh(wGeo, mWire);
-  ww.rotation.x = -Math.PI/2;
-  g.add(ww);
-
-  // Solar cell panels — rows spanwise
-  for(let r=0;r<7;r++){
-    const t  = (r+0.5)/7;
-    const cw = 0.18-t*0.03;
-    const cd = rootC*0.7 - t*0.06;
-    const cg = new THREE.BoxGeometry(cd, 0.007, cw);
-    const cm = new THREE.Mesh(cg, mSolar);
-    cm.position.set(
-      -0.08 + t*0.05,
-      0.033,
-      side*(0.35 + t*2.9)
-    );
-    g.add(cm);
+    LE.push([leX,y,z]);
+    TE.push([teX,y,z]);
+    MID.push([(leX+teX)/2,y,z]);
   }
 
-  // Leading edge strip
-  const leGeo = new THREE.BoxGeometry(0.018,0.018,span*2.0);
-  const le    = new THREE.Mesh(leGeo, mEdge);
-  le.position.set(rootC*0.34, 0.025, side*span*0.5);
-  g.add(le);
+  UAV.add(mkLine(LE,M0));
+  UAV.add(mkLine(TE,M1));
+  UAV.add(mkLine([LE[0],TE[0]],M1));
 
-  // Trailing edge strip
-  const teGeo = new THREE.BoxGeometry(0.014,0.014,span*1.95);
-  const te    = new THREE.Mesh(teGeo, mLine);
-  te.position.set(-rootC*0.63, 0.025, side*span*0.5);
-  g.add(te);
+  // ROUNDED wingtip (not sharp!)
+  const tipLE=LE[NS];
+  const tipTE=TE[NS];
+  const tipR=0.12; // tip radius
+  const tipArc=[];
+  for(let i=0;i<=12;i++){
+    const a=i/12*Math.PI;
+    const cx=(tipLE[0]+tipTE[0])/2;
+    const cy=tipLE[1];
+    const cz=tipLE[2]+S*tipR*Math.cos(a);
+    tipArc.push([cx+tipR*0.3*Math.sin(a),cy,cz]);
+  }
+  UAV.add(mkLine(tipArc,M0));
 
-  // Aileron / elevon surface
-  const ailGeo = new THREE.BoxGeometry(0.42,0.025,1.1);
-  const ail    = new THREE.Mesh(ailGeo, mEdge);
-  ail.position.set(-rootC*0.48, 0.028, side*2.5);
-  g.add(ail);
+  // Wing root blend — smooth fillet into fuselage
+  const fillet=[];
+  for(let i=0;i<=10;i++){
+    const a=i/10*Math.PI*0.5;
+    const fx=ROOT_X-0.1-Math.cos(a)*0.15;
+    const fy=ROOT_Y-Math.sin(a)*0.08;
+    const fz=S*(ROOT_Z+0.05*Math.sin(a));
+    fillet.push([fx,fy,fz]);
+  }
+  UAV.add(mkLine(fillet,M2));
 
-  // Winglet — small vertical tip plate
-  const wlShape = new THREE.Shape();
-  wlShape.moveTo(0,0); wlShape.lineTo(0,0.28); wlShape.lineTo(-0.30,0.22); wlShape.lineTo(-0.35,0); wlShape.closePath();
-  const wlGeo  = new THREE.ExtrudeGeometry(wlShape,{depth:0.022,bevelEnabled:false});
-  const wl     = new THREE.Mesh(wlGeo, mEdge);
-  wl.rotation.x = -Math.PI/2;
-  wl.position.set(rootC*0.1, 0.05, side*span);
-  g.add(wl);
+  // NACA 1410 ribs at stations
+  const ribStations=[0,0.2,0.4,0.6,0.8,1.0];
+  ribStations.forEach(u=>{
+    const idx=Math.round(u*NS);
+    const chord=LE[idx][0]-TE[idx][0];
+    const naca=getNACA1410(chord);
+    const ribPts=[];
+    for(let j=0;j<naca.length;j+=1){
+      ribPts.push([LE[idx][0]-naca[j][0], LE[idx][1]+naca[j][1], LE[idx][2]]);
+    }
+    UAV.add(mkLine(ribPts,u===0||u===1.0?M1:M3));
+  });
 
-  // Dihedral — slight upward angle from root
-  g.rotation.z = side > 0 ? -0.07 : 0.07;
+  // Spars
+  const spar1=[],spar2=[];
+  for(let i=0;i<=NS;i++){
+    const chord=LE[i][0]-TE[i][0];
+    spar1.push([LE[i][0]-chord*0.25,LE[i][1],LE[i][2]]);
+    spar2.push([LE[i][0]-chord*0.70,LE[i][1],LE[i][2]]);
+  }
+  UAV.add(mkLine(spar1,M2));
+  UAV.add(mkLine(spar2,M3));
 
-  // Position wing at mid-body
-  g.position.set(-0.05, -0.05, 0);
-  return g;
+  // Chordwise surface lines
+  for(let ci=0;ci<=4;ci++){
+    const line=[];
+    for(let i=0;i<=NS;i++){
+      const chord=LE[i][0]-TE[i][0];
+      const frac=ci/4;
+      line.push([LE[i][0]-chord*frac,LE[i][1]+0.003,LE[i][2]]);
+    }
+    UAV.add(mkLine(line,M3));
+  }
+
+  // Wing-fuselage junction fairing lines
+  UAV.add(mkLine([[ROOT_X,ROOT_Y,ROOT_Z*0.5],[ROOT_X,ROOT_Y+0.1,ROOT_Z*0.5]],M3));
+  UAV.add(mkLine([[ROOT_X,ROOT_Y,-ROOT_Z*0.5],[ROOT_X,ROOT_Y+0.1,-ROOT_Z*0.5]],M3));
+}
+makeWing(1);
+makeWing(-1);
+
+// ─────────────────────────────────────────────
+// 3. TWIN VERTICAL STABILIZERS
+// Two fins on rear fuselage, swept back, slight outward cant
+// Rounded tips (not sharp)
+// ─────────────────────────────────────────────
+function makeVerticalStab(side){
+  const S=side;
+  const NVT=16;
+
+  // Root on rear fuselage
+  const ROOT_X=-1.6;
+  const ROOT_Z=S*0.22;
+  const ROOT_Y=0.1;
+
+  // Tip — swept back and slightly outward
+  const TIP_X=-2.1;
+  const TIP_Y=0.75;
+  const TIP_Z=S*0.32;
+
+  const vLE=[],vTE=[];
+  for(let i=0;i<=NVT;i++){
+    const u=i/NVT;
+    vLE.push([
+      ROOT_X+(TIP_X-ROOT_X)*u,
+      ROOT_Y+u*(TIP_Y-ROOT_Y),
+      ROOT_Z+u*(TIP_Z-ROOT_Z)
+    ]);
+    vTE.push([
+      ROOT_X-0.35+(TIP_X-0.12-(ROOT_X-0.35))*u,
+      ROOT_Y+u*(TIP_Y-ROOT_Y),
+      ROOT_Z+u*(TIP_Z-ROOT_Z)
+    ]);
+  }
+
+  UAV.add(mkLine(vLE,M0));
+  UAV.add(mkLine(vTE,M1));
+  UAV.add(mkLine([vLE[0],vTE[0]],M1));
+
+  // Rounded tip (not sharp point)
+  const tipR=0.08;
+  const tipArc=[];
+  for(let i=0;i<=8;i++){
+    const a=i/8*Math.PI;
+    const cx=(vLE[NVT][0]+vTE[NVT][0])/2;
+    const cy=vLE[NVT][1]+tipR*0.5*Math.sin(a);
+    const cz=vLE[NVT][2]+S*tipR*Math.cos(a)*0.3;
+    tipArc.push([cx+tipR*0.2*Math.sin(a),cy,cz]);
+  }
+  UAV.add(mkLine(tipArc,M0));
+
+  // Spar
+  const vSpar=[];
+  for(let i=0;i<=NVT;i++){
+    const chord=vLE[i][0]-vTE[i][0];
+    vSpar.push([vLE[i][0]-chord*0.35,vLE[i][1],vLE[i][2]]);
+  }
+  UAV.add(mkLine(vSpar,M2));
+
+  // Ribs
+  [0.25,0.5,0.75].forEach(u=>{
+    const idx=Math.round(u*NVT);
+    UAV.add(mkLine([vLE[idx],vTE[idx]],M3));
+  });
+
+  // Root fillet into fuselage
+  const fillet=[];
+  for(let i=0;i<=6;i++){
+    const a=i/6*Math.PI*0.5;
+    fillet.push([
+      ROOT_X-Math.sin(a)*0.1,
+      ROOT_Y-Math.cos(a)*0.08,
+      ROOT_Z
+    ]);
+  }
+  UAV.add(mkLine(fillet,M2));
+}
+makeVerticalStab(1);
+makeVerticalStab(-1);
+
+// Horizontal stabilizer (small, between vertical fins)
+const HSTAB_LE=-1.9;
+const HSTAB_TE=-2.3;
+const HSTAB_Y=-0.05;
+const HSTAB_HALF=0.45;
+
+for(const S of[1,-1]){
+  const hLE=[],hTE=[];
+  for(let i=0;i<=10;i++){
+    const u=i/10;
+    const z=HSTAB_HALF*S*u;
+    hLE.push([HSTAB_LE+(HSTAB_TE+0.15-HSTAB_LE)*u,HSTAB_Y,z]);
+    hTE.push([HSTAB_TE,HSTAB_Y,z]);
+  }
+  UAV.add(mkLine(hLE,M1));
+  UAV.add(mkLine(hTE,M2));
+  UAV.add(mkLine([hLE[0],hTE[0]],M2));
+
+  // Rounded tip
+  const tipR=0.06;
+  const tipArc=[];
+  for(let i=0;i<=6;i++){
+    const a=i/6*Math.PI;
+    tipArc.push([
+      (hLE[10][0]+hTE[10][0])/2+tipR*0.2*Math.sin(a),
+      HSTAB_Y,
+      hLE[10][2]+S*tipR*Math.cos(a)
+    ]);
+  }
+  UAV.add(mkLine(tipArc,M1));
 }
 
-UAV.add(makeWing( 1));
-UAV.add(makeWing(-1));
+// ─────────────────────────────────────────────
+// 4. PUSHER PROPULSION
+// Motor mounted on tail cone, prop in YZ plane
+// ─────────────────────────────────────────────
+const PX=-2.45;
+const PR=0.35;
 
-// Wing root fairing (blends wing-to-fuselage)
-for(const s of [1,-1]){
-  const rfGeo = new THREE.BoxGeometry(0.95,0.14,0.32);
-  const rf    = new THREE.Mesh(rfGeo, mBody);
-  rf.position.set(-0.05,-0.04,s*0.4);
-  UAV.add(rf);
-}
+// Tail cone motor mount
+UAV.add(mkLine([[PX+0.25,0,0],[PX+0.05,0,0]],M2));
+UAV.add(mkEllipse(PX+0.05,0,0,.07,.07,'YZ',12,M0));
 
-// ─────────────────────────────────────────────────────────
-// 3. V-TAIL  — two angled ruddervators, meeting at tail cone
-//    Seen from rear: butterfly / V shape, ~45° from horizontal each
-// ─────────────────────────────────────────────────────────
-function makeVTail(side) {
-  const shape = new THREE.Shape();
-  // chord runs front-to-back; span goes up-and-out
-  shape.moveTo( 0.32, 0);          // root LE
-  shape.lineTo( 0.38, side*0.55);  // tip LE
-  shape.lineTo(-0.26, side*0.58);  // tip TE
-  shape.lineTo(-0.40, 0);          // root TE
-  shape.closePath();
+// Prop group
+const propG=new THREE.Group();
+propG.position.set(PX,0,0);
 
-  const geo  = new THREE.ExtrudeGeometry(shape,{depth:0.022,bevelEnabled:false});
-  const mesh = new THREE.Mesh(geo, mBody);
-  mesh.rotation.x = -Math.PI/2;
-  // Tilt to V angle
-  mesh.rotation.z = side > 0 ? -0.72 : 0.72;
-  mesh.position.set(-2.05, 0.10, side*0.08);
-  return mesh;
-}
-UAV.add(makeVTail( 1));
-UAV.add(makeVTail(-1));
-
-// ─────────────────────────────────────────────────────────
-// 4. PUSHER PROPULSION  — rear-mounted, on tail cone
-// ─────────────────────────────────────────────────────────
-const propRoot = new THREE.Group();
-
-// Engine nacelle
-const nacGeo  = new THREE.CylinderGeometry(0.13,0.15,0.36,16);
-const nacMesh = new THREE.Mesh(nacGeo, mDark);
-nacMesh.rotation.z = Math.PI/2;
-propRoot.add(nacMesh);
-
-// Spinner nose cone
-const spnGeo  = new THREE.ConeGeometry(0.10,0.20,14);
-const spnMesh = new THREE.Mesh(spnGeo, mEdge);
-spnMesh.rotation.z = -Math.PI/2;
-spnMesh.position.set(-0.28,0,0);
-propRoot.add(spnMesh);
-
-// Gimbal ring
-const gimGeo  = new THREE.TorusGeometry(0.17,0.022,10,28);
-const gimMesh = new THREE.Mesh(gimGeo, mEdge);
-gimMesh.rotation.y = Math.PI/2;
-propRoot.add(gimMesh);
-
-// 3-blade propeller
-const propBlades = new THREE.Group();
 for(let b=0;b<3;b++){
-  const bShape = new THREE.Shape();
-  bShape.moveTo( 0.028, 0.02);
-  bShape.bezierCurveTo( 0.08,  0.25,  0.065, 0.55,  0.025, 0.85);
-  bShape.bezierCurveTo(-0.015, 0.60, -0.055, 0.28, -0.030, 0.02);
-  bShape.closePath();
-  const bGeo  = new THREE.ExtrudeGeometry(bShape,{depth:0.022,bevelEnabled:true,bevelSize:0.005,bevelThickness:0.005,bevelSegments:1});
-  const blade = new THREE.Mesh(bGeo, mProp);
-  blade.rotation.z = (b/3)*Math.PI*2;
-  propBlades.add(blade);
+  const baseA=b*(Math.PI*2/3);
+  const NB=18;
+  const fwd=[],bwd=[];
+  for(let i=0;i<=NB;i++){
+    const u=i/NB;
+    const r=PR*(0.1+u*0.88);
+    const sweep=u*0.12;
+    const ang=baseA+sweep;
+    const chord=0.05*(1-u*0.3);
+    const py=Math.cos(ang)*r;
+    const pz=Math.sin(ang)*r;
+    const px=Math.cos(ang+Math.PI/2)*chord;
+    const pzz=Math.sin(ang+Math.PI/2)*chord;
+    fwd.push([0,py+px*0.5,pz+pzz*0.5]);
+    bwd.push([0,py-px*0.5,pz-pzz*0.5]);
+  }
+  propG.add(mkLine(fwd,M0));
+  propG.add(mkLine(bwd,M2));
+  propG.add(mkLine([fwd[NB],bwd[NB]],M0));
+  propG.add(mkLine([fwd[0],bwd[0]],M2));
 }
-// Hub cap
-const hubGeo  = new THREE.CylinderGeometry(0.048,0.048,0.07,12);
-const hubMesh = new THREE.Mesh(hubGeo, mEdge);
-hubMesh.rotation.z = Math.PI/2;
-propBlades.position.set(-0.22,0,0);
-propRoot.add(propBlades);
-propRoot.add(hubMesh);
-hubMesh.position.set(-0.22,0,0);
+propG.add(mkEllipse(0,0,0,.055,.055,'YZ',12,M0));
+propG.add(mkEllipse(0,0,0,PR,PR,'YZ',32,M3));
 
-propRoot.position.set(-2.30,0,0);
-UAV.add(propRoot);
+// Motor mount ring
+UAV.add(mkEllipse(PX+0.05,0,0,.1,.1,'YZ',14,M0));
 
-// Tail boom / tail fairing connecting body to engine
-const boomGeo  = new THREE.CylinderGeometry(0.10,0.13,0.55,12);
-const boomMesh = new THREE.Mesh(boomGeo, mDark);
-boomMesh.rotation.z = Math.PI/2;
-boomMesh.position.set(-2.05,0,0);
-UAV.add(boomMesh);
+UAV.add(propG);
 
-// ─────────────────────────────────────────────────────────
-// 5. TRICYCLE LANDING GEAR
-//    Front view: nose gear centre, two main gear under wings
-//    Side view: three wheels visible, proper leg geometry
-// ─────────────────────────────────────────────────────────
-function makeGearLeg(x,y,z,legH,wheelR){
-  const g = new THREE.Group();
-  // Strut
-  const strGeo  = new THREE.CylinderGeometry(0.028,0.028,legH,8);
-  const strMesh = new THREE.Mesh(strGeo, mGear);
-  strMesh.position.y = -legH/2;
-  g.add(strMesh);
-  // Wheel (torus)
-  const wGeo  = new THREE.TorusGeometry(wheelR,0.055,10,20);
-  const wMesh = new THREE.Mesh(wGeo, mGear);
-  wMesh.rotation.x = Math.PI/2;
-  wMesh.position.y = -legH - 0.01;
-  g.add(wMesh);
-  // Wheel cap
-  const wcGeo  = new THREE.CylinderGeometry(wheelR*0.5,wheelR*0.5,0.04,10);
-  const wcMesh = new THREE.Mesh(wcGeo, mDark);
-  wcMesh.rotation.x = Math.PI/2;
-  wcMesh.position.y = -legH - 0.01;
-  g.add(wcMesh);
+// ─────────────────────────────────────────────
+// 5. SMOOTH BELLY — no landing gear
+// Clean underside with slight curve
+// ─────────────────────────────────────────────
+// Belly is already smooth from fuselage bottom line
+// Just add some detail lines
 
-  g.position.set(x,y,z);
-  return g;
+// Ventral cooling slots (small, integrated)
+for(let i=0;i<3;i++){
+  const sx=0.2-i*0.15;
+  UAV.add(mkLine([[sx,-fuseHeight(0.3)*0.7,0.08],[sx,-fuseHeight(0.3)*0.7,-0.08]],M3));
 }
-// Nose gear (front-centre, shorter)
-UAV.add(makeGearLeg( 1.1, -0.48, 0,   0.42, 0.13));
-// Main gear (under wings, longer)
-UAV.add(makeGearLeg(-0.1, -0.50,  0.72, 0.50, 0.16));
-UAV.add(makeGearLeg(-0.1, -0.50, -0.72, 0.50, 0.16));
 
-// ─────────────────────────────────────────────────────────
-// 6. DETAILS
-// ─────────────────────────────────────────────────────────
-// Antenna on spine
-const antGeo  = new THREE.CylinderGeometry(0.007,0.007,0.32,6);
-const antMesh = new THREE.Mesh(antGeo, mEdge);
-antMesh.position.set(-0.5, 0.52, 0);
-UAV.add(antMesh);
+// Rear fuselage detail lines
+UAV.add(mkLine([[-1.2,0,0],[-1.8,0,0]],M3));
+UAV.add(mkLine([[-1.4,fuseHeight(0.7)*0.5,0],[-1.4,-fuseHeight(0.7)*0.4,0]],M3));
 
-// Data-link dome
-const dlGeo  = new THREE.SphereGeometry(0.06,10,8);
-const dlMesh = new THREE.Mesh(dlGeo, mGlass);
-dlMesh.position.set(-0.3, 0.54, 0);
-UAV.add(dlMesh);
+// Antenna (small, rear)
+UAV.add(mkLine([[-0.6,fuseHeight(0.5)*0.8,0],[-0.6,fuseHeight(0.5)*0.8+0.15,0]],M2));
 
-// Nav / position lights
-function addNavLight(x,y,z,col){
-  const g = new THREE.SphereGeometry(0.026,8,8);
-  const m = new THREE.MeshBasicMaterial({color:col});
-  const mesh = new THREE.Mesh(g,m);
-  mesh.position.set(x,y,z);
-  UAV.add(mesh);
-  return mesh;
+// Navigation lights (small dots on wingtips)
+for(const S of[1,-1]){
+  const tipZ=S*WS;
+  const tipX=0.6-1.1;
+  UAV.add(mkEllipse(tipX,0,tipZ,.02,.02,'YZ',6,M0));
 }
-const nlL = addNavLight( 0.3, 0.02,  3.58, 0xffffff);
-const nlR = addNavLight( 0.3, 0.02, -3.58, 0xffffff);
-const nlN = addNavLight( 2.1, 0,     0,    0xffffff);
-const nlT = addNavLight(-2.3, 0,     0,    0xdddddd);
 
-// ─────────────────────────────────────────────────────────
-// Scene dressing
-// ─────────────────────────────────────────────────────────
 scene.add(UAV);
 
-// Atmospheric particles
-const pN=1400, pG=new THREE.BufferGeometry(), pP=new Float32Array(pN*3);
-for(let i=0;i<pN;i++){pP[i*3]=(Math.random()-.5)*80;pP[i*3+1]=(Math.random()-.5)*80;pP[i*3+2]=(Math.random()-.5)*80;}
-pG.setAttribute('position',new THREE.BufferAttribute(pP,3));
-const particles = new THREE.Points(pG, new THREE.PointsMaterial({color:0xffffff,size:0.05,transparent:true,opacity:0.32}));
-scene.add(particles);
+// ─────────────────────────────────────────────
+// STAR FIELD
+const sG=new THREE.BufferGeometry();
+const sP=new Float32Array(1200*3);
+for(let i=0;i<1200;i++){sP[i*3]=(Math.random()-.5)*100;sP[i*3+1]=(Math.random()-.5)*100;sP[i*3+2]=(Math.random()-.5)*100;}
+sG.setAttribute('position',new THREE.BufferAttribute(sP,3));
+scene.add(new THREE.Points(sG,new THREE.PointsMaterial({color:0xffffff,size:.055,transparent:true,opacity:.28})));
 
-// Ground grid
-const grid = new THREE.GridHelper(40,50,0x111111,0x080808);
-grid.position.y = -5;
-scene.add(grid);
+// GRID
+const grid=new THREE.GridHelper(40,50,0x111111,0x070707);
+grid.position.y=-4;scene.add(grid);
 
-// ── SCROLL STATE ──
-const panEls  = document.querySelectorAll('.panel');
-const NPANELS = panEls.length;
-document.getElementById('sc').style.height = (NPANELS*100)+'vh';
-
-let scrollP=0, targetP=0, curSec=0;
+// ── SCROLL ──
+const panEls=document.querySelectorAll('.panel');
+const NP=panEls.length;
+document.getElementById('sc').style.height=(NP*100)+'vh';
+let scrollP=0,targetP=0,curSec=0;
 window.addEventListener('scroll',()=>{
-  const max = document.documentElement.scrollHeight - window.innerHeight;
-  targetP = Math.max(0,Math.min(1, window.scrollY/max));
-  document.getElementById('pb').style.width = (targetP*100)+'%';
-  const sec = Math.min(Math.floor(targetP*NPANELS), NPANELS-1);
-  if(sec!==curSec){
-    curSec=sec;
-    document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===curSec));
-    fusWire.visible = curSec===1;
-  }
-  if(window.scrollY>80) document.getElementById('sh').style.opacity='0';
-});
+  const maxS=document.documentElement.scrollHeight-window.innerHeight;
+  targetP=Math.max(0,Math.min(1,window.scrollY/maxS));
+  document.getElementById('pb').style.width=(targetP*100)+'%';
+  const sec=Math.min(Math.floor(targetP*NP),NP-1);
+  if(sec!==curSec){curSec=sec;document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===curSec));}
+  if(window.scrollY>80)document.getElementById('sh').style.opacity='0';
+},{passive:true});
+document.querySelectorAll('.dot').forEach(d=>{d.addEventListener('click',()=>{const s=+d.dataset.s;const maxS=document.documentElement.scrollHeight-window.innerHeight;window.scrollTo({top:(s/(NP-1))*maxS,behavior:'smooth'});});});
 
-document.querySelectorAll('.dot').forEach(d=>{
-  d.addEventListener('click',()=>{
-    const sec=+d.dataset.s;
-    const max=document.documentElement.scrollHeight-window.innerHeight;
-    window.scrollTo({top:(sec/(NPANELS-1))*max,behavior:'smooth'});
-  });
-});
-
-// ── CAMERA + DRONE KEYFRAMES ──
-// [camX, camY, camZ, uavRY, uavRX, uavPosY, fov, bgLabel]
-const KF = [
-  [ 0.5,  1.2,  9.5,  0.30,  0.10,  0,    40,  'PHANTOM'    ],  // 0 — hero 3/4 front
-  [ 3.0,  0.5,  7.0,  0.55,  0.06,  0,    36,  'FUSELAGE'   ],  // 1 — front-right close
-  [-1.0,  5.5,  5.0, -0.15, -0.88,  0.5,  50,  'WINGS'      ],  // 2 — top-down solar
-  [-1.5,  0.5,  8.0, -0.55,  0.05,  0,    42,  'V-TAIL'     ],  // 3 — rear-left tail
-  [-5.5,  0.8,  3.5,  2.15,  0.10,  0,    44,  'PROPULSION' ],  // 4 — direct tail
-  [ 0.5, -2.2,  7.0,  0.25,  0.45,  0,    46,  'GEAR'       ],  // 5 — below angle
-  [ 1.5,  2.0,  7.5, -0.35,  0.28,  0,    44,  'MERCURY'    ],  // 6 — upper front
-  [ 2.0,  2.0,  9.0, -0.55,  0.18,  0,    40,  'PHANTOM'    ],  // 7 — final wide
+// ── CAMERA KEYFRAMES ──
+const KF=[
+  [ 0.5, 1.0, 9.5,  0.35, 0.12, 0,  38, 'PHANTOM'    ],
+  [ 2.5, 0.5, 6.5,  0.50, 0.10, 0,  35, 'FUSELAGE'   ],
+  [-0.3, 4.5, 5.0,  0.00,-0.92,.3,  48, 'WINGS'      ],
+  [-2.0, 1.0, 6.0,  1.10, 0.18, 0,  40, 'TAIL'       ],
+  [-5.0, 0.2, 3.0,  2.25, 0.08, 0,  42, 'PROPULSION' ],
+  [ 0.8,-1.2, 6.5,  0.30, 0.40, 0,  44, 'PAYLOAD'    ],
+  [ 1.2, 2.2, 6.5, -0.40, 0.28, 0,  40, 'MERCURY'    ],
+  [ 1.5, 1.2, 8.0, -0.45, 0.18, 0,  38, 'PHANTOM'    ],
 ];
-
-const HUD = [
+const HUD=[
   {alt:'0000',hdg:'000',spd:'000',sys:'BOOT'},
-  {alt:'0350',hdg:'045',spd:'025',sys:'NOMINAL'},
-  {alt:'1200',hdg:'090',spd:'120',sys:'SCANNING'},
-  {alt:'2100',hdg:'135',spd:'095',sys:'NOMINAL'},
-  {alt:'3800',hdg:'180',spd:'185',sys:'NOMINAL'},
-  {alt:'0050',hdg:'225',spd:'005',sys:'LANDING'},
-  {alt:'4500',hdg:'270',spd:'160',sys:'DETECT'},
+  {alt:'0300',hdg:'045',spd:'022',sys:'NOMINAL'},
+  {alt:'1500',hdg:'090',spd:'130',sys:'SCANNING'},
+  {alt:'2200',hdg:'135',spd:'095',sys:'NOMINAL'},
+  {alt:'3900',hdg:'180',spd:'185',sys:'NOMINAL'},
+  {alt:'0045',hdg:'225',spd:'005',sys:'LANDING'},
+  {alt:'4600',hdg:'270',spd:'160',sys:'DETECT'},
   {alt:'5000',hdg:'315',spd:'200',sys:'NOMINAL'},
 ];
-
-const bgLabel = document.getElementById('bglabel');
-
+const bgLabel=document.getElementById('bgl');
 function lerp(a,b,t){return a+(b-a)*t;}
 function ease(t){return t<.5?2*t*t:-1+(4-2*t)*t;}
 
-let time=0, autoR=0, mxN=0, myN=0;
-document.addEventListener('mousemove',e=>{
-  mxN=(e.clientX/window.innerWidth -.5)*2;
-  myN=(e.clientY/window.innerHeight-.5)*2;
-});
+let simT=0,autoR=0,mxN=0,myN=0,pulse=0;
+document.addEventListener('mousemove',e=>{mxN=(e.clientX/window.innerWidth-.5)*2;myN=(e.clientY/window.innerHeight-.5)*2;});
 
-function render(){
-  requestAnimationFrame(render);
-  time+=0.016;
+function renderLoop(){
+  requestAnimationFrame(renderLoop);
+  simT+=.016;autoR+=.003;pulse+=.011;
+  M2.opacity=.25+Math.sin(pulse)*.06;
+  M3.opacity=.09+Math.sin(pulse*.7)*.03;
 
-  // Smooth scroll
-  scrollP += (targetP-scrollP)*0.055;
+  scrollP+=(targetP-scrollP)*.055;
+  const kfF=Math.max(0,Math.min(scrollP,.9999))*(KF.length-1);
+  const ki=Math.floor(kfF);
+  const kfr=ease(kfF-ki);
+  const A=KF[Math.min(ki,KF.length-1)];
+  const B=KF[Math.min(ki+1,KF.length-1)];
 
-  // Keyframe interpolation
-  const kfF = Math.max(0,Math.min(scrollP,0.9999)) * (KF.length-1);
-  const ki   = Math.floor(kfF);
-  const kfr  = ease(kfF-ki);
-  const A    = KF[Math.min(ki,   KF.length-1)];
-  const B    = KF[Math.min(ki+1, KF.length-1)];
-
-  // Camera
-  camera.position.x = lerp(A[0],B[0],kfr);
-  camera.position.y = lerp(A[1],B[1],kfr);
-  camera.position.z = lerp(A[2],B[2],kfr);
-  camera.fov        = lerp(A[6],B[6],kfr);
+  camera.position.x=lerp(A[0],B[0],kfr);
+  camera.position.y=lerp(A[1],B[1],kfr);
+  camera.position.z=lerp(A[2],B[2],kfr);
+  camera.fov=lerp(A[6],B[6],kfr);
   camera.updateProjectionMatrix();
-  camera.lookAt(0,0.1,0);
+  camera.lookAt(0,0,0);
 
-  // UAV orientation
-  autoR += 0.003;
-  const floatY = Math.sin(time*0.75)*0.07;
-  const autoTiltX = Math.sin(autoR*0.9)*0.03;
+  UAV.rotation.y=lerp(A[3],B[3],kfr)+Math.sin(autoR)*.038+mxN*.032;
+  UAV.rotation.x=lerp(A[4],B[4],kfr)+Math.sin(autoR*.7)*.018+myN*.022;
+  UAV.rotation.z=Math.sin(autoR*1.2)*.010;
+  UAV.position.y=lerp(A[5],B[5],kfr)+Math.sin(simT*.65)*.06;
 
-  UAV.rotation.y = lerp(A[3],B[3],kfr) + Math.sin(autoR)*0.055 + mxN*0.04;
-  UAV.rotation.x = lerp(A[4],B[4],kfr) + autoTiltX            + myN*0.03;
-  UAV.rotation.z = Math.sin(autoR*1.3)*0.018;
-  UAV.position.y = lerp(A[5],B[5],kfr) + floatY;
+  propG.rotation.x+=.048+scrollP*.58;
 
-  // Prop spin
-  propBlades.rotation.y += 0.045 + scrollP*0.55;
+  scene.children.forEach(c=>{if(c.isPoints){c.rotation.y+=.00022;c.rotation.x+=.00009;}});
+  grid.position.y=-4+scrollP*7;
 
-  // Nav lights pulse
-  const pulse=(Math.sin(time*3.8)+1)*.5;
-  [nlL,nlR,nlN,nlT].forEach(l=>l.material.opacity=0.35+pulse*0.65);
-
-  // Particles drift
-  particles.rotation.y+=0.00028;
-  particles.rotation.x+=0.00012;
-
-  // Grid recede
-  grid.position.y = -5 + scrollP*9;
-  grid.material.opacity = Math.max(0, 0.4-scrollP*0.5);
-
-  // BG label
   if(bgLabel.textContent!==A[7]) bgLabel.textContent=A[7];
 
-  // HUD
-  const hi = Math.min(Math.floor(scrollP*HUD.length), HUD.length-1);
-  const h  = HUD[hi];
-  document.getElementById('h-alt').textContent = h.alt;
-  document.getElementById('h-hdg').textContent = h.hdg;
-  document.getElementById('h-spd').textContent = h.spd;
-  document.getElementById('h-sys').textContent = h.sys;
-  document.getElementById('h-pwr').textContent = Math.round(160+scrollP*320);
+  const hi=Math.min(Math.floor(scrollP*HUD.length),HUD.length-1);
+  const h=HUD[hi];
+  document.getElementById('h-alt').textContent=h.alt;
+  document.getElementById('h-hdg').textContent=h.hdg;
+  document.getElementById('h-spd').textContent=h.spd;
+  document.getElementById('h-sys').textContent=h.sys;
+  document.getElementById('h-pwr').textContent=Math.round(150+scrollP*330);
 
   renderer.render(scene,camera);
 }
-render();
+renderLoop();
+
 })();
 </script>
 </body>

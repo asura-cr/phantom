@@ -66,9 +66,8 @@
   }
   .nav-logo-mark {
     width: 28px; height: 28px;
-    border: 1.5px solid var(--white);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px; letter-spacing: 0;
+    display: block;
+    object-fit: contain;
   }
   .nav-links { display: flex; gap: 36px; list-style: none; }
   .nav-links a {
@@ -536,7 +535,7 @@
 <!-- NAV -->
 <nav id="mainNav">
   <a href="index.html" class="nav-logo">
-    <div class="nav-logo-mark">P</div>
+    <img src="icon.png" alt="PHANTOM" class="nav-logo-mark">
     PHANTOM
   </a>
   <ul class="nav-links">
