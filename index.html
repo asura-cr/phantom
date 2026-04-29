@@ -947,31 +947,43 @@ const depthLines = [
 window.addEventListener('scroll', () => {
   if(!depthSection) return;
   const rect = depthSection.getBoundingClientRect();
-  const total = depthSection.offsetHeight - window.innerHeight;
-  const scrolled = -rect.top;
+  const sectionTop = rect.top;
+  const sectionHeight = depthSection.offsetHeight;
+
+  // Start animation when section enters viewport
+  if(sectionTop > window.innerHeight || sectionTop + sectionHeight < 0) return;
+
+  // Calculate total scroll distance through section (4x viewport)
+  const total = sectionHeight;
+  const scrolled = window.innerHeight - sectionTop;
   const progress = Math.max(0, Math.min(1, scrolled / total));
-  const segSize = 1 / depthLines.length;
 
   depthLines.forEach((line, i) => {
-    const start = i * segSize;
-    const end = (i + 1) * segSize;
+    // Each line gets its own phase: 0-25%, 25-50%, 50-75%, 75-100%
+    const start = i * 0.25;
+    const end = (i + 1) * 0.25;
     const mid = (start + end) / 2;
+
     let p = (progress - start) / (end - start);
     p = Math.max(0, Math.min(1, p));
 
-    let t2, z2, op2;
+    // Phase 1 (0-0.5): Come in from far back
     if(p < 0.5) {
-      t2 = p * 2;
-      z2 = -400 + t2 * 400;
-      op2 = t2;
-      line.style.transform = `perspective(800px) translateZ(${z2}px) scale(${0.7 + t2 * 0.3})`;
-      line.style.opacity = op2;
-    } else {
-      t2 = (p - 0.5) * 2;
-      z2 = t2 * 200;
-      op2 = 1 - t2 * 0.8;
-      line.style.transform = `perspective(800px) translateZ(${z2}px) scale(${1 + t2 * 0.2})`;
-      line.style.opacity = op2;
+      const t = p * 2;
+      const z = -400 + t * 200;
+      const scale = 0.7 + t * 0.15;
+      const opacity = t * 0.8;
+      line.style.transform = `perspective(800px) translateZ(${z}px) scale(${scale})`;
+      line.style.opacity = opacity;
+    }
+    // Phase 2 (0.5-1): Move forward and fade
+    else {
+      const t = (p - 0.5) * 2;
+      const z = -200 + t * 400;
+      const scale = 0.85 + t * 0.35;
+      const opacity = 0.8 - t * 0.7;
+      line.style.transform = `perspective(800px) translateZ(${z}px) scale(${scale})`;
+      line.style.opacity = Math.max(0, opacity);
     }
   });
 });
