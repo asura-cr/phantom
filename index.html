@@ -944,46 +944,57 @@ const depthLines = [
   document.getElementById('dl4')
 ];
 
+// ── 3D SCROLL DEPTH ──
+const depthSection = document.getElementById('depthSection');
+const depthLines = [
+  document.getElementById('dl1'),
+  document.getElementById('dl2'),
+  document.getElementById('dl3'),
+  document.getElementById('dl4')
+];
+
 window.addEventListener('scroll', () => {
   if(!depthSection) return;
-  const rect = depthSection.getBoundingClientRect();
-  const sectionTop = rect.top;
+
+  // Get section position in document
+  const sectionRect = depthSection.getBoundingClientRect();
+  const sectionTop = window.scrollY + sectionRect.top;
   const sectionHeight = depthSection.offsetHeight;
+  const sectionBottom = sectionTop + sectionHeight;
 
-  // Start animation when section enters viewport
-  if(sectionTop > window.innerHeight || sectionTop + sectionHeight < 0) return;
+  // Current scroll position
+  const scrollPos = window.scrollY + window.innerHeight / 2; // Middle of viewport
 
-  // Calculate total scroll distance through section (4x viewport)
-  const total = sectionHeight;
-  const scrolled = window.innerHeight - sectionTop;
-  const progress = Math.max(0, Math.min(1, scrolled / total));
+  // How far through the section are we? (0 = start, 1 = end)
+  let progress = (scrollPos - sectionTop) / sectionHeight;
+  progress = Math.max(0, Math.min(1, progress));
+
+  // Only animate if we're in/near the section
+  if(scrollPos < sectionTop || scrollPos > sectionBottom + window.innerHeight) {
+    depthLines.forEach(line => { line.style.opacity = 0; });
+    return;
+  }
 
   depthLines.forEach((line, i) => {
-    // Each line gets its own exclusive window: 0-25%, 25-50%, 50-75%, 75-100%
+    // Each line: 0-25%, 25-50%, 50-75%, 75-100%
     const start = i * 0.25;
     const end = (i + 1) * 0.25;
 
-    let p = (progress - start) / (end - start);
-    p = Math.max(0, Math.min(1, p));
-
-    // Only animate within this line's window
     if(progress < start || progress > end) {
       line.style.opacity = 0;
       return;
     }
 
-    // Smooth fade in (0-0.5) and out (0.5-1)
-    let opacity;
-    if(p < 0.5) {
-      opacity = p * 2; // 0 to 1
-    } else {
-      opacity = (1 - p) * 2; // 1 to 0
-    }
-    opacity = Math.max(0, Math.min(1, opacity));
+    // Position within this line's window
+    let p = (progress - start) / 0.25;
+    p = Math.max(0, Math.min(1, p));
 
-    // 3D depth animation: come forward as opacity increases
-    const z = -400 + (p * 400);
-    const scale = 0.7 + (p * 0.3);
+    // Fade in then out
+    let opacity = p < 0.5 ? p * 2 : (1 - p) * 2;
+
+    // 3D effect: move forward
+    const z = -400 + p * 400;
+    const scale = 0.7 + p * 0.3;
 
     line.style.transform = `perspective(800px) translateZ(${z}px) scale(${scale})`;
     line.style.opacity = opacity;
