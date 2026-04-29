@@ -19,9 +19,10 @@
   html{scroll-behavior:smooth;overflow-x:hidden;}
   body{background:var(--bg);color:var(--white);font-family:var(--font-sans);overflow-x:hidden;cursor:none;}
 
-  .cursor{position:fixed;top:0;left:0;z-index:9999;pointer-events:none;mix-blend-mode:difference;}
-  .cursor-dot{width:8px;height:8px;background:#fff;border-radius:50%;transform:translate(-50%,-50%);}
-  .cursor-ring{width:36px;height:36px;border:1px solid rgba(255,255,255,0.6);border-radius:50%;transform:translate(-50%,-50%);transition:transform 0.18s ease,width 0.2s,height 0.2s;}
+  /* CURSOR */
+  #cur-dot { position:fixed; top:0; left:0; z-index:9999; pointer-events:none; mix-blend-mode:difference; width:8px; height:8px; background:#fff; border-radius:50%; transform:translate(-50%,-50%); transition:transform 0.1s; }
+  #cur-ring { position:fixed; top:0; left:0; z-index:9998; pointer-events:none; mix-blend-mode:difference; width:36px; height:36px; border:1px solid rgba(255,255,255,0.6); border-radius:50%; transform:translate(-50%,-50%); transition:width 0.2s, height 0.2s, border-color 0.2s; }
+  body:has(a:hover) #cur-ring, body:has(button:hover) #cur-ring { width:56px; height:56px; border-color:#fff; }
 
   nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:20px 48px;background:rgba(5,5,5,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
   .nav-logo{font-family:var(--font-mono);font-size:18px;font-weight:700;letter-spacing:0.2em;color:var(--white);text-decoration:none;display:flex;align-items:center;gap:10px;}
@@ -135,8 +136,8 @@
 </head>
 <body>
 
-<div class="cursor" id="cursorDot"><div class="cursor-dot"></div></div>
-<div class="cursor" id="cursorRing"><div class="cursor-ring"></div></div>
+<div id="cur-dot"></div>
+<div id="cur-ring"></div>
 
 <nav>
   <a href="index.html" class="nav-logo">
@@ -509,12 +510,19 @@
 </footer>
 
 <script>
+(function(){
+'use strict';
 // CURSOR
-const dot=document.getElementById('cursorDot').querySelector('.cursor-dot');
-const ring=document.getElementById('cursorRing').querySelector('.cursor-ring');
+const curDot = document.getElementById('cur-dot');
+const curRing = document.getElementById('cur-ring');
 let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
-(function a(){dot.style.left=mx+'px';dot.style.top=my+'px';rx+=(mx-rx)*0.14;ry+=(my-ry)*0.14;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(a);})();
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+(function animCursor(){
+  curDot.style.left=mx+'px'; curDot.style.top=my+'px';
+  rx+=(mx-rx)*0.14; ry+=(my-ry)*0.14;
+  curRing.style.left=rx+'px'; curRing.style.top=ry+'px';
+  requestAnimationFrame(animCursor);
+})();
 
 // REVEAL
 const revealEls=document.querySelectorAll('.reveal');
@@ -541,6 +549,7 @@ const barObs=new IntersectionObserver(entries=>{
   });
 },{threshold:0.3});
 if(bars.length) barObs.observe(bars[0].closest('.energy-diagram'));
+})();
 </script>
 </body>
 </html>

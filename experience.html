@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHANTOM — 3D Experience</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#050505;--white:#fff;--w60:rgba(255,255,255,0.6);
+    --w50:rgba(255,255,255,0.5);--w30:rgba(255,255,255,0.3);
+    --w20:rgba(255,255,255,0.2);--w10:rgba(255,255,255,0.1);
+    --w08:rgba(255,255,255,0.08);--w04:rgba(255,255,255,0.04);
+    --border:rgba(255,255,255,0.07);
+    --sans:'Space Grotesk',sans-serif;--mono:'Space Mono',monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{overflow-x:hidden;}
+  body{background:var(--bg);color:#fff;font-family:var(--sans);cursor:none;overflow-x:hidden;}
+
+  /* ── CURSOR ── */
+  #cur-dot{position:fixed;top:0;left:0;z-index:9999;pointer-events:none;mix-blend-mode:difference;width:8px;height:8px;background:#fff;border-radius:50%;transform:translate(-50%,-50%);transition:transform .1s;}
+  #cur-ring{position:fixed;top:0;left:0;z-index:9998;pointer-events:none;mix-blend-mode:difference;width:36px;height:36px;border:1px solid rgba(255,255,255,.6);border-radius:50%;transform:translate(-50%,-50%);transition:width .2s,height .2s,border-color .2s;}
+  body:has(a:hover) #cur-ring,body:has(button:hover) #cur-ring{width:56px;height:56px;border-color:#fff;}
+
+  /* ── NAV ── */
+  nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:20px 48px;background:rgba(5,5,5,.55);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
+  .nl{font-family:var(--mono);font-size:18px;font-weight:700;letter-spacing:.2em;color:#fff;text-decoration:none;display:flex;align-items:center;gap:10px;}
+  .nlm{width:28px;height:28px;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:10px;}
+  .nlinks{display:flex;gap:36px;list-style:none;}
+  .nlinks a{color:var(--w50);text-decoration:none;font-size:13px;letter-spacing:.1em;text-transform:uppercase;transition:color .2s;}
+  .nlinks a:hover,.nlinks a.active{color:#fff;}
+  .ncta{background:#fff;color:#050505;padding:10px 24px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;}
+
+  /* ── CANVAS ── */
+  #c{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;}
+
+  /* ── SCROLL PANELS ── */
+  #sc{position:relative;z-index:10;}
+  .panel{height:100vh;display:flex;align-items:center;padding:0 80px;pointer-events:none;}
+  .panel.right{justify-content:flex-end;}
+  .panel.center{justify-content:center;}
+
+  /* ── TEXT BOX ── */
+  .box{background:rgba(5,5,5,.76);backdrop-filter:blur(20px);border:1px solid var(--border);padding:44px 40px;max-width:400px;pointer-events:auto;position:relative;}
+  .box::before{content:'';position:absolute;top:0;left:0;width:28px;height:2px;background:rgba(255,255,255,.45);}
+  .hl{font-family:var(--mono);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--w30);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+  .hl::before{content:'';width:14px;height:1px;background:var(--w30);}
+  .pt{font-size:clamp(26px,3.5vw,48px);font-weight:700;line-height:1.0;letter-spacing:-.04em;margin-bottom:14px;}
+  .pd{font-size:14px;line-height:1.7;color:var(--w50);}
+  .ps{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap;}
+  .pv{border:1px solid var(--border);padding:11px 14px;background:rgba(5,5,5,.5);}
+  .pv-n{font-family:var(--mono);font-size:19px;font-weight:700;display:block;margin-bottom:2px;}
+  .pv-l{font-size:9px;color:rgba(255,255,255,.35);letter-spacing:.12em;text-transform:uppercase;}
+
+  /* ── PROGRESS ── */
+  #pb{position:fixed;top:0;left:0;width:0%;height:2px;background:#fff;z-index:300;}
+
+  /* ── SCROLL HINT ── */
+  #sh{position:fixed;bottom:36px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--w30);text-transform:uppercase;transition:opacity .6s;}
+  .sl{width:1px;height:32px;background:var(--w20);overflow:hidden;position:relative;}
+  .sl::after{content:'';position:absolute;top:-100%;left:0;width:100%;height:100%;background:#fff;animation:drop 2s ease-in-out infinite;}
+  @keyframes drop{0%{top:-100%}100%{top:200%}}
+
+  /* ── SECTION DOTS ── */
+  #dots{position:fixed;right:44px;top:50%;transform:translateY(-50%);z-index:200;display:flex;flex-direction:column;gap:12px;}
+  .dot{width:6px;height:6px;border-radius:50%;border:1px solid var(--w30);background:transparent;transition:background .3s,border-color .3s,transform .3s;cursor:pointer;pointer-events:auto;}
+  .dot.active{background:#fff;border-color:#fff;transform:scale(1.4);}
+
+  /* ── HUD ── */
+  #hud{position:fixed;bottom:36px;right:48px;z-index:200;font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--w30);text-align:right;line-height:2.1;}
+  .hv{color:rgba(255,255,255,.65);}
+
+  /* ── SECTION BG LABEL ── */
+  #bglabel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;font-family:var(--mono);font-size:clamp(80px,14vw,190px);font-weight:700;letter-spacing:-.05em;color:rgba(255,255,255,.022);white-space:nowrap;user-select:none;}
+
+  /* ── SCANLINES ── */
+  #scan{position:fixed;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px);}
+
+  /* ── CROSSHAIR ── */
+  #xhair{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;pointer-events:none;opacity:.1;}
+
+  /* ── FINAL ── */
+  .fcta{pointer-events:auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:36px;}
+  .ft{font-size:clamp(52px,9vw,118px);font-weight:700;letter-spacing:-.05em;line-height:.88;}
+  .fl{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+  .bp{background:#fff;color:#050505;padding:16px 40px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;transition:transform .2s;display:inline-block;}
+  .bp:hover{transform:translateY(-2px);}
+  .bs{border:1px solid var(--w20);color:#fff;padding:16px 40px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;transition:border-color .2s;display:inline-block;}
+  .bs:hover{border-color:#fff;}
+
+  @media(max-width:768px){
+    nav{padding:16px 20px;}.nlinks{display:none;}
+    .panel{padding:0 20px;}.box{max-width:100%;padding:28px 22px;}
+    #dots,#hud{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div id="cur-dot"></div>
+<div id="cur-ring"></div>
+<div id="pb"></div>
+<div id="scan"></div>
+
+<svg id="xhair" width="56" height="56" viewBox="0 0 56 56">
+  <line x1="28" y1="0" x2="28" y2="20" stroke="white" stroke-width="1"/>
+  <line x1="28" y1="36" x2="28" y2="56" stroke="white" stroke-width="1"/>
+  <line x1="0" y1="28" x2="20" y2="28" stroke="white" stroke-width="1"/>
+  <line x1="36" y1="28" x2="56" y2="28" stroke="white" stroke-width="1"/>
+  <circle cx="28" cy="28" r="5" fill="none" stroke="white" stroke-width="1"/>
+</svg>
+
+<canvas id="c"></canvas>
+
+<nav>
+  <a href="index.html" class="nl"><div class="nlm">P</div>PHANTOM</a>
+  <ul class="nlinks">
+    <li><a href="index.html">Overview</a></li>
+    <li><a href="technology.html">Technology</a></li>
+    <li><a href="mercury.html">Mercury AI</a></li>
+    <li><a href="deployment.html">Deployment</a></li>
+    <li><a href="experience.html" class="active">3D</a></li>
+  </ul>
+  <a href="index.html" class="ncta">Full Site</a>
+</nav>
+
+<div id="dots">
+  <div class="dot active" data-s="0"></div>
+  <div class="dot" data-s="1"></div>
+  <div class="dot" data-s="2"></div>
+  <div class="dot" data-s="3"></div>
+  <div class="dot" data-s="4"></div>
+  <div class="dot" data-s="5"></div>
+  <div class="dot" data-s="6"></div>
+</div>
+
+<div id="hud">
+  <div>ALT&nbsp;<span class="hv" id="h-alt">——</span>&nbsp;M</div>
+  <div>HDG&nbsp;<span class="hv" id="h-hdg">——</span>°</div>
+  <div>SPD&nbsp;<span class="hv" id="h-spd">——</span>&nbsp;KMH</div>
+  <div>PWR&nbsp;<span class="hv" id="h-pwr">——</span>&nbsp;W</div>
+  <div>SYS&nbsp;<span class="hv" id="h-sys">INIT</span></div>
+</div>
+
+<div id="bglabel">PHANTOM</div>
+
+<div id="sh"><span>Scroll</span><div class="sl"></div></div>
+
+<!-- SCROLL PANELS -->
+<div id="sc">
+  <div class="panel center">
+    <div class="box" style="max-width:560px;text-align:center;">
+      <div class="hl" style="justify-content:center;">Interactive 3D · Real-Time WebGL</div>
+      <h1 class="pt" style="font-size:clamp(50px,7vw,84px);">PHANTOM<br>UAV</h1>
+      <p class="pd" style="max-width:100%;">Scroll to explore every system of the Phantom platform — fuselage, solar wings, pusher propulsion, and onboard AI — rendered live in three dimensions.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="box">
+      <div class="hl">01 — Fuselage</div>
+      <h2 class="pt">Oval Body.<br>Maximum<br>Volume.</h2>
+      <p class="pd">The Phantom's distinctive oval cross-section maximises internal volume for avionics, battery, and payload while minimising wetted area. Carbon fibre primary structure. 10-year service life.</p>
+      <div class="ps">
+        <div class="pv"><span class="pv-n">6g</span><span class="pv-l">Load Factor</span></div>
+        <div class="pv"><span class="pv-n">10yr</span><span class="pv-l">Service Life</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel right">
+    <div class="box">
+      <div class="hl">02 — Solar Wings</div>
+      <h2 class="pt">Straight Wing.<br>Infinite<br>Range.</h2>
+      <p class="pd">High-aspect straight wings with full-span solar laminate. 480W average harvest. 250W surplus over cruise load. Wings connect via QRAM in under 3 minutes — six different configurations available.</p>
+      <div class="ps">
+        <div class="pv"><span class="pv-n">480W</span><span class="pv-l">Solar Avg</span></div>
+        <div class="pv"><span class="pv-n">6</span><span class="pv-l">Wing Types</span></div>
+        <div class="pv"><span class="pv-n">∞</span><span class="pv-l">Daylight</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="box">
+      <div class="hl">03 — V-Tail</div>
+      <h2 class="pt">Ruddervators.<br>One Surface.<br>Two Axes.</h2>
+      <p class="pd">Butterfly V-tail eliminates conventional horizontal stabiliser. Each ruddervator provides combined pitch-and-yaw authority. Lower wetted area, reduced interference drag vs. conventional empennage.</p>
+      <div class="ps">
+        <div class="pv"><span class="pv-n">±30°</span><span class="pv-l">Deflection</span></div>
+        <div class="pv"><span class="pv-n">−18%</span><span class="pv-l">Drag vs Conv.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel right">
+    <div class="box">
+      <div class="hl">04 — Pusher Propulsion</div>
+      <h2 class="pt">Rear Engine.<br>Clean<br>Airframe.</h2>
+      <p class="pd">Pusher configuration keeps propwash clear of all sensors and payload. Three-blade variable-pitch propeller on thrust-vectoring gimbal: 0–90° pitch for vertical launch, ±25° yaw for hover control.</p>
+      <div class="ps">
+        <div class="pv"><span class="pv-n">90°</span><span class="pv-l">Gimbal Pitch</span></div>
+        <div class="pv"><span class="pv-n">3-blade</span><span class="pv-l">Variable Pitch</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="box">
+      <div class="hl">05 — Landing Gear</div>
+      <h2 class="pt">Tricycle<br>Gear. Any<br>Surface.</h2>
+      <p class="pd">Fixed tricycle undercarriage with shock-absorbing composite legs. Nose wheel plus two main gear. Slope tolerance ±5°. Rough surface capability. No runway required with VTOL module.</p>
+      <div class="ps">
+        <div class="pv"><span class="pv-n">±5°</span><span class="pv-l">Slope Tol.</span></div>
+        <div class="pv"><span class="pv-n">3-pt</span><span class="pv-l">Tricycle</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel right">
+    <div class="box">
+      <div class="hl">06 — Mercury AI</div>
+      <h2 class="pt">40 TOPS.<br>5-Second<br>Loop.</h2>
+      <p class="pd">NVIDIA Jetson Orin Nano — 67g, 15W — runs real-time 3D reconstruction, YOLOv8 object detection at 97% precision, and swarm coordination protocols simultaneously.</p>
+      <div class="ps">
+        <div class="pv"><span class="pv-n">40</span><span class="pv-l">TOPS</span></div>
+        <div class="pv"><span class="pv-n">97%</span><span class="pv-l">Precision</span></div>
+        <div class="pv"><span class="pv-n">67g</span><span class="pv-l">Module Mass</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel center">
+    <div class="fcta">
+      <div class="ft">ONE UAV.<br>EVERY<br>MISSION.</div>
+      <div class="fl">
+        <a href="index.html" class="bp">Full Overview</a>
+        <a href="technology.html" class="bs">Technology →</a>
+        <a href="mercury.html" class="bs">Mercury AI →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+'use strict';
+
+// ── CURSOR ──
+const curDot  = document.getElementById('cur-dot');
+const curRing = document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function aC(){
+  curDot.style.left=mx+'px'; curDot.style.top=my+'px';
+  rx+=(mx-rx)*0.14; ry+=(my-ry)*0.14;
+  curRing.style.left=rx+'px'; curRing.style.top=ry+'px';
+  requestAnimationFrame(aC);
+})();
+
+// ── RENDERER ──
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.shadowMap.enabled = true;
+
+const scene  = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(40,window.innerWidth/window.innerHeight,0.05,300);
+camera.position.set(0,1.5,10);
+
+window.addEventListener('resize',()=>{
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+});
+
+// ── LIGHTS ──
+scene.add(new THREE.AmbientLight(0xffffff,0.22));
+const key=new THREE.DirectionalLight(0xffffff,1.5); key.position.set(5,9,7); key.castShadow=true; scene.add(key);
+const fill=new THREE.DirectionalLight(0xffffff,0.5); fill.position.set(-6,3,5); scene.add(fill);
+const rim=new THREE.DirectionalLight(0xffffff,0.55); rim.position.set(1,-5,-6); scene.add(rim);
+const top=new THREE.DirectionalLight(0xffffff,0.35); top.position.set(0,10,-2); scene.add(top);
+
+// ── MATERIALS ──
+const mBody  = new THREE.MeshPhongMaterial({color:0x1c1c1c,shininess:90, specular:0x888888});
+const mDark  = new THREE.MeshPhongMaterial({color:0x0e0e0e,shininess:40, specular:0x444444});
+const mEdge  = new THREE.MeshPhongMaterial({color:0x2e2e2e,shininess:200,specular:0xffffff});
+const mSolar = new THREE.MeshPhongMaterial({color:0x06060f,shininess:350,specular:0x3333bb,emissive:0x010108});
+const mGlass = new THREE.MeshPhongMaterial({color:0x050512,shininess:500,specular:0xffffff,transparent:true,opacity:0.88});
+const mProp  = new THREE.MeshPhongMaterial({color:0x181818,shininess:140,specular:0x999999});
+const mGear  = new THREE.MeshPhongMaterial({color:0x111111,shininess:80, specular:0x555555});
+const mWire  = new THREE.MeshBasicMaterial({color:0x555555,wireframe:true,transparent:true,opacity:0.07});
+const mLine  = new THREE.MeshPhongMaterial({color:0x303030,shininess:300,specular:0xffffff});
+
+// ══════════════════════════════════════════════════════════
+//  PHANTOM UAV — faithful to 4-view blueprint
+//  Coordinate convention: X = nose→tail (+X = nose)
+//  Y = up, Z = right wing
+// ══════════════════════════════════════════════════════════
+const UAV = new THREE.Group();
+
+// ─────────────────────────────────────────────────────────
+// 1. FUSELAGE  — thick oval cross-section, teardrop plan
+//    Side view: very tall/thick oval, rounded nose, tapers to tail
+//    Top view:  wide ellipse, narrows to tail
+// ─────────────────────────────────────────────────────────
+// Build via LatheGeometry (rotated around Y), then squash in Z to oval
+const fusPts = [];
+// nose→tail in local Y (we'll rotate later): tip at top, tail at bottom
+fusPts.push(new THREE.Vector2(0,     2.10));  // nose tip
+fusPts.push(new THREE.Vector2(0.18,  1.80));
+fusPts.push(new THREE.Vector2(0.52,  1.30));
+fusPts.push(new THREE.Vector2(0.72,  0.70));
+fusPts.push(new THREE.Vector2(0.78,  0.10));  // widest — slightly forward of centre
+fusPts.push(new THREE.Vector2(0.74, -0.50));
+fusPts.push(new THREE.Vector2(0.62, -1.10));
+fusPts.push(new THREE.Vector2(0.44, -1.65));
+fusPts.push(new THREE.Vector2(0.22, -2.00));
+fusPts.push(new THREE.Vector2(0.06, -2.22));
+fusPts.push(new THREE.Vector2(0,    -2.30));  // tail tip
+
+const fusGeo  = new THREE.LatheGeometry(fusPts,32);
+const fusMesh = new THREE.Mesh(fusGeo, mBody);
+// Rotate so nose → +X (world), squash in Z to get horizontal oval
+fusMesh.rotation.z = Math.PI/2;   // nose now points +X
+fusMesh.scale.set(1, 0.68, 1);    // flatten height (Y) to get oval side profile
+UAV.add(fusMesh);
+
+// Fuselage wireframe shell (shown in section 1)
+const fusWire = new THREE.Mesh(fusGeo, mWire);
+fusWire.rotation.z = Math.PI/2;
+fusWire.scale.set(1,0.68,1);
+fusWire.visible = false;
+UAV.add(fusWire);
+
+// Canopy / cockpit hump — top of fuselage, centre-forward
+// Elongated dome sitting on top
+const canGeo  = new THREE.SphereGeometry(0.46,20,14,0,Math.PI*2,0,Math.PI*0.55);
+const canMesh = new THREE.Mesh(canGeo, mGlass);
+canMesh.scale.set(1.6, 1.0, 1.1);
+canMesh.position.set(0.5, 0.44, 0);
+UAV.add(canMesh);
+
+// Canopy frame ring
+const cfGeo  = new THREE.TorusGeometry(0.46,0.025,8,28);
+const cfMesh = new THREE.Mesh(cfGeo, mEdge);
+cfMesh.scale.set(1.6,1.0,1.1);
+cfMesh.position.set(0.5,0.44,0);
+UAV.add(cfMesh);
+
+// Belly flat underside (payload bay door area)
+const bellyGeo  = new THREE.BoxGeometry(2.2,0.05,0.9);
+const bellyMesh = new THREE.Mesh(bellyGeo, mDark);
+bellyMesh.position.set(0.2,-0.48,0);
+UAV.add(bellyMesh);
+
+// Ventral sensor/turret
+const turGeo  = new THREE.SphereGeometry(0.18,16,12);
+const turMesh = new THREE.Mesh(turGeo, mGlass);
+turMesh.scale.set(1,0.7,1);
+turMesh.position.set(0.7,-0.55,0);
+UAV.add(turMesh);
+
+// ─────────────────────────────────────────────────────────
+// 2. STRAIGHT WINGS  — high-aspect, mid-mounted, slight dihedral
+//    Top view: straight, almost no sweep, slight taper at tip
+// ─────────────────────────────────────────────────────────
+function makeWing(side) {
+  const g = new THREE.Group();
+
+  // Wing planform — slight taper root→tip
+  const shape = new THREE.Shape();
+  const span  = 3.6;            // half-span
+  const rootC = 0.90;           // root chord
+  const tipC  = 0.62;           // tip chord
+  shape.moveTo( rootC*0.35, 0);          // root LE
+  shape.lineTo( tipC*0.35,  side*span);  // tip LE
+  shape.lineTo(-tipC*0.65,  side*span);  // tip TE
+  shape.lineTo(-rootC*0.65, 0);          // root TE
+  shape.closePath();
+
+  const extS = {depth:0.048, bevelEnabled:true, bevelThickness:0.009,bevelSize:0.009,bevelSegments:2};
+  const wGeo = new THREE.ExtrudeGeometry(shape,extS);
+
+  const wing = new THREE.Mesh(wGeo, mBody);
+  wing.rotation.x = -Math.PI/2;
+  g.add(wing);
+
+  // Wing wireframe
+  const ww = new THREE.Mesh(wGeo, mWire);
+  ww.rotation.x = -Math.PI/2;
+  g.add(ww);
+
+  // Solar cell panels — rows spanwise
+  for(let r=0;r<7;r++){
+    const t  = (r+0.5)/7;
+    const cw = 0.18-t*0.03;
+    const cd = rootC*0.7 - t*0.06;
+    const cg = new THREE.BoxGeometry(cd, 0.007, cw);
+    const cm = new THREE.Mesh(cg, mSolar);
+    cm.position.set(
+      -0.08 + t*0.05,
+      0.033,
+      side*(0.35 + t*2.9)
+    );
+    g.add(cm);
+  }
+
+  // Leading edge strip
+  const leGeo = new THREE.BoxGeometry(0.018,0.018,span*2.0);
+  const le    = new THREE.Mesh(leGeo, mEdge);
+  le.position.set(rootC*0.34, 0.025, side*span*0.5);
+  g.add(le);
+
+  // Trailing edge strip
+  const teGeo = new THREE.BoxGeometry(0.014,0.014,span*1.95);
+  const te    = new THREE.Mesh(teGeo, mLine);
+  te.position.set(-rootC*0.63, 0.025, side*span*0.5);
+  g.add(te);
+
+  // Aileron / elevon surface
+  const ailGeo = new THREE.BoxGeometry(0.42,0.025,1.1);
+  const ail    = new THREE.Mesh(ailGeo, mEdge);
+  ail.position.set(-rootC*0.48, 0.028, side*2.5);
+  g.add(ail);
+
+  // Winglet — small vertical tip plate
+  const wlShape = new THREE.Shape();
+  wlShape.moveTo(0,0); wlShape.lineTo(0,0.28); wlShape.lineTo(-0.30,0.22); wlShape.lineTo(-0.35,0); wlShape.closePath();
+  const wlGeo  = new THREE.ExtrudeGeometry(wlShape,{depth:0.022,bevelEnabled:false});
+  const wl     = new THREE.Mesh(wlGeo, mEdge);
+  wl.rotation.x = -Math.PI/2;
+  wl.position.set(rootC*0.1, 0.05, side*span);
+  g.add(wl);
+
+  // Dihedral — slight upward angle from root
+  g.rotation.z = side > 0 ? -0.07 : 0.07;
+
+  // Position wing at mid-body
+  g.position.set(-0.05, -0.05, 0);
+  return g;
+}
+
+UAV.add(makeWing( 1));
+UAV.add(makeWing(-1));
+
+// Wing root fairing (blends wing-to-fuselage)
+for(const s of [1,-1]){
+  const rfGeo = new THREE.BoxGeometry(0.95,0.14,0.32);
+  const rf    = new THREE.Mesh(rfGeo, mBody);
+  rf.position.set(-0.05,-0.04,s*0.4);
+  UAV.add(rf);
+}
+
+// ─────────────────────────────────────────────────────────
+// 3. V-TAIL  — two angled ruddervators, meeting at tail cone
+//    Seen from rear: butterfly / V shape, ~45° from horizontal each
+// ─────────────────────────────────────────────────────────
+function makeVTail(side) {
+  const shape = new THREE.Shape();
+  // chord runs front-to-back; span goes up-and-out
+  shape.moveTo( 0.32, 0);          // root LE
+  shape.lineTo( 0.38, side*0.55);  // tip LE
+  shape.lineTo(-0.26, side*0.58);  // tip TE
+  shape.lineTo(-0.40, 0);          // root TE
+  shape.closePath();
+
+  const geo  = new THREE.ExtrudeGeometry(shape,{depth:0.022,bevelEnabled:false});
+  const mesh = new THREE.Mesh(geo, mBody);
+  mesh.rotation.x = -Math.PI/2;
+  // Tilt to V angle
+  mesh.rotation.z = side > 0 ? -0.72 : 0.72;
+  mesh.position.set(-2.05, 0.10, side*0.08);
+  return mesh;
+}
+UAV.add(makeVTail( 1));
+UAV.add(makeVTail(-1));
+
+// ─────────────────────────────────────────────────────────
+// 4. PUSHER PROPULSION  — rear-mounted, on tail cone
+// ─────────────────────────────────────────────────────────
+const propRoot = new THREE.Group();
+
+// Engine nacelle
+const nacGeo  = new THREE.CylinderGeometry(0.13,0.15,0.36,16);
+const nacMesh = new THREE.Mesh(nacGeo, mDark);
+nacMesh.rotation.z = Math.PI/2;
+propRoot.add(nacMesh);
+
+// Spinner nose cone
+const spnGeo  = new THREE.ConeGeometry(0.10,0.20,14);
+const spnMesh = new THREE.Mesh(spnGeo, mEdge);
+spnMesh.rotation.z = -Math.PI/2;
+spnMesh.position.set(-0.28,0,0);
+propRoot.add(spnMesh);
+
+// Gimbal ring
+const gimGeo  = new THREE.TorusGeometry(0.17,0.022,10,28);
+const gimMesh = new THREE.Mesh(gimGeo, mEdge);
+gimMesh.rotation.y = Math.PI/2;
+propRoot.add(gimMesh);
+
+// 3-blade propeller
+const propBlades = new THREE.Group();
+for(let b=0;b<3;b++){
+  const bShape = new THREE.Shape();
+  bShape.moveTo( 0.028, 0.02);
+  bShape.bezierCurveTo( 0.08,  0.25,  0.065, 0.55,  0.025, 0.85);
+  bShape.bezierCurveTo(-0.015, 0.60, -0.055, 0.28, -0.030, 0.02);
+  bShape.closePath();
+  const bGeo  = new THREE.ExtrudeGeometry(bShape,{depth:0.022,bevelEnabled:true,bevelSize:0.005,bevelThickness:0.005,bevelSegments:1});
+  const blade = new THREE.Mesh(bGeo, mProp);
+  blade.rotation.z = (b/3)*Math.PI*2;
+  propBlades.add(blade);
+}
+// Hub cap
+const hubGeo  = new THREE.CylinderGeometry(0.048,0.048,0.07,12);
+const hubMesh = new THREE.Mesh(hubGeo, mEdge);
+hubMesh.rotation.z = Math.PI/2;
+propBlades.position.set(-0.22,0,0);
+propRoot.add(propBlades);
+propRoot.add(hubMesh);
+hubMesh.position.set(-0.22,0,0);
+
+propRoot.position.set(-2.30,0,0);
+UAV.add(propRoot);
+
+// Tail boom / tail fairing connecting body to engine
+const boomGeo  = new THREE.CylinderGeometry(0.10,0.13,0.55,12);
+const boomMesh = new THREE.Mesh(boomGeo, mDark);
+boomMesh.rotation.z = Math.PI/2;
+boomMesh.position.set(-2.05,0,0);
+UAV.add(boomMesh);
+
+// ─────────────────────────────────────────────────────────
+// 5. TRICYCLE LANDING GEAR
+//    Front view: nose gear centre, two main gear under wings
+//    Side view: three wheels visible, proper leg geometry
+// ─────────────────────────────────────────────────────────
+function makeGearLeg(x,y,z,legH,wheelR){
+  const g = new THREE.Group();
+  // Strut
+  const strGeo  = new THREE.CylinderGeometry(0.028,0.028,legH,8);
+  const strMesh = new THREE.Mesh(strGeo, mGear);
+  strMesh.position.y = -legH/2;
+  g.add(strMesh);
+  // Wheel (torus)
+  const wGeo  = new THREE.TorusGeometry(wheelR,0.055,10,20);
+  const wMesh = new THREE.Mesh(wGeo, mGear);
+  wMesh.rotation.x = Math.PI/2;
+  wMesh.position.y = -legH - 0.01;
+  g.add(wMesh);
+  // Wheel cap
+  const wcGeo  = new THREE.CylinderGeometry(wheelR*0.5,wheelR*0.5,0.04,10);
+  const wcMesh = new THREE.Mesh(wcGeo, mDark);
+  wcMesh.rotation.x = Math.PI/2;
+  wcMesh.position.y = -legH - 0.01;
+  g.add(wcMesh);
+
+  g.position.set(x,y,z);
+  return g;
+}
+// Nose gear (front-centre, shorter)
+UAV.add(makeGearLeg( 1.1, -0.48, 0,   0.42, 0.13));
+// Main gear (under wings, longer)
+UAV.add(makeGearLeg(-0.1, -0.50,  0.72, 0.50, 0.16));
+UAV.add(makeGearLeg(-0.1, -0.50, -0.72, 0.50, 0.16));
+
+// ─────────────────────────────────────────────────────────
+// 6. DETAILS
+// ─────────────────────────────────────────────────────────
+// Antenna on spine
+const antGeo  = new THREE.CylinderGeometry(0.007,0.007,0.32,6);
+const antMesh = new THREE.Mesh(antGeo, mEdge);
+antMesh.position.set(-0.5, 0.52, 0);
+UAV.add(antMesh);
+
+// Data-link dome
+const dlGeo  = new THREE.SphereGeometry(0.06,10,8);
+const dlMesh = new THREE.Mesh(dlGeo, mGlass);
+dlMesh.position.set(-0.3, 0.54, 0);
+UAV.add(dlMesh);
+
+// Nav / position lights
+function addNavLight(x,y,z,col){
+  const g = new THREE.SphereGeometry(0.026,8,8);
+  const m = new THREE.MeshBasicMaterial({color:col});
+  const mesh = new THREE.Mesh(g,m);
+  mesh.position.set(x,y,z);
+  UAV.add(mesh);
+  return mesh;
+}
+const nlL = addNavLight( 0.3, 0.02,  3.58, 0xffffff);
+const nlR = addNavLight( 0.3, 0.02, -3.58, 0xffffff);
+const nlN = addNavLight( 2.1, 0,     0,    0xffffff);
+const nlT = addNavLight(-2.3, 0,     0,    0xdddddd);
+
+// ─────────────────────────────────────────────────────────
+// Scene dressing
+// ─────────────────────────────────────────────────────────
+scene.add(UAV);
+
+// Atmospheric particles
+const pN=1400, pG=new THREE.BufferGeometry(), pP=new Float32Array(pN*3);
+for(let i=0;i<pN;i++){pP[i*3]=(Math.random()-.5)*80;pP[i*3+1]=(Math.random()-.5)*80;pP[i*3+2]=(Math.random()-.5)*80;}
+pG.setAttribute('position',new THREE.BufferAttribute(pP,3));
+const particles = new THREE.Points(pG, new THREE.PointsMaterial({color:0xffffff,size:0.05,transparent:true,opacity:0.32}));
+scene.add(particles);
+
+// Ground grid
+const grid = new THREE.GridHelper(40,50,0x111111,0x080808);
+grid.position.y = -5;
+scene.add(grid);
+
+// ── SCROLL STATE ──
+const panEls  = document.querySelectorAll('.panel');
+const NPANELS = panEls.length;
+document.getElementById('sc').style.height = (NPANELS*100)+'vh';
+
+let scrollP=0, targetP=0, curSec=0;
+window.addEventListener('scroll',()=>{
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  targetP = Math.max(0,Math.min(1, window.scrollY/max));
+  document.getElementById('pb').style.width = (targetP*100)+'%';
+  const sec = Math.min(Math.floor(targetP*NPANELS), NPANELS-1);
+  if(sec!==curSec){
+    curSec=sec;
+    document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===curSec));
+    fusWire.visible = curSec===1;
+  }
+  if(window.scrollY>80) document.getElementById('sh').style.opacity='0';
+});
+
+document.querySelectorAll('.dot').forEach(d=>{
+  d.addEventListener('click',()=>{
+    const sec=+d.dataset.s;
+    const max=document.documentElement.scrollHeight-window.innerHeight;
+    window.scrollTo({top:(sec/(NPANELS-1))*max,behavior:'smooth'});
+  });
+});
+
+// ── CAMERA + DRONE KEYFRAMES ──
+// [camX, camY, camZ, uavRY, uavRX, uavPosY, fov, bgLabel]
+const KF = [
+  [ 0.5,  1.2,  9.5,  0.30,  0.10,  0,    40,  'PHANTOM'    ],  // 0 — hero 3/4 front
+  [ 3.0,  0.5,  7.0,  0.55,  0.06,  0,    36,  'FUSELAGE'   ],  // 1 — front-right close
+  [-1.0,  5.5,  5.0, -0.15, -0.88,  0.5,  50,  'WINGS'      ],  // 2 — top-down solar
+  [-1.5,  0.5,  8.0, -0.55,  0.05,  0,    42,  'V-TAIL'     ],  // 3 — rear-left tail
+  [-5.5,  0.8,  3.5,  2.15,  0.10,  0,    44,  'PROPULSION' ],  // 4 — direct tail
+  [ 0.5, -2.2,  7.0,  0.25,  0.45,  0,    46,  'GEAR'       ],  // 5 — below angle
+  [ 1.5,  2.0,  7.5, -0.35,  0.28,  0,    44,  'MERCURY'    ],  // 6 — upper front
+  [ 2.0,  2.0,  9.0, -0.55,  0.18,  0,    40,  'PHANTOM'    ],  // 7 — final wide
+];
+
+const HUD = [
+  {alt:'0000',hdg:'000',spd:'000',sys:'BOOT'},
+  {alt:'0350',hdg:'045',spd:'025',sys:'NOMINAL'},
+  {alt:'1200',hdg:'090',spd:'120',sys:'SCANNING'},
+  {alt:'2100',hdg:'135',spd:'095',sys:'NOMINAL'},
+  {alt:'3800',hdg:'180',spd:'185',sys:'NOMINAL'},
+  {alt:'0050',hdg:'225',spd:'005',sys:'LANDING'},
+  {alt:'4500',hdg:'270',spd:'160',sys:'DETECT'},
+  {alt:'5000',hdg:'315',spd:'200',sys:'NOMINAL'},
+];
+
+const bgLabel = document.getElementById('bglabel');
+
+function lerp(a,b,t){return a+(b-a)*t;}
+function ease(t){return t<.5?2*t*t:-1+(4-2*t)*t;}
+
+let time=0, autoR=0, mxN=0, myN=0;
+document.addEventListener('mousemove',e=>{
+  mxN=(e.clientX/window.innerWidth -.5)*2;
+  myN=(e.clientY/window.innerHeight-.5)*2;
+});
+
+function render(){
+  requestAnimationFrame(render);
+  time+=0.016;
+
+  // Smooth scroll
+  scrollP += (targetP-scrollP)*0.055;
+
+  // Keyframe interpolation
+  const kfF = Math.max(0,Math.min(scrollP,0.9999)) * (KF.length-1);
+  const ki   = Math.floor(kfF);
+  const kfr  = ease(kfF-ki);
+  const A    = KF[Math.min(ki,   KF.length-1)];
+  const B    = KF[Math.min(ki+1, KF.length-1)];
+
+  // Camera
+  camera.position.x = lerp(A[0],B[0],kfr);
+  camera.position.y = lerp(A[1],B[1],kfr);
+  camera.position.z = lerp(A[2],B[2],kfr);
+  camera.fov        = lerp(A[6],B[6],kfr);
+  camera.updateProjectionMatrix();
+  camera.lookAt(0,0.1,0);
+
+  // UAV orientation
+  autoR += 0.003;
+  const floatY = Math.sin(time*0.75)*0.07;
+  const autoTiltX = Math.sin(autoR*0.9)*0.03;
+
+  UAV.rotation.y = lerp(A[3],B[3],kfr) + Math.sin(autoR)*0.055 + mxN*0.04;
+  UAV.rotation.x = lerp(A[4],B[4],kfr) + autoTiltX            + myN*0.03;
+  UAV.rotation.z = Math.sin(autoR*1.3)*0.018;
+  UAV.position.y = lerp(A[5],B[5],kfr) + floatY;
+
+  // Prop spin
+  propBlades.rotation.y += 0.045 + scrollP*0.55;
+
+  // Nav lights pulse
+  const pulse=(Math.sin(time*3.8)+1)*.5;
+  [nlL,nlR,nlN,nlT].forEach(l=>l.material.opacity=0.35+pulse*0.65);
+
+  // Particles drift
+  particles.rotation.y+=0.00028;
+  particles.rotation.x+=0.00012;
+
+  // Grid recede
+  grid.position.y = -5 + scrollP*9;
+  grid.material.opacity = Math.max(0, 0.4-scrollP*0.5);
+
+  // BG label
+  if(bgLabel.textContent!==A[7]) bgLabel.textContent=A[7];
+
+  // HUD
+  const hi = Math.min(Math.floor(scrollP*HUD.length), HUD.length-1);
+  const h  = HUD[hi];
+  document.getElementById('h-alt').textContent = h.alt;
+  document.getElementById('h-hdg').textContent = h.hdg;
+  document.getElementById('h-spd').textContent = h.spd;
+  document.getElementById('h-sys').textContent = h.sys;
+  document.getElementById('h-pwr').textContent = Math.round(160+scrollP*320);
+
+  renderer.render(scene,camera);
+}
+render();
+})();
+</script>
+</body>
+</html>

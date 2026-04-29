@@ -39,26 +39,10 @@
     cursor: none;
   }
 
-  /* ── CUSTOM CURSOR ── */
-  .cursor {
-    position: fixed; top: 0; left: 0; z-index: 9999;
-    pointer-events: none; mix-blend-mode: difference;
-  }
-  .cursor-dot {
-    width: 8px; height: 8px;
-    background: #fff; border-radius: 50%;
-    transform: translate(-50%,-50%);
-    transition: transform 0.1s;
-  }
-  .cursor-ring {
-    width: 36px; height: 36px;
-    border: 1px solid rgba(255,255,255,0.6);
-    border-radius: 50%;
-    transform: translate(-50%,-50%);
-    transition: transform 0.18s ease, width 0.2s, height 0.2s, border-color 0.2s;
-  }
-  body:has(a:hover) .cursor-ring,
-  body:has(button:hover) .cursor-ring { width: 56px; height: 56px; border-color: #fff; }
+  /* CURSOR */
+  #cur-dot { position:fixed; top:0; left:0; z-index:9999; pointer-events:none; mix-blend-mode:difference; width:8px; height:8px; background:#fff; border-radius:50%; transform:translate(-50%,-50%); transition:transform 0.1s; }
+  #cur-ring { position:fixed; top:0; left:0; z-index:9998; pointer-events:none; mix-blend-mode:difference; width:36px; height:36px; border:1px solid rgba(255,255,255,0.6); border-radius:50%; transform:translate(-50%,-50%); transition:width 0.2s, height 0.2s, border-color 0.2s; }
+  body:has(a:hover) #cur-ring, body:has(button:hover) #cur-ring { width:56px; height:56px; border-color:#fff; }
 
   /* ── NAV ── */
   nav {
@@ -546,8 +530,8 @@
 <body>
 
 <!-- CURSOR -->
-<div class="cursor" id="cursorDot"><div class="cursor-dot"></div></div>
-<div class="cursor" id="cursorRing"><div class="cursor-ring"></div></div>
+<div id="cur-dot"></div>
+<div id="cur-ring"></div>
 
 <!-- NAV -->
 <nav id="mainNav">
@@ -560,8 +544,9 @@
     <li><a href="technology.html">Technology</a></li>
     <li><a href="mercury.html">Mercury AI</a></li>
     <li><a href="deployment.html">Deployment</a></li>
+    <li><a href="experience.html">3D Experience</a></li>
   </ul>
-  <a href="technology.html" class="nav-cta">Explore Tech</a>
+  <a href="experience.html" class="nav-cta">3D Experience ↗</a>
 </nav>
 
 <!-- HERO -->
@@ -907,16 +892,18 @@
 </div>
 
 <script>
-// ── CURSOR ──
-const dot = document.getElementById('cursorDot').querySelector('.cursor-dot');
-const ring = document.getElementById('cursorRing').querySelector('.cursor-ring');
-let mx = 0, my = 0, rx = 0, ry = 0;
-document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-(function animateCursor() {
-  dot.style.left = mx + 'px'; dot.style.top = my + 'px';
-  rx += (mx - rx) * 0.14; ry += (my - ry) * 0.14;
-  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
-  requestAnimationFrame(animateCursor);
+(function(){
+'use strict';
+// CURSOR
+const curDot = document.getElementById('cur-dot');
+const curRing = document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+(function animCursor(){
+  curDot.style.left=mx+'px'; curDot.style.top=my+'px';
+  rx+=(mx-rx)*0.14; ry+=(my-ry)*0.14;
+  curRing.style.left=rx+'px'; curRing.style.top=ry+'px';
+  requestAnimationFrame(animCursor);
 })();
 
 // ── NAV SCROLL ──
@@ -973,18 +960,19 @@ window.addEventListener('scroll', () => {
     let p = (progress - start) / (end - start);
     p = Math.max(0, Math.min(1, p));
 
+    let t2, z2, op2;
     if(p < 0.5) {
-      const t = p * 2;
-      const z = -400 + t * 400;
-      const opacity = t;
-      line.style.transform = `perspective(800px) translateZ(${z}px) scale(${0.7 + t * 0.3})`;
-      line.style.opacity = opacity;
+      t2 = p * 2;
+      z2 = -400 + t2 * 400;
+      op2 = t2;
+      line.style.transform = `perspective(800px) translateZ(${z2}px) scale(${0.7 + t2 * 0.3})`;
+      line.style.opacity = op2;
     } else {
-      const t = (p - 0.5) * 2;
-      const z = t * 200;
-      const opacity = 1 - t * 0.8;
-      line.style.transform = `perspective(800px) translateZ(${z}px) scale(${1 + t * 0.2})`;
-      line.style.opacity = opacity;
+      t2 = (p - 0.5) * 2;
+      z2 = t2 * 200;
+      op2 = 1 - t2 * 0.8;
+      line.style.transform = `perspective(800px) translateZ(${z2}px) scale(${1 + t2 * 0.2})`;
+      line.style.opacity = op2;
     }
   });
 });
@@ -1000,6 +988,7 @@ const progressObs = new IntersectionObserver(entries => {
   });
 }, { threshold: 0.5 });
 progressFills.forEach(el => progressObs.observe(el));
+})();
 </script>
 </body>
 </html>
