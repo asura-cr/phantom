@@ -137,11 +137,11 @@ input[type=range]:hover{background:rgba(255,255,255,0.25);}
       </div>
       <div class="ctrl-row">
         <div class="ctrl-label">GIMBAL PITCH <span class="ctrl-val" id="lbl-gpitch">0°</span></div>
-        <input type="range" id="sl-gpitch" min="-45" max="45" value="0">
+        <input type="range" id="sl-gpitch" min="-90" max="90" value="0">
       </div>
       <div class="ctrl-row">
         <div class="ctrl-label">GIMBAL YAW <span class="ctrl-val" id="lbl-gyaw">0°</span></div>
-        <input type="range" id="sl-gyaw" min="-45" max="45" value="0">
+        <input type="range" id="sl-gyaw" min="-90" max="90" value="0">
       </div>
     </div>
 
@@ -408,26 +408,67 @@ for(const S of[1,-1]){
   UAV.add(mkLine(hLE,M1));UAV.add(mkLine(hTE,M2));UAV.add(mkLine([hLE[0],hTE[0]],M2));
 }
 
-// Pusher propeller
+// ── 2-AXIS GIMBAL + ROTOR ────────────────────────────────────────
 const PX=-2.45;
-UAV.add(mkEllipse(PX+0.05,0,0,.1,.1,'YZ',14,M0));
+const PR=0.55; // bigger rotor
+
+// Motor body stub
+UAV.add(mkLine([[PX+0.35,0,0],[PX+0.08,0,0]],M1));
+UAV.add(mkEllipse(PX+0.08,0,0,.08,.08,'YZ',14,M1));
+
+// GIMBAL YAW mount (rotates around Y — yaw axis, fixed to fuselage)
+const gimbalYawG=new THREE.Group();
+gimbalYawG.position.set(PX,0,0);
+// Outer yaw ring — in XZ plane (horizontal ring)
+gimbalYawG.add(mkEllipse(0,0,0,0.22,0.22,'XZ',28,M1));
+// Yaw axis rod
+gimbalYawG.add(mkLine([[0,-0.22,0],[0,0.22,0]],M2));
+
+// GIMBAL PITCH inner group (rotates around Z — pitch axis)
+const gimbalPitchG=new THREE.Group();
+// Inner pitch ring — in XY plane
+gimbalPitchG.add(mkEllipse(0,0,0,0.16,0.16,'XY',24,
+  new THREE.LineBasicMaterial({color:0x00ffff,transparent:true,opacity:0.7})));
+// Pitch axis rod
+gimbalPitchG.add(mkLine([[0,0,-0.16],[0,0,0.16]],M2));
+
+// PROP GROUP — spins on X (forward axis), child of pitch gimbal
 const propG=new THREE.Group();
-propG.position.set(PX,0,0);
-const PR=0.35;
+// Bigger 3-blade prop
 for(let b=0;b<3;b++){
-  const baseA=b*(Math.PI*2/3),NB=18;
-  const fwd=[],bwd=[];
+  const baseA=b*(Math.PI*2/3),NB=22;
+  const fwd=[],bwd=[],mid=[];
   for(let i=0;i<=NB;i++){
-    const u=i/NB,r=PR*(0.1+u*0.88),sweep=u*0.12,ang=baseA+sweep,chord=0.05*(1-u*0.3);
-    const py=Math.cos(ang)*r,pz=Math.sin(ang)*r,px=Math.cos(ang+Math.PI/2)*chord,pzz=Math.sin(ang+Math.PI/2)*chord;
-    fwd.push([0,py+px*0.5,pz+pzz*0.5]);bwd.push([0,py-px*0.5,pz-pzz*0.5]);
+    const u=i/NB,r=PR*(0.08+u*0.90),sweep=u*0.18,ang=baseA+sweep;
+    const chord=0.075*(1-u*0.45);
+    const py=Math.cos(ang)*r,pz=Math.sin(ang)*r;
+    const px=Math.cos(ang+Math.PI/2)*chord,pzz=Math.sin(ang+Math.PI/2)*chord;
+    fwd.push([0,py+px*0.6,pz+pzz*0.6]);
+    bwd.push([0,py-px*0.6,pz-pzz*0.6]);
+    mid.push([0,py,pz]);
   }
-  propG.add(mkLine(fwd,M0));propG.add(mkLine(bwd,M2));
-  propG.add(mkLine([fwd[NB],bwd[NB]],M0));propG.add(mkLine([fwd[0],bwd[0]],M2));
+  const bMat=new THREE.LineBasicMaterial({color:0x00ffff,transparent:true,opacity:0.9});
+  const bMat2=new THREE.LineBasicMaterial({color:0x00ffff,transparent:true,opacity:0.4});
+  propG.add(mkLine(fwd,bMat));
+  propG.add(mkLine(bwd,bMat2));
+  propG.add(mkLine(mid,bMat2));
+  propG.add(mkLine([fwd[NB],bwd[NB]],bMat));
+  propG.add(mkLine([fwd[0],bwd[0]],bMat2));
 }
-propG.add(mkEllipse(0,0,0,.055,.055,'YZ',12,M0));
-propG.add(mkEllipse(0,0,0,PR,PR,'YZ',32,M3));
-UAV.add(propG);
+// Hub
+const hubMat=new THREE.LineBasicMaterial({color:0x00ffff,transparent:true,opacity:1.0});
+propG.add(mkEllipse(0,0,0,.06,.06,'YZ',12,hubMat));
+propG.add(mkEllipse(0,0,0,.03,.03,'YZ',8,hubMat));
+// Swept disk — shows rotor plane clearly
+propG.add(mkEllipse(0,0,0,PR,PR,'YZ',40,
+  new THREE.LineBasicMaterial({color:0x00ffff,transparent:true,opacity:0.18})));
+propG.add(mkEllipse(0,0,0,PR*0.6,PR*0.6,'YZ',32,
+  new THREE.LineBasicMaterial({color:0x00ffff,transparent:true,opacity:0.10})));
+
+// Hierarchy: UAV → gimbalYawG → gimbalPitchG → propG
+gimbalPitchG.add(propG);
+gimbalYawG.add(gimbalPitchG);
+UAV.add(gimbalYawG);
 scene.add(UAV);
 
 // ── GROUND GRID ─────────────────────────────────────────────────
@@ -703,8 +744,13 @@ function animate(){
   const dt=Math.min((now-lastTime)/1000,0.033);
   lastTime=now;simT+=dt;
 
-  // Prop spin
-  propG.rotation.x+=0.06+ctrl.thrustPct*0.003;
+  // Prop spin — faster with thrust
+  propG.rotation.x+=0.08+ctrl.thrustPct*0.006;
+  // Gimbal angles — smooth lerp to slider target so you SEE it rotate
+  const gpRad=ctrl.gimbalPitch*Math.PI/180;
+  const gyRad=ctrl.gimbalYaw*Math.PI/180;
+  gimbalPitchG.rotation.z+=(gpRad-gimbalPitchG.rotation.z)*0.12;
+  gimbalYawG.rotation.y+=(gyRad-gimbalYawG.rotation.y)*0.12;
   M2.opacity=0.22+Math.sin(simT*1.1)*0.05;
   M3.opacity=0.08+Math.sin(simT*0.7)*0.03;
 
@@ -737,10 +783,9 @@ function animate(){
   forceGroup.visible=ctrl.showForces;
 
   if(ctrl.showForces){
-    // Thrust — auto-scales with thrust level, rotates with gimbal in world space
-    const gp=ctrl.gimbalPitch*Math.PI/180,gy=ctrl.gimbalYaw*Math.PI/180;
-    const thrustScale=0.5+ctrl.thrustPct/100*2.5; // 0.5 at 0% → 3.0 at 100%
-    thrustArrow.rotation.set(gp,gy,0);
+    // Thrust — reads live gimbal group angles so arrow always matches rotor
+    const thrustScale=0.5+ctrl.thrustPct/100*2.5;
+    thrustArrow.rotation.set(gimbalPitchG.rotation.z, gimbalYawG.rotation.y, 0);
     thrustArrow.scale.setScalar(thrustScale);
     THRUST_MAT.opacity=0.7+ctrl.thrustPct/100*0.3;
 
