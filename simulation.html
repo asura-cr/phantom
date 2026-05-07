@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHANTOM SIMULATOR — VTOL Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;background:#050505;color:#fff;font-family:'Space Mono',monospace;}
+#canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;}
+#ui{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none;display:grid;grid-template-columns:260px 1fr 240px;grid-template-rows:48px 1fr 120px;}
+
+/* NAV */
+#topbar{grid-column:1/-1;grid-row:1;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(5,5,5,0.85);border-bottom:1px solid rgba(255,255,255,0.08);pointer-events:auto;}
+.brand{font-size:13px;letter-spacing:.3em;color:#fff;font-weight:700;}
+.brand span{color:rgba(255,255,255,0.35);}
+.topbar-status{display:flex;gap:20px;align-items:center;}
+.status-dot{width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 2s infinite;}
+.status-dot.warn{background:rgba(255,255,255,0.4);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.status-label{font-size:10px;letter-spacing:.15em;color:rgba(255,255,255,0.4);}
+.status-val{font-size:10px;letter-spacing:.1em;color:rgba(255,255,255,0.8);}
+.mode-badge{font-size:9px;letter-spacing:.2em;padding:3px 10px;border:1px solid rgba(255,255,255,0.25);color:rgba(255,255,255,0.7);}
+
+/* LEFT PANEL */
+#left{grid-column:1;grid-row:2/4;padding:16px;background:rgba(5,5,5,0.8);border-right:1px solid rgba(255,255,255,0.07);pointer-events:auto;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
+.panel-section{border:1px solid rgba(255,255,255,0.08);padding:12px;}
+.section-title{font-size:9px;letter-spacing:.3em;color:rgba(255,255,255,0.35);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.section-title::before{content:'';width:12px;height:1px;background:rgba(255,255,255,0.25);}
+.ctrl-row{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+.ctrl-label{font-size:9px;letter-spacing:.12em;color:rgba(255,255,255,0.4);display:flex;justify-content:space-between;}
+.ctrl-val{color:rgba(255,255,255,0.85);}
+input[type=range]{width:100%;-webkit-appearance:none;height:2px;background:rgba(255,255,255,0.15);outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;background:#fff;border-radius:50%;cursor:pointer;}
+input[type=range]:hover{background:rgba(255,255,255,0.25);}
+.mode-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.mode-btn{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;padding:8px 6px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.45);cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.mode-btn:hover{border-color:rgba(255,255,255,0.4);color:rgba(255,255,255,0.8);}
+.mode-btn.active{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.6);color:#fff;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.toggle-label{font-size:9px;letter-spacing:.1em;color:rgba(255,255,255,0.45);}
+.toggle{width:28px;height:14px;background:rgba(255,255,255,0.1);border-radius:7px;position:relative;cursor:pointer;border:1px solid rgba(255,255,255,0.15);transition:.2s;}
+.toggle.on{background:rgba(255,255,255,0.25);border-color:rgba(255,255,255,0.5);}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:8px;height:8px;background:rgba(255,255,255,0.5);border-radius:50%;transition:.2s;}
+.toggle.on::after{left:16px;background:#fff;}
+
+/* RIGHT PANEL */
+#right{grid-column:3;grid-row:2/4;padding:16px;background:rgba(5,5,5,0.8);border-left:1px solid rgba(255,255,255,0.07);pointer-events:auto;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
+.telem-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.telem-box{border:1px solid rgba(255,255,255,0.08);padding:8px 10px;}
+.telem-name{font-size:8px;letter-spacing:.15em;color:rgba(255,255,255,0.3);margin-bottom:4px;text-transform:uppercase;}
+.telem-value{font-size:16px;font-weight:700;color:#fff;font-family:'Space Mono',monospace;}
+.telem-unit{font-size:8px;color:rgba(255,255,255,0.3);margin-left:2px;}
+.telem-big{grid-column:1/-1;}
+
+/* BOTTOM BAR */
+#bottom{grid-column:2;grid-row:3;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(5,5,5,0.6);border-top:1px solid rgba(255,255,255,0.07);pointer-events:auto;}
+.hud-item{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.hud-label{font-size:8px;letter-spacing:.2em;color:rgba(255,255,255,0.3);}
+.hud-val{font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);}
+.sep{width:1px;height:40px;background:rgba(255,255,255,0.08);}
+.cam-btns{display:flex;gap:6px;}
+.cam-btn{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.1em;padding:5px 10px;background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);cursor:pointer;transition:.2s;text-transform:uppercase;}
+.cam-btn:hover,.cam-btn.active{border-color:rgba(255,255,255,0.5);color:#fff;}
+.launch-btn{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;padding:8px 20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.4);color:#fff;cursor:pointer;transition:.2s;text-transform:uppercase;}
+.launch-btn:hover{background:rgba(255,255,255,0.15);border-color:#fff;}
+.launch-btn.active{background:rgba(255,255,255,0.2);border-color:#fff;animation:btn-pulse 1s infinite;}
+@keyframes btn-pulse{0%,100%{border-color:rgba(255,255,255,0.8)}50%{border-color:rgba(255,255,255,0.3)}}
+
+/* FORCE LEGEND */
+.force-legend{display:flex;flex-direction:column;gap:6px;}
+.force-item{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.1em;color:rgba(255,255,255,0.5);}
+.force-line{width:20px;height:1px;}
+.force-line.thrust{background:#ffffff;}
+.force-line.gravity{background:rgba(255,255,255,0.5);}
+.force-line.wind{background:rgba(255,255,255,0.3);border-top:1px dashed rgba(255,255,255,0.4);}
+.force-line.vel{background:rgba(255,255,255,0.6);border-top:1px dotted rgba(255,255,255,0.7);}
+
+/* SCAN LINE FX */
+#scanlines{position:fixed;inset:0;z-index:5;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px);}
+#vignette{position:fixed;inset:0;z-index:6;pointer-events:none;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.5) 100%);}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;z-index:100;background:#050505;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .8s;}
+.splash-logo{font-size:64px;letter-spacing:.15em;font-weight:700;color:#fff;}
+.splash-sub{font-size:11px;letter-spacing:.4em;color:rgba(255,255,255,0.3);}
+.splash-bar{width:180px;height:1px;background:rgba(255,255,255,0.1);position:relative;overflow:hidden;}
+.splash-fill{position:absolute;top:0;left:0;height:100%;background:#fff;width:0%;transition:width .05s linear;}
+.splash-status{font-size:9px;letter-spacing:.2em;color:rgba(255,255,255,0.25);}
+
+::-webkit-scrollbar{width:2px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="splash-logo">PHANTOM</div>
+  <div class="splash-sub">VTOL SIMULATOR — DEMO</div>
+  <div class="splash-bar"><div class="splash-fill" id="sf"></div></div>
+  <div class="splash-status" id="ss">INITIALIZING PHYSICS ENGINE</div>
+</div>
+
+<div id="scanlines"></div>
+<div id="vignette"></div>
+<canvas id="canvas"></canvas>
+
+<div id="ui">
+  <div id="topbar">
+    <div class="brand">PHANTOM <span>// VTOL SIM v1.0</span></div>
+    <div class="topbar-status">
+      <div class="status-dot" id="sys-dot"></div>
+      <span class="status-label">SYS&nbsp;</span><span class="status-val" id="sys-status">NOMINAL</span>
+      <span class="status-label">|&nbsp;MODE&nbsp;</span><div class="mode-badge" id="mode-badge">VTOL</div>
+      <span class="status-label">|&nbsp;T+</span><span class="status-val" id="mission-timer">00:00</span>
+    </div>
+  </div>
+
+  <div id="left">
+    <div class="panel-section">
+      <div class="section-title">FLIGHT MODE</div>
+      <div class="mode-btns">
+        <button class="mode-btn active" data-mode="vtol">VTOL</button>
+        <button class="mode-btn" data-mode="runway">RUNWAY</button>
+        <button class="mode-btn" data-mode="auto">AUTO</button>
+        <button class="mode-btn" data-mode="manual">MANUAL</button>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-title">PROPULSION</div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">THRUST <span class="ctrl-val" id="lbl-thrust">65%</span></div>
+        <input type="range" id="sl-thrust" min="0" max="100" value="65">
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">GIMBAL PITCH <span class="ctrl-val" id="lbl-gpitch">0°</span></div>
+        <input type="range" id="sl-gpitch" min="-45" max="45" value="0">
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">GIMBAL YAW <span class="ctrl-val" id="lbl-gyaw">0°</span></div>
+        <input type="range" id="sl-gyaw" min="-45" max="45" value="0">
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-title">ENVIRONMENT</div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">WIND SPD <span class="ctrl-val" id="lbl-wind">8 m/s</span></div>
+        <input type="range" id="sl-wind" min="0" max="25" value="8">
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">WIND DIR <span class="ctrl-val" id="lbl-wdir">90°</span></div>
+        <input type="range" id="sl-wdir" min="0" max="360" value="90">
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">GUST INT <span class="ctrl-val" id="lbl-gust">3 m/s</span></div>
+        <input type="range" id="sl-gust" min="0" max="15" value="3">
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-title">CONFIGURATION</div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">MASS <span class="ctrl-val" id="lbl-mass">2.4 kg</span></div>
+        <input type="range" id="sl-mass" min="10" max="60" value="24">
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">CG OFFSET <span class="ctrl-val" id="lbl-cg">0%</span></div>
+        <input type="range" id="sl-cg" min="-30" max="30" value="0">
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-title">VISUALIZATION</div>
+      <div class="toggle-row">
+        <span class="toggle-label">FORCE VECTORS</span>
+        <div class="toggle on" id="tog-forces"></div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">THRUST PARTICLES</span>
+        <div class="toggle on" id="tog-particles"></div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">AUTOPILOT PID</span>
+        <div class="toggle on" id="tog-pid"></div>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">TRAJECTORY</span>
+        <div class="toggle" id="tog-trail"></div>
+      </div>
+      <div style="margin-top:10px;" class="force-legend">
+        <div class="force-item"><div class="force-line thrust"></div>THRUST VECTOR</div>
+        <div class="force-item"><div class="force-line gravity"></div>GRAVITY</div>
+        <div class="force-item"><div class="force-line wind"></div>WIND</div>
+        <div class="force-item"><div class="force-line vel"></div>VELOCITY</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="bottom">
+    <div class="cam-btns">
+      <button class="cam-btn active" data-cam="orbit">ORBIT</button>
+      <button class="cam-btn" data-cam="chase">CHASE</button>
+      <button class="cam-btn" data-cam="side">SIDE</button>
+      <button class="cam-btn" data-cam="top">TOP</button>
+      <button class="cam-btn" data-cam="rear">REAR</button>
+    </div>
+    <div class="sep"></div>
+    <div class="hud-item"><div class="hud-label">ALTITUDE</div><div class="hud-val"><span id="h-alt">0</span> m</div></div>
+    <div class="hud-item"><div class="hud-label">AIRSPEED</div><div class="hud-val"><span id="h-spd">0</span> m/s</div></div>
+    <div class="hud-item"><div class="hud-label">PITCH</div><div class="hud-val"><span id="h-pitch">0</span>°</div></div>
+    <div class="hud-item"><div class="hud-label">AoA</div><div class="hud-val"><span id="h-aoa">0</span>°</div></div>
+    <div class="sep"></div>
+    <button class="launch-btn" id="launch-btn">▶ LAUNCH VTOL</button>
+  </div>
+
+  <div id="right">
+    <div class="panel-section">
+      <div class="section-title">TELEMETRY</div>
+      <div class="telem-grid">
+        <div class="telem-box telem-big">
+          <div class="telem-name">ALTITUDE</div>
+          <div class="telem-value"><span id="t-alt">0.0</span><span class="telem-unit">m</span></div>
+        </div>
+        <div class="telem-box"><div class="telem-name">AIRSPEED</div><div class="telem-value"><span id="t-spd">0.0</span><span class="telem-unit">m/s</span></div></div>
+        <div class="telem-box"><div class="telem-name">VERT SPD</div><div class="telem-value"><span id="t-vspd">0.0</span><span class="telem-unit">m/s</span></div></div>
+        <div class="telem-box"><div class="telem-name">PITCH</div><div class="telem-value"><span id="t-pitch">0.0</span><span class="telem-unit">°</span></div></div>
+        <div class="telem-box"><div class="telem-name">ROLL</div><div class="telem-value"><span id="t-roll">0.0</span><span class="telem-unit">°</span></div></div>
+        <div class="telem-box"><div class="telem-name">YAW</div><div class="telem-value"><span id="t-yaw">0.0</span><span class="telem-unit">°</span></div></div>
+        <div class="telem-box"><div class="telem-name">AoA</div><div class="telem-value"><span id="t-aoa">0.0</span><span class="telem-unit">°</span></div></div>
+        <div class="telem-box"><div class="telem-name">THRUST</div><div class="telem-value"><span id="t-thrust">0</span><span class="telem-unit">%</span></div></div>
+        <div class="telem-box"><div class="telem-name">G-PITCH</div><div class="telem-value"><span id="t-gpitch">0.0</span><span class="telem-unit">°</span></div></div>
+        <div class="telem-box"><div class="telem-name">G-YAW</div><div class="telem-value"><span id="t-gyaw">0.0</span><span class="telem-unit">°</span></div></div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-title">PID MONITOR</div>
+      <div id="pid-display">
+        <div class="ctrl-row">
+          <div class="ctrl-label">PITCH ERR <span class="ctrl-val" id="pid-pe">0.00</span></div>
+          <div style="height:3px;background:rgba(255,255,255,0.1);margin-top:3px;"><div id="pid-pe-bar" style="height:100%;background:rgba(255,255,255,0.6);width:50%;transition:.1s;"></div></div>
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">ROLL ERR <span class="ctrl-val" id="pid-re">0.00</span></div>
+          <div style="height:3px;background:rgba(255,255,255,0.1);margin-top:3px;"><div id="pid-re-bar" style="height:100%;background:rgba(255,255,255,0.6);width:50%;transition:.1s;"></div></div>
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">YAW ERR <span class="ctrl-val" id="pid-ye">0.00</span></div>
+          <div style="height:3px;background:rgba(255,255,255,0.1);margin-top:3px;"><div id="pid-ye-bar" style="height:100%;background:rgba(255,255,255,0.6);width:50%;transition:.1s;"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-title">CONTROL AUTHORITY</div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">THRUST VEC <span class="ctrl-val" id="ca-tv">100%</span></div>
+        <div style="height:3px;background:rgba(255,255,255,0.1);margin-top:3px;"><div id="ca-tv-bar" style="height:100%;background:#fff;width:100%;transition:.3s;"></div></div>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">AERO SURF <span class="ctrl-val" id="ca-as">0%</span></div>
+        <div style="height:3px;background:rgba(255,255,255,0.1);margin-top:3px;"><div id="ca-as-bar" style="height:100%;background:rgba(255,255,255,0.45);width:0%;transition:.3s;"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(()=>{
+'use strict';
+
+// ── SPLASH ──────────────────────────────────────────────────────
+const sf=document.getElementById('sf'),ss=document.getElementById('ss');
+const msgs=['INITIALIZING PHYSICS ENGINE','LOADING UAV GEOMETRY','CALIBRATING PID CONTROLLERS','BUILDING PARTICLE SYSTEMS','READY'];
+let si=0;
+const sI=setInterval(()=>{
+  si++;sf.style.width=(si/msgs.length*100)+'%';ss.textContent=msgs[Math.min(si,msgs.length-1)];
+  if(si>=msgs.length){clearInterval(sI);setTimeout(()=>{document.getElementById('splash').style.opacity='0';setTimeout(()=>document.getElementById('splash').remove(),800);},400);}
+},350);
+
+// ── RENDERER ────────────────────────────────────────────────────
+const canvas=document.getElementById('canvas');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setClearColor(0x050505,1);
+const scene=new THREE.Scene();
+scene.fog=new THREE.FogExp2(0x050505,0.018);
+const camera=new THREE.PerspectiveCamera(40,window.innerWidth/window.innerHeight,0.1,500);
+window.addEventListener('resize',()=>{
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+});
+
+// ── MATERIALS ───────────────────────────────────────────────────
+const M0=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:1.0});
+const M1=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.7});
+const M2=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.28});
+const M3=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.10});
+const THRUST_MAT=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.9});
+const GRAV_MAT=new THREE.LineBasicMaterial({color:0xaaaaaa,transparent:true,opacity:0.6});
+const WIND_MAT=new THREE.LineBasicMaterial({color:0x888888,transparent:true,opacity:0.5});
+const VEL_MAT=new THREE.LineBasicMaterial({color:0xcccccc,transparent:true,opacity:0.7});
+
+function mkLine(pts,mat){
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(pts.flat()),3));
+  return new THREE.Line(g,mat||M1);
+}
+function mkEllipse(cx,cy,cz,rx,ry,plane,n,mat){
+  const pts=[];const N=n||32;
+  for(let i=0;i<=N;i++){const a=i/N*Math.PI*2;const c=Math.cos(a),s=Math.sin(a);
+    if(plane==='YZ')pts.push([cx,cy+s*ry,cz+c*rx]);
+    else if(plane==='XZ')pts.push([cx+c*rx,cy,cz+s*ry]);
+    else pts.push([cx+c*rx,cy+s*ry,cz]);}
+  return mkLine(pts,mat);
+}
+
+// ── UAV GEOMETRY (matching 3D experience HTML exactly) ──────────
+const UAV=new THREE.Group();
+const FUSE_MAX_R=0.42,L=4.8,WS=2.5,WING_ROOT_CHORD=1.4,WING_TIP_CHORD=0.75;
+
+function fuseHeight(t){
+  if(t<0.08)return FUSE_MAX_R*0.2*Math.pow(t/0.08,0.8);
+  if(t<0.30)return FUSE_MAX_R*(0.2+0.8*Math.pow((t-0.08)/0.22,0.5));
+  if(t<0.55)return FUSE_MAX_R*(1.0+0.12*Math.sin((t-0.30)/0.25*Math.PI));
+  if(t<0.80)return FUSE_MAX_R*(1.05-0.15*(t-0.55)/0.25);
+  return FUSE_MAX_R*0.90*Math.pow(1-(t-0.80)/0.20,1.1);
+}
+function fuseWidth(t){
+  if(t<0.08)return FUSE_MAX_R*0.18*Math.pow(t/0.08,0.7);
+  if(t<0.35)return FUSE_MAX_R*(0.18+0.82*Math.pow((t-0.08)/0.27,0.4));
+  if(t<0.65)return FUSE_MAX_R*0.98;
+  if(t<0.88)return FUSE_MAX_R*(0.98-0.15*(t-0.65)/0.23);
+  return FUSE_MAX_R*0.83*Math.pow(1-(t-0.88)/0.12,1.2);
+}
+
+const fuseStations=[0.02,0.06,0.10,0.15,0.20,0.28,0.36,0.44,0.52,0.60,0.68,0.76,0.84,0.90,0.95];
+fuseStations.forEach((t,idx)=>{
+  const x=2.3-t*L;const h=fuseHeight(t),w=fuseWidth(t);
+  const ring=[];const nr=28;
+  for(let i=0;i<=nr;i++){const a=i/nr*Math.PI*2;ring.push([x,Math.sin(a)*h,Math.cos(a)*w]);}
+  UAV.add(mkLine(ring,(idx>=4&&idx<=8)?M0:M2));
+});
+const N=40;
+const topLine=[],botLine=[];
+for(let i=0;i<=N;i++){const t=i/N,x=2.3-t*L;topLine.push([x,fuseHeight(t)*0.85,0]);botLine.push([x,-fuseHeight(t)*0.75,0]);}
+UAV.add(mkLine(topLine,M1));UAV.add(mkLine(botLine,M1));
+UAV.add(mkEllipse(2.25,0,0,.03,.025,'YZ',10,M0));
+const canopyPts=[];
+for(let i=0;i<=20;i++){const a=i/20*Math.PI;canopyPts.push([1.4-Math.cos(a)*0.55,fuseHeight(0.35)+Math.sin(a)*0.18,0]);}
+UAV.add(mkLine(canopyPts,M1));
+
+// Wings
+function makeWing(side){
+  const S=side,NS=24,ROOT_X=0.6,ROOT_Z=S*0.38,ROOT_Y=-0.05,TIP_X=ROOT_X-1.1,TIP_Z=S*WS,TIP_Y=ROOT_Y+(WS-0.38)*Math.tan(2.5*Math.PI/180);
+  const LE=[],TE=[];
+  for(let i=0;i<=NS;i++){
+    const u=i/NS,z=ROOT_Z+(TIP_Z-ROOT_Z)*u,leX=ROOT_X+(TIP_X-ROOT_X)*u,chord=WING_ROOT_CHORD-(WING_ROOT_CHORD-WING_TIP_CHORD)*u,teX=leX-chord,y=ROOT_Y+(TIP_Y-ROOT_Y)*u;
+    LE.push([leX,y,z]);TE.push([teX,y,z]);
+  }
+  UAV.add(mkLine(LE,M0));UAV.add(mkLine(TE,M1));UAV.add(mkLine([LE[0],TE[0]],M1));
+  const tipArc=[];
+  for(let i=0;i<=12;i++){const a=i/12*Math.PI;const cx=(LE[NS][0]+TE[NS][0])/2;tipArc.push([cx+0.12*0.3*Math.sin(a),LE[NS][1],LE[NS][2]+S*0.12*Math.cos(a)]);}
+  UAV.add(mkLine(tipArc,M0));
+  const spar1=[],spar2=[];
+  for(let i=0;i<=NS;i++){const c=LE[i][0]-TE[i][0];spar1.push([LE[i][0]-c*0.25,LE[i][1],LE[i][2]]);spar2.push([LE[i][0]-c*0.70,LE[i][1],LE[i][2]]);}
+  UAV.add(mkLine(spar1,M2));UAV.add(mkLine(spar2,M3));
+  [0,0.4,0.8,1.0].forEach(u=>{
+    const idx=Math.round(u*NS);
+    UAV.add(mkLine([LE[idx],TE[idx]],u===0||u===1?M2:M3));
+  });
+  UAV.add(mkEllipse(TIP_X,TIP_Y,TIP_Z,.02,.02,'YZ',6,M0));
+}
+makeWing(1);makeWing(-1);
+
+// Twin vertical stabilizers
+function makeVStab(side){
+  const S=side,NVT=16,ROOT_X=-1.6,ROOT_Z=S*0.22,ROOT_Y=0.1,TIP_X=-2.1,TIP_Y=0.75,TIP_Z=S*0.32;
+  const vLE=[],vTE=[];
+  for(let i=0;i<=NVT;i++){
+    const u=i/NVT;
+    vLE.push([ROOT_X+(TIP_X-ROOT_X)*u,ROOT_Y+u*(TIP_Y-ROOT_Y),ROOT_Z+u*(TIP_Z-ROOT_Z)]);
+    vTE.push([ROOT_X-0.35+(TIP_X-0.12-(ROOT_X-0.35))*u,ROOT_Y+u*(TIP_Y-ROOT_Y),ROOT_Z+u*(TIP_Z-ROOT_Z)]);
+  }
+  UAV.add(mkLine(vLE,M0));UAV.add(mkLine(vTE,M1));UAV.add(mkLine([vLE[0],vTE[0]],M1));
+  const tipArc=[];
+  for(let i=0;i<=8;i++){const a=i/8*Math.PI;tipArc.push([(vLE[NVT][0]+vTE[NVT][0])/2+0.08*0.2*Math.sin(a),vLE[NVT][1]+0.08*0.5*Math.sin(a),vLE[NVT][2]+S*0.08*0.3*Math.cos(a)]);}
+  UAV.add(mkLine(tipArc,M0));
+  const vSpar=[];
+  for(let i=0;i<=NVT;i++){const c=vLE[i][0]-vTE[i][0];vSpar.push([vLE[i][0]-c*0.35,vLE[i][1],vLE[i][2]]);}
+  UAV.add(mkLine(vSpar,M2));
+  [0.25,0.5,0.75].forEach(u=>{const idx=Math.round(u*NVT);UAV.add(mkLine([vLE[idx],vTE[idx]],M3));});
+}
+makeVStab(1);makeVStab(-1);
+
+// Horizontal stab
+const HSTAB_LE=-1.9,HSTAB_TE=-2.3,HSTAB_Y=-0.05,HSTAB_HALF=0.45;
+for(const S of[1,-1]){
+  const hLE=[],hTE=[];
+  for(let i=0;i<=10;i++){const u=i/10,z=HSTAB_HALF*S*u;hLE.push([HSTAB_LE+(HSTAB_TE+0.15-HSTAB_LE)*u,HSTAB_Y,z]);hTE.push([HSTAB_TE,HSTAB_Y,z]);}
+  UAV.add(mkLine(hLE,M1));UAV.add(mkLine(hTE,M2));UAV.add(mkLine([hLE[0],hTE[0]],M2));
+}
+
+// Pusher propeller
+const PX=-2.45;
+UAV.add(mkEllipse(PX+0.05,0,0,.1,.1,'YZ',14,M0));
+const propG=new THREE.Group();
+propG.position.set(PX,0,0);
+const PR=0.35;
+for(let b=0;b<3;b++){
+  const baseA=b*(Math.PI*2/3),NB=18;
+  const fwd=[],bwd=[];
+  for(let i=0;i<=NB;i++){
+    const u=i/NB,r=PR*(0.1+u*0.88),sweep=u*0.12,ang=baseA+sweep,chord=0.05*(1-u*0.3);
+    const py=Math.cos(ang)*r,pz=Math.sin(ang)*r,px=Math.cos(ang+Math.PI/2)*chord,pzz=Math.sin(ang+Math.PI/2)*chord;
+    fwd.push([0,py+px*0.5,pz+pzz*0.5]);bwd.push([0,py-px*0.5,pz-pzz*0.5]);
+  }
+  propG.add(mkLine(fwd,M0));propG.add(mkLine(bwd,M2));
+  propG.add(mkLine([fwd[NB],bwd[NB]],M0));propG.add(mkLine([fwd[0],bwd[0]],M2));
+}
+propG.add(mkEllipse(0,0,0,.055,.055,'YZ',12,M0));
+propG.add(mkEllipse(0,0,0,PR,PR,'YZ',32,M3));
+UAV.add(propG);
+scene.add(UAV);
+
+// ── GROUND GRID ─────────────────────────────────────────────────
+const gridHelper=new THREE.GridHelper(80,80,0x111111,0x0a0a0a);
+gridHelper.position.y=-5;
+scene.add(gridHelper);
+
+// ── STARS ───────────────────────────────────────────────────────
+const sG=new THREE.BufferGeometry();
+const sP=new Float32Array(1500*3);
+for(let i=0;i<1500;i++){sP[i*3]=(Math.random()-.5)*150;sP[i*3+1]=(Math.random()-.5)*150;sP[i*3+2]=(Math.random()-.5)*150;}
+sG.setAttribute('position',new THREE.BufferAttribute(sP,3));
+scene.add(new THREE.Points(sG,new THREE.PointsMaterial({color:0xffffff,size:0.04,transparent:true,opacity:0.22})));
+
+// ── FORCE ARROWS ────────────────────────────────────────────────
+function makeArrow(mat,len){
+  const pts=[[0,0,0],[0,len,0]];
+  const arrowG=new THREE.Group();
+  arrowG.add(mkLine(pts,mat));
+  const headPts=[[0,len,0],[-0.04,len-0.12,0],[0.04,len-0.12,0],[0,len,0]];
+  arrowG.add(mkLine(headPts,mat));
+  return arrowG;
+}
+
+const thrustArrow=makeArrow(THRUST_MAT,1.5);
+const gravArrow=makeArrow(GRAV_MAT,1.0);
+const windArrow=makeArrow(WIND_MAT,0.8);
+const velArrow=makeArrow(VEL_MAT,1.2);
+const forceGroup=new THREE.Group();
+forceGroup.add(thrustArrow);forceGroup.add(gravArrow);forceGroup.add(windArrow);forceGroup.add(velArrow);
+scene.add(forceGroup);
+
+// ── PARTICLES ───────────────────────────────────────────────────
+const NPART=120;
+const partPositions=new Float32Array(NPART*3);
+const partGeom=new THREE.BufferGeometry();
+partGeom.setAttribute('position',new THREE.BufferAttribute(partPositions,3));
+const partMat=new THREE.PointsMaterial({color:0xffffff,size:0.04,transparent:true,opacity:0.5});
+const particles=new THREE.Points(partGeom,partMat);
+scene.add(particles);
+const partData=[];
+for(let i=0;i<NPART;i++)partData.push({life:Math.random(),speed:0.03+Math.random()*0.05,spread:0.05});
+
+// ── TRAJECTORY TRAIL ────────────────────────────────────────────
+const TRAIL_MAX=200;
+const trailPositions=new Float32Array(TRAIL_MAX*3);
+const trailGeom=new THREE.BufferGeometry();
+trailGeom.setAttribute('position',new THREE.BufferAttribute(trailPositions,3));
+const trailLine=new THREE.Line(trailGeom,new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.25}));
+scene.add(trailLine);
+let trailIdx=0,trailCount=0;
+const trailData=new Array(TRAIL_MAX).fill(null).map(()=>({x:0,y:0,z:0}));
+
+// ── FLIGHT PHYSICS STATE ─────────────────────────────────────────
+const state={
+  x:0,y:-5,z:0,
+  vx:0,vy:0,vz:0,
+  pitch:0,roll:0,yaw:0,
+  dpitch:0,droll:0,dyaw:0,
+  launched:false,mode:'vtol',
+  time:0,startTime:null,
+  pidPitchI:0,pidRollI:0,pidYawI:0,
+  prevPitchE:0,prevRollE:0,prevYawE:0,
+  targetPitch:0,targetRoll:0,targetYaw:0,
+  transitionFactor:0,
+};
+const GRAVITY=9.81;
+let lastTime=performance.now();
+
+// ── CONTROLS STATE ───────────────────────────────────────────────
+const ctrl={
+  thrustPct:65,gimbalPitch:0,gimbalYaw:0,
+  windSpeed:8,windDir:90,gustInt:3,
+  mass:2.4,cgOffset:0,
+  showForces:true,showParticles:true,pidActive:true,showTrail:false,
+  camMode:'orbit',
+};
+
+// Slider bindings
+function bindSlider(id,lblId,parse,fmt,cb){
+  const el=document.getElementById(id),lbl=document.getElementById(lblId);
+  el.addEventListener('input',()=>{const v=parse(el.value);lbl.textContent=fmt(v);cb(v);});
+}
+bindSlider('sl-thrust','lbl-thrust',v=>+v,v=>v+'%',v=>{ctrl.thrustPct=v;});
+bindSlider('sl-gpitch','lbl-gpitch',v=>+v,v=>v+'°',v=>{ctrl.gimbalPitch=v;});
+bindSlider('sl-gyaw','lbl-gyaw',v=>+v,v=>v+'°',v=>{ctrl.gimbalYaw=v;});
+bindSlider('sl-wind','lbl-wind',v=>+v,v=>v+' m/s',v=>{ctrl.windSpeed=v;});
+bindSlider('sl-wdir','lbl-wdir',v=>+v,v=>v+'°',v=>{ctrl.windDir=v;});
+bindSlider('sl-gust','lbl-gust',v=>+v,v=>v+' m/s',v=>{ctrl.gustInt=v;});
+bindSlider('sl-mass','lbl-mass',v=>v/10,v=>v.toFixed(1)+' kg',v=>{ctrl.mass=v;});
+bindSlider('sl-cg','lbl-cg',v=>+v,v=>v+'%',v=>{ctrl.cgOffset=v;});
+
+// Mode buttons
+document.querySelectorAll('.mode-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.mode-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    ctrl.mode=b.dataset.mode;state.mode=b.dataset.mode;
+    document.getElementById('mode-badge').textContent=b.dataset.mode.toUpperCase();
+    document.getElementById('launch-btn').textContent=b.dataset.mode==='vtol'?'▶ LAUNCH VTOL':b.dataset.mode==='runway'?'▶ RUNWAY TAKEOFF':'▶ START MISSION';
+    if(state.launched){resetFlight();}
+  });
+});
+
+// Toggles
+function bindToggle(id,key){
+  const el=document.getElementById(id);
+  el.addEventListener('click',()=>{el.classList.toggle('on');ctrl[key]=el.classList.contains('on');});
+}
+bindToggle('tog-forces','showForces');
+bindToggle('tog-particles','showParticles');
+bindToggle('tog-pid','pidActive');
+bindToggle('tog-trail','showTrail');
+
+// Camera
+document.querySelectorAll('.cam-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.cam-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');ctrl.camMode=b.dataset.cam;
+  });
+});
+
+// Launch
+document.getElementById('launch-btn').addEventListener('click',()=>{
+  if(state.launched){resetFlight();document.getElementById('launch-btn').textContent='▶ LAUNCH VTOL';document.getElementById('launch-btn').classList.remove('active');}
+  else{launchFlight();document.getElementById('launch-btn').textContent='■ ABORT';document.getElementById('launch-btn').classList.add('active');}
+});
+
+function resetFlight(){
+  state.x=0;state.y=-5;state.z=0;state.vx=0;state.vy=0;state.vz=0;
+  state.pitch=0;state.roll=0;state.yaw=0;state.dpitch=0;state.droll=0;state.dyaw=0;
+  state.launched=false;state.time=0;state.startTime=null;
+  state.pidPitchI=0;state.pidRollI=0;state.pidYawI=0;
+  state.transitionFactor=0;
+  trailIdx=0;trailCount=0;
+}
+function launchFlight(){
+  state.launched=true;state.startTime=performance.now();
+  if(state.mode==='vtol'){state.pitch=Math.PI/2;} // tail-sitting
+  else{state.pitch=0;}
+}
+
+// ── ORBIT CAMERA STATE ───────────────────────────────────────────
+let orbitTheta=0.5,orbitPhi=0.3,orbitDist=12;
+let isDragging=false,lastMX=0,lastMY=0;
+canvas.addEventListener('mousedown',e=>{isDragging=true;lastMX=e.clientX;lastMY=e.clientY;});
+canvas.addEventListener('mousemove',e=>{
+  if(!isDragging)return;
+  orbitTheta+=(e.clientX-lastMX)*0.005;
+  orbitPhi=Math.max(-1.2,Math.min(1.4,orbitPhi-(e.clientY-lastMY)*0.005));
+  lastMX=e.clientX;lastMY=e.clientY;
+});
+canvas.addEventListener('mouseup',()=>isDragging=false);
+canvas.addEventListener('wheel',e=>{orbitDist=Math.max(4,Math.min(30,orbitDist+e.deltaY*0.02));},{passive:true});
+
+// ── PHYSICS STEP ────────────────────────────────────────────────
+function stepPhysics(dt){
+  if(!state.launched)return;
+  state.time+=dt;
+
+  const thrust=ctrl.thrustPct/100;
+  const thrustForce=thrust*ctrl.mass*GRAVITY*1.5;
+  const gPitchRad=ctrl.gimbalPitch*Math.PI/180;
+  const gYawRad=ctrl.gimbalYaw*Math.PI/180;
+
+  const airspeed=Math.sqrt(state.vx*state.vx+state.vz*state.vz);
+  const dynamicPressure=0.5*1.2*airspeed*airspeed;
+  const wingArea=0.35;
+  const liftCoeff=Math.max(0,Math.min(2,0.8+state.pitch*0.4));
+  const lift=dynamicPressure*wingArea*liftCoeff;
+  const drag=dynamicPressure*wingArea*0.05;
+
+  // transition blending (0=thrust dominant, 1=aero dominant)
+  const transRaw=Math.min(1,airspeed/10);
+  state.transitionFactor+=(transRaw-state.transitionFactor)*0.02;
+  const tv=1-state.transitionFactor;
+
+  // Thrust vector in world space
+  const thrX=Math.sin(state.pitch)*Math.cos(state.roll);
+  const thrY=Math.cos(state.pitch)*Math.cos(gPitchRad);
+  const thrZ=Math.cos(state.pitch)*Math.sin(gYawRad);
+
+  // Wind
+  const wRad=ctrl.windDir*Math.PI/180;
+  const gustNow=ctrl.gustInt*(Math.sin(state.time*2.3+0.4)*0.5+Math.random()*0.5);
+  const wx=(ctrl.windSpeed+gustNow)*Math.cos(wRad);
+  const wz=(ctrl.windSpeed+gustNow)*Math.sin(wRad);
+
+  // Forces
+  let ax=thrustForce/ctrl.mass*thrX - drag*Math.sign(state.vx)/ctrl.mass + wx*0.04;
+  let ay=thrustForce/ctrl.mass*thrY - GRAVITY + lift/ctrl.mass;
+  let az=thrustForce/ctrl.mass*thrZ - drag*Math.sign(state.vz)/ctrl.mass + wz*0.04;
+
+  // Ground constraint
+  if(state.y<=-5&&ay<0){ay=0;state.vy=0;}
+
+  // PID stabilization
+  if(ctrl.pidActive){
+    const Kp=2.5,Ki=0.1,Kd=0.8;
+    const pitchErr=state.targetPitch-state.pitch;
+    state.pidPitchI+=pitchErr*dt;
+    const pitchCorr=Kp*pitchErr+Ki*state.pidPitchI+Kd*(pitchErr-state.prevPitchE)/dt;
+    state.prevPitchE=pitchErr;
+
+    const rollErr=state.targetRoll-state.roll;
+    state.pidRollI+=rollErr*dt;
+    const rollCorr=Kp*rollErr+Ki*state.pidRollI+Kd*(rollErr-state.prevRollE)/dt;
+    state.prevRollE=rollErr;
+
+    const yawErr=state.targetYaw-state.yaw;
+    state.pidYawI+=yawErr*dt;
+    const yawCorr=Kp*yawErr+Ki*state.pidYawI+Kd*(yawErr-state.prevYawE)/dt;
+    state.prevYawE=yawErr;
+
+    state.dpitch+=(pitchCorr*tv*0.6)*dt;
+    state.droll+=(rollCorr*0.8)*dt;
+    state.dyaw+=(yawCorr*0.8)*dt;
+
+    // Update PID UI
+    document.getElementById('pid-pe').textContent=pitchErr.toFixed(2);
+    document.getElementById('pid-re').textContent=rollErr.toFixed(2);
+    document.getElementById('pid-ye').textContent=yawErr.toFixed(2);
+    document.getElementById('pid-pe-bar').style.width=Math.min(100,50+pitchErr*80)+'%';
+    document.getElementById('pid-re-bar').style.width=Math.min(100,50+rollErr*80)+'%';
+    document.getElementById('pid-ye-bar').style.width=Math.min(100,50+yawErr*80)+'%';
+  }
+
+  // Damping
+  state.dpitch*=0.97;state.droll*=0.97;state.dyaw*=0.97;
+  // Wind moments
+  state.dpitch+=wx*0.003;state.droll+=wz*0.002;
+
+  // Integrate
+  state.vx+=(ax+wx*0.02)*dt;state.vy+=ay*dt;state.vz+=(az+wz*0.02)*dt;
+  state.x+=state.vx*dt;state.y+=state.vy*dt;state.z+=state.vz*dt;
+  state.pitch+=state.dpitch*dt;state.roll+=state.droll*dt;state.yaw+=state.dyaw*dt;
+  if(state.y<-5){state.y=-5;state.vy=Math.max(0,state.vy);}
+
+  // Mode-specific target
+  if(state.mode==='vtol'&&state.time<3){state.targetPitch=Math.PI/2;}
+  else if(state.mode==='vtol'&&state.time<8){state.targetPitch=Math.PI/2*(1-(state.time-3)/5);}
+  else{state.targetPitch=0;}
+
+  // Control authority
+  const tvPct=Math.round((1-state.transitionFactor)*100);
+  const asPct=Math.round(state.transitionFactor*100);
+  document.getElementById('ca-tv').textContent=tvPct+'%';
+  document.getElementById('ca-as').textContent=asPct+'%';
+  document.getElementById('ca-tv-bar').style.width=tvPct+'%';
+  document.getElementById('ca-as-bar').style.width=asPct+'%';
+}
+
+// ── RENDER LOOP ──────────────────────────────────────────────────
+let simT=0;
+function animate(){
+  requestAnimationFrame(animate);
+  const now=performance.now();
+  const dt=Math.min((now-lastTime)/1000,0.033);
+  lastTime=now;simT+=dt;
+
+  // Prop spin
+  propG.rotation.x+=0.06+ctrl.thrustPct*0.003;
+  M2.opacity=0.22+Math.sin(simT*1.1)*0.05;
+  M3.opacity=0.08+Math.sin(simT*0.7)*0.03;
+
+  // Physics
+  stepPhysics(dt);
+
+  // Position UAV in scene
+  const wy=state.launched?state.y+5:0;
+  UAV.position.set(state.x*0.3,wy*0.3,state.z*0.3);
+  UAV.rotation.x=state.pitch;
+  UAV.rotation.z=state.roll;
+  UAV.rotation.y=state.yaw;
+
+  // Trail
+  if(state.launched&&ctrl.showTrail){
+    trailData[trailIdx]={x:UAV.position.x,y:UAV.position.y,z:UAV.position.z};
+    trailIdx=(trailIdx+1)%TRAIL_MAX;trailCount=Math.min(trailCount+1,TRAIL_MAX);
+    for(let i=0;i<trailCount;i++){
+      const p=trailData[(trailIdx-trailCount+i+TRAIL_MAX)%TRAIL_MAX];
+      trailPositions[i*3]=p.x;trailPositions[i*3+1]=p.y;trailPositions[i*3+2]=p.z;
+    }
+    trailGeom.attributes.position.needsUpdate=true;
+    trailGeom.setDrawRange(0,trailCount);
+    trailLine.visible=true;
+  }else{trailLine.visible=false;}
+
+  // Force vectors
+  forceGroup.position.copy(UAV.position);
+  forceGroup.rotation.copy(UAV.rotation);
+  forceGroup.visible=ctrl.showForces;
+
+  if(ctrl.showForces){
+    // Thrust direction
+    const gp=ctrl.gimbalPitch*Math.PI/180,gy=ctrl.gimbalYaw*Math.PI/180;
+    thrustArrow.rotation.set(gp,gy,0);
+    thrustArrow.scale.setScalar(ctrl.thrustPct/60);
+
+    // Gravity always down (world)
+    gravArrow.rotation.set(0,0,Math.PI);
+    gravArrow.rotation.copy(new THREE.Euler(0,0,Math.PI));
+
+    // Wind
+    const wRad=ctrl.windDir*Math.PI/180;
+    windArrow.rotation.set(0,wRad,Math.PI/2);
+    windArrow.scale.setScalar(ctrl.windSpeed/10);
+
+    // Velocity
+    if(state.launched){
+      const spd=Math.sqrt(state.vx*state.vx+state.vy*state.vy+state.vz*state.vz);
+      velArrow.scale.setScalar(Math.min(2,spd*0.2));
+    }
+  }
+
+  // Particles (thrust flow)
+  if(ctrl.showParticles&&state.launched&&ctrl.thrustPct>5){
+    const gp=ctrl.gimbalPitch*Math.PI/180,gy=ctrl.gimbalYaw*Math.PI/180;
+    // Thrust direction in UAV local space, then world
+    const tDir=new THREE.Vector3(Math.sin(gp),Math.cos(gp)*(-1),Math.sin(gy)).normalize();
+    const worldDir=tDir.clone().applyEuler(UAV.rotation);
+    for(let i=0;i<NPART;i++){
+      partData[i].life+=dt*2;
+      if(partData[i].life>1){
+        partData[i].life=0;
+        const spread=0.06;
+        partPositions[i*3]=UAV.position.x+(PX+0.05);
+        partPositions[i*3+1]=UAV.position.y;
+        partPositions[i*3+2]=UAV.position.z;
+      }
+      const l=partData[i].life;
+      const spd=partData[i].speed*(ctrl.thrustPct/60);
+      partPositions[i*3]+=worldDir.x*spd+(Math.random()-.5)*0.003;
+      partPositions[i*3+1]+=worldDir.y*spd+(Math.random()-.5)*0.003;
+      partPositions[i*3+2]+=worldDir.z*spd+(Math.random()-.5)*0.003;
+    }
+    partGeom.attributes.position.needsUpdate=true;
+    particles.visible=true;
+    partMat.opacity=0.4+ctrl.thrustPct*0.004;
+  }else{particles.visible=false;}
+
+  // Camera
+  const target=UAV.position.clone();
+  switch(ctrl.camMode){
+    case 'orbit':{
+      const cx=target.x+Math.sin(orbitTheta)*Math.cos(orbitPhi)*orbitDist;
+      const cy=target.y+Math.sin(orbitPhi)*orbitDist+1;
+      const cz=target.z+Math.cos(orbitTheta)*Math.cos(orbitPhi)*orbitDist;
+      camera.position.set(cx,cy,cz);camera.lookAt(target);break;}
+    case 'chase':{camera.position.set(target.x-6,target.y+1,target.z);camera.lookAt(target);break;}
+    case 'side':{camera.position.set(target.x,target.y+1,target.z+10);camera.lookAt(target);break;}
+    case 'top':{camera.position.set(target.x,target.y+12,target.z);camera.lookAt(target);break;}
+    case 'rear':{
+      const rearDir=new THREE.Vector3(-1,0,0).applyEuler(UAV.rotation).multiplyScalar(8);
+      camera.position.set(target.x+rearDir.x,target.y+rearDir.y+1,target.z+rearDir.z);
+      camera.lookAt(target);break;}
+  }
+
+  // Grid follows UAV
+  gridHelper.position.x=UAV.position.x;gridHelper.position.z=UAV.position.z;
+  gridHelper.position.y=Math.min(-5+UAV.position.y*0,-5);
+
+  // Update UI
+  const alt=(state.y+5).toFixed(1);
+  const spd=Math.sqrt(state.vx*state.vx+state.vy*state.vy+state.vz*state.vz).toFixed(1);
+  const vspd=state.vy.toFixed(1);
+  const pitchDeg=(state.pitch*180/Math.PI).toFixed(1);
+  const rollDeg=(state.roll*180/Math.PI).toFixed(1);
+  const yawDeg=(state.yaw*180/Math.PI).toFixed(1);
+  const aoa=(Math.atan2(state.vy,Math.sqrt(state.vx*state.vx+state.vz*state.vz))*180/Math.PI).toFixed(1);
+
+  document.getElementById('t-alt').textContent=alt;
+  document.getElementById('t-spd').textContent=spd;
+  document.getElementById('t-vspd').textContent=vspd;
+  document.getElementById('t-pitch').textContent=pitchDeg;
+  document.getElementById('t-roll').textContent=rollDeg;
+  document.getElementById('t-yaw').textContent=yawDeg;
+  document.getElementById('t-aoa').textContent=aoa;
+  document.getElementById('t-thrust').textContent=ctrl.thrustPct;
+  document.getElementById('t-gpitch').textContent=ctrl.gimbalPitch.toFixed(1);
+  document.getElementById('t-gyaw').textContent=ctrl.gimbalYaw.toFixed(1);
+  document.getElementById('h-alt').textContent=alt;
+  document.getElementById('h-spd').textContent=spd;
+  document.getElementById('h-pitch').textContent=pitchDeg;
+  document.getElementById('h-aoa').textContent=aoa;
+
+  // Mission timer
+  if(state.launched&&state.startTime){
+    const elapsed=Math.floor((performance.now()-state.startTime)/1000);
+    const m=String(Math.floor(elapsed/60)).padStart(2,'0');
+    const s=String(elapsed%60).padStart(2,'0');
+    document.getElementById('mission-timer').textContent=m+':'+s;
+  }
+
+  renderer.render(scene,camera);
+}
+animate();
+
+})();
+</script>
+</body>
+</html>
