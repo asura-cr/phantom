@@ -619,11 +619,19 @@ function resetFlight(){
   state.pidPitchI=0;state.pidRollI=0;state.pidYawI=0;
   state.transitionFactor=0;
   trailIdx=0;trailCount=0;
+  // Reset gimbal to straight up
+  ctrl.gimbalPitch=0;ctrl.gimbalYaw=0;
+  document.getElementById('sl-gpitch').value=0;
+  document.getElementById('sl-gyaw').value=0;
+  document.getElementById('lbl-gpitch').textContent='0°';
+  document.getElementById('lbl-gyaw').textContent='0°';
 }
 function launchFlight(){
   state.launched=true;state.startTime=performance.now();
-  if(state.mode==='vtol'){state.pitch=Math.PI/2;} // tail-sitting
-  else{state.pitch=0;}
+  // Tail-sitter: UAV stands vertical, nose UP, prop at top pointing straight up
+  // In our coordinate: pitch = -PI/2 means nose pointing up (prop fires upward)
+  state.pitch=-Math.PI/2;
+  state.vy=0.5; // small upward nudge
 }
 
 // ── ORBIT CAMERA STATE ───────────────────────────────────────────
@@ -645,95 +653,110 @@ function stepPhysics(dt){
   state.time+=dt;
 
   const thrust=ctrl.thrustPct/100;
-  const thrustForce=thrust*ctrl.mass*GRAVITY*1.5;
-  const gPitchRad=ctrl.gimbalPitch*Math.PI/180;
-  const gYawRad=ctrl.gimbalYaw*Math.PI/180;
+  const thrustForce=thrust*ctrl.mass*GRAVITY*1.8;
 
-  const airspeed=Math.sqrt(state.vx*state.vx+state.vz*state.vz);
-  const dynamicPressure=0.5*1.2*airspeed*airspeed;
-  const wingArea=0.35;
-  const liftCoeff=Math.max(0,Math.min(2,0.8+state.pitch*0.4));
-  const lift=dynamicPressure*wingArea*liftCoeff;
-  const drag=dynamicPressure*wingArea*0.05;
+  // Live gimbal angles (read from actual animated gimbal groups)
+  const liveGimbalPitch=gimbalPitchG.rotation.z; // pitch tilt
+  const liveGimbalYaw=gimbalYawG.rotation.y;     // yaw tilt
 
-  // transition blending (0=thrust dominant, 1=aero dominant)
-  const transRaw=Math.min(1,airspeed/10);
-  state.transitionFactor+=(transRaw-state.transitionFactor)*0.02;
-  const tv=1-state.transitionFactor;
+  // THE KEY IDEA:
+  // Prop tilt (gimbal) creates a torque that pitches the aircraft body.
+  // Aircraft body pitch FOLLOWS the prop tilt with inertia/lag.
+  // Target body pitch = gimbal pitch offset from vertical
+  // Phase 1 (vertical): prop straight up, aircraft vertical, climbing
+  // Phase 2 (transition): pilot tilts gimbal forward → body pitches over → forward flight
 
-  // Thrust vector in world space
-  const thrX=Math.sin(state.pitch)*Math.cos(state.roll);
-  const thrY=Math.cos(state.pitch)*Math.cos(gPitchRad);
-  const thrZ=Math.cos(state.pitch)*Math.sin(gYawRad);
+  // Aircraft body pitch target is driven by gimbal tilt
+  // When gimbal tilts forward (negative pitch), aircraft nose should pitch down (rotate toward horizontal)
+  const bodyPitchTarget = -Math.PI/2 + liveGimbalPitch; // starts vertical, gimbal tilt rotates it toward 0 (horizontal)
 
-  // Wind
-  const wRad=ctrl.windDir*Math.PI/180;
-  const gustNow=ctrl.gustInt*(Math.sin(state.time*2.3+0.4)*0.5+Math.random()*0.5);
-  const wx=(ctrl.windSpeed+gustNow)*Math.cos(wRad);
-  const wz=(ctrl.windSpeed+gustNow)*Math.sin(wRad);
+  // Body follows target with realistic lag (inertia)
+  const pitchErr = bodyPitchTarget - state.pitch;
+  state.pidPitchI += pitchErr * dt;
+  state.pidPitchI = Math.max(-2, Math.min(2, state.pidPitchI));
+  const Kp=1.8, Ki=0.08, Kd=1.2;
+  const pitchCorr = Kp*pitchErr + Ki*state.pidPitchI + Kd*(pitchErr - state.prevPitchE)/Math.max(dt,0.001);
+  state.prevPitchE = pitchErr;
+  state.dpitch += pitchCorr * dt * 0.8;
 
-  // Forces
-  let ax=thrustForce/ctrl.mass*thrX - drag*Math.sign(state.vx)/ctrl.mass + wx*0.04;
-  let ay=thrustForce/ctrl.mass*thrY - GRAVITY + lift/ctrl.mass;
-  let az=thrustForce/ctrl.mass*thrZ - drag*Math.sign(state.vz)/ctrl.mass + wz*0.04;
+  // Yaw: gimbal yaw steers the nose left/right
+  const yawErr = liveGimbalYaw - state.yaw;
+  state.pidYawI += yawErr * dt;
+  const yawCorr = 1.5*yawErr + 0.06*state.pidYawI;
+  state.dyaw += yawCorr * dt * 0.6;
 
-  // Ground constraint
-  if(state.y<=-5&&ay<0){ay=0;state.vy=0;}
-
-  // PID stabilization
-  if(ctrl.pidActive){
-    const Kp=2.5,Ki=0.1,Kd=0.8;
-    const pitchErr=state.targetPitch-state.pitch;
-    state.pidPitchI+=pitchErr*dt;
-    const pitchCorr=Kp*pitchErr+Ki*state.pidPitchI+Kd*(pitchErr-state.prevPitchE)/dt;
-    state.prevPitchE=pitchErr;
-
-    const rollErr=state.targetRoll-state.roll;
-    state.pidRollI+=rollErr*dt;
-    const rollCorr=Kp*rollErr+Ki*state.pidRollI+Kd*(rollErr-state.prevRollE)/dt;
-    state.prevRollE=rollErr;
-
-    const yawErr=state.targetYaw-state.yaw;
-    state.pidYawI+=yawErr*dt;
-    const yawCorr=Kp*yawErr+Ki*state.pidYawI+Kd*(yawErr-state.prevYawE)/dt;
-    state.prevYawE=yawErr;
-
-    state.dpitch+=(pitchCorr*tv*0.6)*dt;
-    state.droll+=(rollCorr*0.8)*dt;
-    state.dyaw+=(yawCorr*0.8)*dt;
-
-    // Update PID UI
-    document.getElementById('pid-pe').textContent=pitchErr.toFixed(2);
-    document.getElementById('pid-re').textContent=rollErr.toFixed(2);
-    document.getElementById('pid-ye').textContent=yawErr.toFixed(2);
-    document.getElementById('pid-pe-bar').style.width=Math.min(100,50+pitchErr*80)+'%';
-    document.getElementById('pid-re-bar').style.width=Math.min(100,50+rollErr*80)+'%';
-    document.getElementById('pid-ye-bar').style.width=Math.min(100,50+yawErr*80)+'%';
-  }
+  // Roll stabilization (keep wings level)
+  const rollCorr = -1.8*state.roll - 1.0*state.droll;
+  state.droll += rollCorr * dt;
 
   // Damping
-  state.dpitch*=0.97;state.droll*=0.97;state.dyaw*=0.97;
-  // Wind moments
-  state.dpitch+=wx*0.003;state.droll+=wz*0.002;
+  state.dpitch *= 0.94; state.droll *= 0.96; state.dyaw *= 0.96;
 
-  // Integrate
-  state.vx+=(ax+wx*0.02)*dt;state.vy+=ay*dt;state.vz+=(az+wz*0.02)*dt;
-  state.x+=state.vx*dt;state.y+=state.vy*dt;state.z+=state.vz*dt;
-  state.pitch+=state.dpitch*dt;state.roll+=state.droll*dt;state.yaw+=state.dyaw*dt;
-  if(state.y<-5){state.y=-5;state.vy=Math.max(0,state.vy);}
+  // Thrust vector — prop always pushes along its own axis
+  // In UAV local frame: prop pushes backward (negative X in UAV space = up when vertical)
+  // World thrust direction based on current UAV pitch + gimbal tilt
+  const totalPitch = state.pitch + liveGimbalPitch;
+  const totalYaw   = state.yaw   + liveGimbalYaw;
+  // Thrust points out the "nose" direction of prop disk
+  const thrX = -Math.sin(totalPitch) * Math.cos(totalYaw);
+  const thrY =  Math.cos(totalPitch);
+  const thrZ = -Math.sin(totalPitch) * Math.sin(totalYaw);
 
-  // Mode-specific target
-  if(state.mode==='vtol'&&state.time<3){state.targetPitch=Math.PI/2;}
-  else if(state.mode==='vtol'&&state.time<8){state.targetPitch=Math.PI/2*(1-(state.time-3)/5);}
-  else{state.targetPitch=0;}
+  // Airspeed for aero forces
+  const airspeed = Math.sqrt(state.vx*state.vx + state.vy*state.vy + state.vz*state.vz);
+  const airspeedH = Math.sqrt(state.vx*state.vx + state.vz*state.vz);
+  const dynamicPressure = 0.5*1.2*airspeedH*airspeedH;
+  const wingArea = 0.35;
+  const aoa = Math.atan2(state.vy, airspeedH+0.001);
+  const liftCoeff = Math.max(0, Math.min(1.8, 0.6 + aoa*1.2));
+  const lift = dynamicPressure * wingArea * liftCoeff;
+  const drag = dynamicPressure * wingArea * 0.06;
 
-  // Control authority
+  // Transition factor (0=prop dominant, 1=aero dominant)
+  const transRaw = Math.min(1, airspeedH/12);
+  state.transitionFactor += (transRaw - state.transitionFactor)*0.015;
+
+  // Wind + gusts
+  const wRad = ctrl.windDir*Math.PI/180;
+  const gustNow = ctrl.gustInt*(Math.sin(state.time*2.3)*0.5 + Math.random()*0.5);
+  const wx = (ctrl.windSpeed+gustNow)*Math.cos(wRad)*0.04;
+  const wz = (ctrl.windSpeed+gustNow)*Math.sin(wRad)*0.04;
+
+  // Net forces
+  let ax = thrustForce/ctrl.mass * thrX - drag*Math.sign(state.vx)/ctrl.mass + wx;
+  let ay = thrustForce/ctrl.mass * thrY - GRAVITY + lift/ctrl.mass;
+  let az = thrustForce/ctrl.mass * thrZ - drag*Math.sign(state.vz)/ctrl.mass + wz;
+
+  // Ground
+  if(state.y<=-5){ if(ay<0){ay=0;state.vy=0;} state.dpitch*=0.5; }
+
+  // Integrate velocity and position
+  state.vx += ax*dt; state.vy += ay*dt; state.vz += az*dt;
+  state.x  += state.vx*dt; state.y += state.vy*dt; state.z += state.vz*dt;
+  state.pitch += state.dpitch*dt;
+  state.roll  += state.droll*dt;
+  state.yaw   += state.dyaw*dt;
+  if(state.y<-5){state.y=-5; state.vy=Math.max(0,state.vy);}
+
+  // Update PID monitor UI
+  document.getElementById('pid-pe').textContent=pitchErr.toFixed(2);
+  document.getElementById('pid-re').textContent=state.roll.toFixed(2);
+  document.getElementById('pid-ye').textContent=yawErr.toFixed(2);
+  document.getElementById('pid-pe-bar').style.width=Math.min(100,50+pitchErr*40)+'%';
+  document.getElementById('pid-re-bar').style.width=Math.min(100,50+state.roll*40)+'%';
+  document.getElementById('pid-ye-bar').style.width=Math.min(100,50+yawErr*40)+'%';
+
+  // Control authority bars
   const tvPct=Math.round((1-state.transitionFactor)*100);
   const asPct=Math.round(state.transitionFactor*100);
   document.getElementById('ca-tv').textContent=tvPct+'%';
   document.getElementById('ca-as').textContent=asPct+'%';
   document.getElementById('ca-tv-bar').style.width=tvPct+'%';
   document.getElementById('ca-as-bar').style.width=asPct+'%';
+
+  // Telemetry: AoA
+  const aoDeg=(Math.atan2(state.vy,airspeedH+0.001)*180/Math.PI).toFixed(1);
+  document.getElementById('h-aoa').textContent=aoDeg;
 }
 
 // ── RENDER LOOP ──────────────────────────────────────────────────
@@ -757,12 +780,19 @@ function animate(){
   // Physics
   stepPhysics(dt);
 
-  // Position UAV in scene
+  // UAV in scene — vertical at rest (nose up), pitches over as gimbal tilts
   const wy=state.launched?state.y+5:0;
-  UAV.position.set(state.x*0.3,wy*0.3,state.z*0.3);
-  UAV.rotation.x=state.pitch;
-  UAV.rotation.z=state.roll;
-  UAV.rotation.y=state.yaw;
+  UAV.position.set(state.x*0.3, wy*0.3, state.z*0.3);
+  if(!state.launched){
+    // Standing on tail before launch: nose up = pitch = -PI/2
+    UAV.rotation.x=-Math.PI/2;
+    UAV.rotation.z=0;
+    UAV.rotation.y=0;
+  } else {
+    UAV.rotation.x=state.pitch;
+    UAV.rotation.z=state.roll;
+    UAV.rotation.y=state.yaw;
+  }
 
   // Trail
   if(state.launched&&ctrl.showTrail){
