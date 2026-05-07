@@ -72,10 +72,10 @@ input[type=range]:hover{background:rgba(255,255,255,0.25);}
 .force-legend{display:flex;flex-direction:column;gap:6px;}
 .force-item{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.1em;color:rgba(255,255,255,0.5);}
 .force-line{width:20px;height:1px;}
-.force-line.thrust{background:#ffffff;}
-.force-line.gravity{background:rgba(255,255,255,0.5);}
-.force-line.wind{background:rgba(255,255,255,0.3);border-top:1px dashed rgba(255,255,255,0.4);}
-.force-line.vel{background:rgba(255,255,255,0.6);border-top:1px dotted rgba(255,255,255,0.7);}
+.force-line.thrust{background:#00ffff;box-shadow:0 0 4px #00ffff;}
+.force-line.gravity{background:#ff3333;}
+.force-line.wind{background:#ffee00;}
+.force-line.vel{background:#00ff88;}
 
 /* SCAN LINE FX */
 #scanlines{position:fixed;inset:0;z-index:5;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px);}
@@ -192,10 +192,10 @@ input[type=range]:hover{background:rgba(255,255,255,0.25);}
         <div class="toggle" id="tog-trail"></div>
       </div>
       <div style="margin-top:10px;" class="force-legend">
-        <div class="force-item"><div class="force-line thrust"></div>THRUST VECTOR</div>
-        <div class="force-item"><div class="force-line gravity"></div>GRAVITY</div>
-        <div class="force-item"><div class="force-line wind"></div>WIND</div>
-        <div class="force-item"><div class="force-line vel"></div>VELOCITY</div>
+        <div class="force-item"><div class="force-line thrust"></div><span style="color:#00ffff">THRUST VECTOR</span></div>
+        <div class="force-item"><div class="force-line gravity"></div><span style="color:#ff3333">GRAVITY</span></div>
+        <div class="force-item"><div class="force-line wind"></div><span style="color:#ffee00">WIND</span></div>
+        <div class="force-item"><div class="force-line vel"></div><span style="color:#00ff88">VELOCITY</span></div>
       </div>
     </div>
   </div>
@@ -303,10 +303,10 @@ const M0=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:1.
 const M1=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.7});
 const M2=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.28});
 const M3=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.10});
-const THRUST_MAT=new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:0.9});
-const GRAV_MAT=new THREE.LineBasicMaterial({color:0xaaaaaa,transparent:true,opacity:0.6});
-const WIND_MAT=new THREE.LineBasicMaterial({color:0x888888,transparent:true,opacity:0.5});
-const VEL_MAT=new THREE.LineBasicMaterial({color:0xcccccc,transparent:true,opacity:0.7});
+const THRUST_MAT=new THREE.LineBasicMaterial({color:0x00ffff,transparent:true,opacity:1.0,linewidth:3});
+const GRAV_MAT=new THREE.LineBasicMaterial({color:0xff3333,transparent:true,opacity:0.95});
+const WIND_MAT=new THREE.LineBasicMaterial({color:0xffee00,transparent:true,opacity:0.95});
+const VEL_MAT=new THREE.LineBasicMaterial({color:0x00ff88,transparent:true,opacity:0.95});
 
 function mkLine(pts,mat){
   const g=new THREE.BufferGeometry();
@@ -443,19 +443,34 @@ sG.setAttribute('position',new THREE.BufferAttribute(sP,3));
 scene.add(new THREE.Points(sG,new THREE.PointsMaterial({color:0xffffff,size:0.04,transparent:true,opacity:0.22})));
 
 // ── FORCE ARROWS ────────────────────────────────────────────────
-function makeArrow(mat,len){
-  const pts=[[0,0,0],[0,len,0]];
+function makeArrow(mat,len,headSize){
+  const hs=headSize||0.18;
   const arrowG=new THREE.Group();
-  arrowG.add(mkLine(pts,mat));
-  const headPts=[[0,len,0],[-0.04,len-0.12,0],[0.04,len-0.12,0],[0,len,0]];
-  arrowG.add(mkLine(headPts,mat));
+  arrowG.add(mkLine([[0,0,0],[0,len,0]],mat));
+  arrowG.add(mkLine([[0,len,0],[-hs*0.6,len-hs,0],[hs*0.6,len-hs,0],[0,len,0]],mat));
+  arrowG.add(mkLine([[0,len,0],[0,len-hs,-hs*0.6],[0,len-hs,hs*0.6],[0,len,0]],mat));
+  return arrowG;
+}
+function makeThrustArrow(mat){
+  const arrowG=new THREE.Group();
+  // thick shaft with double line for visibility
+  arrowG.add(mkLine([[0,0,0],[0,2.5,0]],mat));
+  arrowG.add(mkLine([[0.04,0,0],[0.04,2.5,0]],mat));
+  arrowG.add(mkLine([[-0.04,0,0],[-0.04,2.5,0]],mat));
+  // big arrowhead
+  arrowG.add(mkLine([[0,2.5,0],[-0.28,2.1,0],[0.28,2.1,0],[0,2.5,0]],mat));
+  arrowG.add(mkLine([[0,2.5,0],[0,2.1,-0.28],[0,2.1,0.28],[0,2.5,0]],mat));
+  // second smaller arrowhead for extra pop
+  arrowG.add(mkLine([[0,2.1,0],[-0.16,1.8,0],[0.16,1.8,0],[0,2.1,0]],mat));
+  // base ring at prop
+  arrowG.add(mkEllipse(0,0,0,0.08,0.08,'YZ',8,mat));
   return arrowG;
 }
 
-const thrustArrow=makeArrow(THRUST_MAT,1.5);
-const gravArrow=makeArrow(GRAV_MAT,1.0);
-const windArrow=makeArrow(WIND_MAT,0.8);
-const velArrow=makeArrow(VEL_MAT,1.2);
+const thrustArrow=makeThrustArrow(THRUST_MAT);
+const gravArrow=makeArrow(GRAV_MAT,1.2,0.22);
+const windArrow=makeArrow(WIND_MAT,1.0,0.20);
+const velArrow=makeArrow(VEL_MAT,1.4,0.20);
 const forceGroup=new THREE.Group();
 forceGroup.add(thrustArrow);forceGroup.add(gravArrow);forceGroup.add(windArrow);forceGroup.add(velArrow);
 scene.add(forceGroup);
@@ -465,7 +480,7 @@ const NPART=120;
 const partPositions=new Float32Array(NPART*3);
 const partGeom=new THREE.BufferGeometry();
 partGeom.setAttribute('position',new THREE.BufferAttribute(partPositions,3));
-const partMat=new THREE.PointsMaterial({color:0xffffff,size:0.04,transparent:true,opacity:0.5});
+const partMat=new THREE.PointsMaterial({color:0x00ffff,size:0.055,transparent:true,opacity:0.7});
 const particles=new THREE.Points(partGeom,partMat);
 scene.add(particles);
 const partData=[];
@@ -722,24 +737,35 @@ function animate(){
   forceGroup.visible=ctrl.showForces;
 
   if(ctrl.showForces){
-    // Thrust direction
+    // Thrust — auto-scales with thrust level, rotates with gimbal in world space
     const gp=ctrl.gimbalPitch*Math.PI/180,gy=ctrl.gimbalYaw*Math.PI/180;
+    const thrustScale=0.5+ctrl.thrustPct/100*2.5; // 0.5 at 0% → 3.0 at 100%
     thrustArrow.rotation.set(gp,gy,0);
-    thrustArrow.scale.setScalar(ctrl.thrustPct/60);
+    thrustArrow.scale.setScalar(thrustScale);
+    THRUST_MAT.opacity=0.7+ctrl.thrustPct/100*0.3;
 
-    // Gravity always down (world)
-    gravArrow.rotation.set(0,0,Math.PI);
-    gravArrow.rotation.copy(new THREE.Euler(0,0,Math.PI));
+    // Gravity — always points down in world (counter UAV rotation)
+    gravArrow.rotation.set(-state.pitch,-state.yaw,-state.roll);
+    gravArrow.rotation.x+=Math.PI; // flip to point down
+    const gravScale=0.6+ctrl.mass/8*0.4;
+    gravArrow.scale.setScalar(gravScale);
 
-    // Wind
+    // Wind — points in wind direction, horizontal, world space
     const wRad=ctrl.windDir*Math.PI/180;
-    windArrow.rotation.set(0,wRad,Math.PI/2);
-    windArrow.scale.setScalar(ctrl.windSpeed/10);
+    windArrow.rotation.set(-state.pitch+Math.PI/2,wRad,-state.roll);
+    const windScale=0.3+ctrl.windSpeed/15;
+    windArrow.scale.setScalar(windScale);
 
-    // Velocity
+    // Velocity — points in direction of travel, scales with speed
     if(state.launched){
       const spd=Math.sqrt(state.vx*state.vx+state.vy*state.vy+state.vz*state.vz);
-      velArrow.scale.setScalar(Math.min(2,spd*0.2));
+      const velScale=Math.min(2.5,spd*0.25);
+      velArrow.scale.setScalar(velScale);
+      if(spd>0.1){
+        const velPitch=Math.atan2(state.vy,Math.sqrt(state.vx*state.vx+state.vz*state.vz));
+        const velYaw=Math.atan2(state.vz,state.vx);
+        velArrow.rotation.set(-state.pitch+velPitch,-state.yaw+velYaw,-state.roll);
+      }
     }
   }
 
