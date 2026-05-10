@@ -749,30 +749,30 @@ function stepPhysics(dt){
   // ── AUTO-LAND SEQUENCE ─────────────────────────────────────────
   if(state.landing){
     const alt=state.y+5;
+    const pitchDeg=state.pitch*180/Math.PI; // 0=vertical, 90=horiz
 
-    // Step 1: slide gimbal pitch to 0 — body pitches back to vertical via torque physics
-    ctrl.gimbalPitch+=(0-ctrl.gimbalPitch)*0.04;
-    ctrl.gimbalYaw  +=(0-ctrl.gimbalYaw  )*0.04;
-    document.getElementById('sl-gpitch').value=ctrl.gimbalPitch;
-    document.getElementById('sl-gyaw').value=ctrl.gimbalYaw;
-    document.getElementById('lbl-gpitch').textContent=ctrl.gimbalPitch.toFixed(0)+'°';
-    document.getElementById('lbl-gyaw').textContent=ctrl.gimbalYaw.toFixed(0)+'°';
+    // Step 1: push gimbal negative = torques body back toward vertical (same physics as flight)
+    const gimbalTarget = pitchDeg > 5 ? -Math.min(70, pitchDeg) : 0;
+    ctrl.gimbalPitch += (gimbalTarget - ctrl.gimbalPitch) * 0.05;
+    document.getElementById('sl-gpitch').value = ctrl.gimbalPitch;
+    document.getElementById('lbl-gpitch').textContent = ctrl.gimbalPitch.toFixed(0)+'°';
 
-    // Step 2: only once gimbal is nearly 0, slowly reduce thrust to descend
-    if(Math.abs(ctrl.gimbalPitch)<5){
-      const targetThrust=Math.max(0, alt*9.5);
-      ctrl.thrustPct+=(targetThrust-ctrl.thrustPct)*0.03;
-      document.getElementById('sl-thrust').value=ctrl.thrustPct;
-      document.getElementById('lbl-thrust').textContent=Math.round(ctrl.thrustPct)+'%';
+    // Step 2: body is back vertical — zero gimbal, reduce thrust to descend
+    if(pitchDeg < 8){
+      ctrl.gimbalPitch *= 0.9;
+      const targetThrust = Math.max(0, alt * 10);
+      ctrl.thrustPct += (targetThrust - ctrl.thrustPct) * 0.04;
+      document.getElementById('sl-thrust').value = ctrl.thrustPct;
+      document.getElementById('lbl-thrust').textContent = Math.round(ctrl.thrustPct)+'%';
     }
 
-    // Step 3: touchdown — spin down prop
-    if(state.y<=-4.85){
-      ctrl.thrustPct+=(0-ctrl.thrustPct)*0.1;
-      document.getElementById('sl-thrust').value=ctrl.thrustPct;
-      document.getElementById('lbl-thrust').textContent=Math.round(ctrl.thrustPct)+'%';
+    // Step 3: touchdown — spin down
+    if(state.y <= -4.85){
+      ctrl.thrustPct += (0 - ctrl.thrustPct) * 0.12;
+      document.getElementById('sl-thrust').value = ctrl.thrustPct;
+      document.getElementById('lbl-thrust').textContent = Math.round(ctrl.thrustPct)+'%';
       state.vy=0; state.vx*=0.88; state.vz*=0.88;
-      if(ctrl.thrustPct<1){
+      if(ctrl.thrustPct < 1){
         state.landing=false; state.landed=true; state.launched=false;
         state.vy=0; state.vx=0; state.vz=0; state.y=-5;
         document.getElementById('sys-status').textContent='LANDED';
@@ -881,8 +881,10 @@ function animate(){
   const dt=Math.min((now-lastTime)/1000,0.033);
   lastTime=now;simT+=dt;
 
-  // Prop spin
-  propG.rotation.x+=0.08+ctrl.thrustPct*0.006;
+  // Prop spin — only when launched or landing
+  if(state.launched||state.landing){
+    propG.rotation.x+=0.08+ctrl.thrustPct*0.006;
+  }
 
   // Gimbal auto-trim: slowly return to 0 after body has rotated
   // Only during flight, not during landing (landing has its own gimbal logic)
