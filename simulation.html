@@ -473,21 +473,18 @@ UAV.add(gimbalYawG);
 scene.add(UAV);
 
 // ── GROUND ──────────────────────────────────────────────────────
-// Solid ground plane
-const groundGeo=new THREE.PlaneGeometry(200,200);
+const groundGeo=new THREE.PlaneGeometry(600,600);
 const groundMat=new THREE.MeshBasicMaterial({color:0x0d0d0d,side:THREE.DoubleSide});
 const groundPlane=new THREE.Mesh(groundGeo,groundMat);
 groundPlane.rotation.x=Math.PI/2;
 groundPlane.position.y=-5;
 scene.add(groundPlane);
 
-// Bright grid on top of ground
-const gridHelper=new THREE.GridHelper(120,60,0x2a2a2a,0x1a1a1a);
+const gridHelper=new THREE.GridHelper(600,150,0x252525,0x181818);
 gridHelper.position.y=-4.98;
 scene.add(gridHelper);
 
-// Bright border grid lines
-const gridBright=new THREE.GridHelper(120,12,0x404040,0x222222);
+const gridBright=new THREE.GridHelper(600,30,0x383838,0x202020);
 gridBright.position.y=-4.97;
 scene.add(gridBright);
 
@@ -710,32 +707,33 @@ function stepPhysics(dt){
 
   // ── AUTO-LAND SEQUENCE ─────────────────────────────────────────
   if(state.landing){
-    const alt=state.y+5;
-    // Auto-zero the gimbal so prop points straight up → body pitches back to vertical
-    ctrl.gimbalPitch+=(0-ctrl.gimbalPitch)*0.035;
-    ctrl.gimbalYaw  +=(0-ctrl.gimbalYaw  )*0.035;
+    const alt=state.y+5; // altitude above ground
+
+    // PHASE 1: Slam gimbal back to 0 — body pitches back to vertical
+    ctrl.gimbalPitch+=(0-ctrl.gimbalPitch)*0.09;
+    ctrl.gimbalYaw  +=(0-ctrl.gimbalYaw  )*0.09;
     document.getElementById('sl-gpitch').value=ctrl.gimbalPitch;
     document.getElementById('sl-gyaw').value=ctrl.gimbalYaw;
     document.getElementById('lbl-gpitch').textContent=ctrl.gimbalPitch.toFixed(0)+'°';
     document.getElementById('lbl-gyaw').textContent=ctrl.gimbalYaw.toFixed(0)+'°';
-    // How vertical are we? state.pitch=0 is fully vertical
-    const isVertical=Math.abs(state.pitch)<0.3; // 0=vertical
-    if(isVertical && alt>0.5){
-      // Reduce thrust for gentle descent — just enough to sink slowly
-      const targetThrust=Math.max(32, 52-alt*1.5);
-      ctrl.thrustPct+=(targetThrust-ctrl.thrustPct)*0.04;
+
+    // PHASE 2: Once gimbal near zero, reduce thrust → descend
+    // Start reducing thrust proportional to how vertical we are
+    const vertFactor=1-Math.min(1,Math.abs(state.pitch)/(Math.PI/2));// 1=vertical,0=horiz
+    const targetThrust=Math.max(0, 58*vertFactor - alt*0.5);
+    ctrl.thrustPct+=(targetThrust-ctrl.thrustPct)*0.05;
+    document.getElementById('sl-thrust').value=ctrl.thrustPct;
+    document.getElementById('lbl-thrust').textContent=Math.round(ctrl.thrustPct)+'%';
+
+    // PHASE 3: Touchdown — kill thrust
+    if(state.y<=-4.85){
+      ctrl.thrustPct+=(0-ctrl.thrustPct)*0.12;
       document.getElementById('sl-thrust').value=ctrl.thrustPct;
       document.getElementById('lbl-thrust').textContent=Math.round(ctrl.thrustPct)+'%';
-    }
-    // Touchdown
-    if(state.y<=-4.9){
-      // Spin prop down
-      ctrl.thrustPct+=(0-ctrl.thrustPct)*0.08;
-      document.getElementById('sl-thrust').value=ctrl.thrustPct;
-      document.getElementById('lbl-thrust').textContent=Math.round(ctrl.thrustPct)+'%';
-      if(ctrl.thrustPct<2){
+      state.vy=0; state.vx*=0.85; state.vz*=0.85;
+      if(ctrl.thrustPct<1){
         state.landing=false;state.landed=true;state.launched=false;
-        state.vy=0;state.vx*=0.5;state.vz*=0.5;state.y=-5;
+        state.vy=0;state.vx=0;state.vz=0;state.y=-5;state.pitch=0;
         document.getElementById('sys-status').textContent='LANDED';
         document.getElementById('launch-btn').textContent='▶ LAUNCH';
         document.getElementById('launch-btn').classList.remove('active');
@@ -976,8 +974,13 @@ function animate(){
       camera.lookAt(target);break;}
   }
 
-  // Grid stays fixed at ground — no following
-  // (ground plane is static, only update launch pad visibility)
+  // Ground follows UAV in XZ — snap to grid cell so lines don't slide
+  const snap=4;
+  const gx=Math.round(UAV.position.x/snap)*snap;
+  const gz=Math.round(UAV.position.z/snap)*snap;
+  groundPlane.position.x=gx; groundPlane.position.z=gz;
+  gridHelper.position.x=gx;  gridHelper.position.z=gz;
+  gridBright.position.x=gx;  gridBright.position.z=gz;
 
   // Update UI
   const alt=(state.y+5).toFixed(1);
