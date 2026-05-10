@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AURA SIMULATOR — VTOL Demo</title>
+<title>PHANTOM SIMULATOR — VTOL Demo</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -97,7 +97,7 @@ input[type=range]:hover{background:rgba(255,255,255,0.25);}
 <body>
 
 <div id="splash">
-  <div class="splash-logo">AURA</div>
+  <div class="splash-logo">PHANTOM</div>
   <div class="splash-sub">VTOL SIMULATOR — DEMO</div>
   <div class="splash-bar"><div class="splash-fill" id="sf"></div></div>
   <div class="splash-status" id="ss">INITIALIZING PHYSICS ENGINE</div>
@@ -109,7 +109,7 @@ input[type=range]:hover{background:rgba(255,255,255,0.25);}
 
 <div id="ui">
   <div id="topbar">
-    <div class="brand">AURA <span>// VTOL SIM v1.0</span></div>
+    <div class="brand">PHANTOM <span>// VTOL SIM v1.0</span></div>
     <div class="topbar-status">
       <div class="status-dot" id="sys-dot"></div>
       <span class="status-label">SYS&nbsp;</span><span class="status-val" id="sys-status">NOMINAL</span>
@@ -709,8 +709,7 @@ function stepPhysics(dt){
   if(state.landing){
     const alt=state.y+5;
 
-    // Just drive gimbal back to 0 — the torque physics does the rest naturally
-    // Body pitches back to vertical exactly like when pilot moves the slider
+    // Step 1: slide gimbal pitch to 0 — body pitches back to vertical via torque physics
     ctrl.gimbalPitch+=(0-ctrl.gimbalPitch)*0.04;
     ctrl.gimbalYaw  +=(0-ctrl.gimbalYaw  )*0.04;
     document.getElementById('sl-gpitch').value=ctrl.gimbalPitch;
@@ -718,22 +717,23 @@ function stepPhysics(dt){
     document.getElementById('lbl-gpitch').textContent=ctrl.gimbalPitch.toFixed(0)+'°';
     document.getElementById('lbl-gyaw').textContent=ctrl.gimbalYaw.toFixed(0)+'°';
 
-    // Once body is back vertical (pitch~0), reduce thrust to descend
-    const verticalness = 1 - Math.min(1, Math.abs(state.pitch) / (Math.PI/2));
-    const targetThrust = 55 * verticalness * Math.min(1, alt/3);
-    ctrl.thrustPct += (targetThrust - ctrl.thrustPct) * 0.03;
-    document.getElementById('sl-thrust').value=ctrl.thrustPct;
-    document.getElementById('lbl-thrust').textContent=Math.round(ctrl.thrustPct)+'%';
+    // Step 2: only once gimbal is nearly 0, slowly reduce thrust to descend
+    if(Math.abs(ctrl.gimbalPitch)<5){
+      const targetThrust=Math.max(0, alt*9.5);
+      ctrl.thrustPct+=(targetThrust-ctrl.thrustPct)*0.03;
+      document.getElementById('sl-thrust').value=ctrl.thrustPct;
+      document.getElementById('lbl-thrust').textContent=Math.round(ctrl.thrustPct)+'%';
+    }
 
-    // Touchdown
+    // Step 3: touchdown — spin down prop
     if(state.y<=-4.85){
       ctrl.thrustPct+=(0-ctrl.thrustPct)*0.1;
       document.getElementById('sl-thrust').value=ctrl.thrustPct;
       document.getElementById('lbl-thrust').textContent=Math.round(ctrl.thrustPct)+'%';
       state.vy=0; state.vx*=0.88; state.vz*=0.88;
       if(ctrl.thrustPct<1){
-        state.landing=false;state.landed=true;state.launched=false;
-        state.vy=0;state.vx=0;state.vz=0;state.y=-5;
+        state.landing=false; state.landed=true; state.launched=false;
+        state.vy=0; state.vx=0; state.vz=0; state.y=-5;
         document.getElementById('sys-status').textContent='LANDED';
         document.getElementById('launch-btn').textContent='▶ LAUNCH';
         document.getElementById('launch-btn').classList.remove('active');
@@ -747,7 +747,7 @@ function stepPhysics(dt){
   }
 
   const thrust = ctrl.thrustPct / 100;
-  const thrustForce = thrust * ctrl.mass * GRAVITY * 2.0;
+  const thrustForce = thrust * ctrl.mass * GRAVITY * 2.8;
 
   // Read gimbal directly from ctrl — not from Three.js groups (those are local UAV space)
   const gPitch = ctrl.gimbalPitch * Math.PI / 180;
@@ -778,15 +778,12 @@ function stepPhysics(dt){
   if(state.pitch < -0.1) { state.pitch = -0.1; state.dpitch = Math.max(0, state.dpitch); }
 
   // ── THRUST VECTOR IN WORLD SPACE ──────────────────────────────
-  // Body pitch: 0 = vertical (nose up), PI/2 = horizontal (nose forward)
-  // Prop points along body axis + gimbal offset
+  // pitch=0 → vertical (thrust UP), pitch=PI/2 → horizontal (thrust FORWARD along X)
   const worldPitch = state.pitch + gPitch;
   const worldYaw   = state.yaw   + gYaw;
-  // When pitch=0 (vertical), thrust is straight up (Y). 
-  // As pitch increases toward PI/2, thrust tilts forward (X).
-  const thrY =  Math.cos(worldPitch) * Math.cos(gPitch);
-  const thrX =  Math.sin(worldPitch);
-  const thrZ =  Math.sin(worldYaw) * Math.cos(worldPitch);
+  const thrY = Math.cos(worldPitch);           // up component: 1 when vertical, 0 when horizontal
+  const thrX = Math.sin(worldPitch) * Math.cos(worldYaw); // forward component
+  const thrZ = Math.sin(worldPitch) * Math.sin(worldYaw); // sideways component
 
   // ── TRANSLATION ────────────────────────────────────────────────
   const airspeedH = Math.sqrt(state.vx*state.vx + state.vz*state.vz);
@@ -957,7 +954,6 @@ function animate(){
     partMat.opacity=0.5+ctrl.thrustPct*0.004;
   }else{particles.visible=false;}
 
-  // Camera
   const target=UAV.position.clone();
   switch(ctrl.camMode){
     case 'orbit':{
@@ -965,7 +961,13 @@ function animate(){
       const cy=target.y+Math.sin(orbitPhi)*orbitDist+1;
       const cz=target.z+Math.cos(orbitTheta)*Math.cos(orbitPhi)*orbitDist;
       camera.position.set(cx,cy,cz);camera.lookAt(target);break;}
-    case 'chase':{camera.position.set(target.x-6,target.y+1,target.z);camera.lookAt(target);break;}
+    case 'chase':{
+      // Behind the UAV based on yaw + pitch so it always follows from the rear
+      const behindX=-Math.sin(state.pitch)*Math.cos(state.yaw)*8;
+      const behindY= Math.cos(state.pitch)*4+2;
+      const behindZ=-Math.sin(state.pitch)*Math.sin(state.yaw)*8;
+      camera.position.set(target.x+behindX,target.y+behindY,target.z+behindZ);
+      camera.lookAt(target);break;}
     case 'side':{camera.position.set(target.x,target.y+1,target.z+10);camera.lookAt(target);break;}
     case 'top':{camera.position.set(target.x,target.y+12,target.z);camera.lookAt(target);break;}
     case 'rear':{
