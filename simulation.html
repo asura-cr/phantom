@@ -514,6 +514,41 @@ for(let d=-40;d<=40;d+=20){
   scene.add(mkLine([[-60,-4.96,d],[60,-4.96,d]],new THREE.LineBasicMaterial({color:0x333333,transparent:true,opacity:0.4})));
 }
 
+// ── MOUNTAINS ───────────────────────────────────────────────────
+function makeMountain(cx,cz,height,radius,sides,mat){
+  const g=new THREE.Group();
+  const peak=[cx,(-5+height),cz];
+  // Sides
+  for(let i=0;i<sides;i++){
+    const a0=i/sides*Math.PI*2, a1=(i+1)/sides*Math.PI*2;
+    const x0=cx+Math.cos(a0)*radius, z0=cz+Math.sin(a0)*radius;
+    const x1=cx+Math.cos(a1)*radius, z1=cz+Math.sin(a1)*radius;
+    g.add(mkLine([peak,[x0,-5,z0],[x1,-5,z1],peak],mat));
+  }
+  // Base ring
+  const base=[];
+  for(let i=0;i<=sides;i++){const a=i/sides*Math.PI*2;base.push([cx+Math.cos(a)*radius,-5,cz+Math.sin(a)*radius]);}
+  g.add(mkLine(base,mat));
+  // Contour lines at mid height
+  const mid=[];
+  for(let i=0;i<=sides;i++){const a=i/sides*Math.PI*2;mid.push([cx+Math.cos(a)*radius*0.5,-5+height*0.5,cz+Math.sin(a)*radius*0.5]);}
+  g.add(mkLine(mid,mat));
+  return g;
+}
+const mtnMat=new THREE.LineBasicMaterial({color:0x333333,transparent:true,opacity:0.7});
+const mtnMat2=new THREE.LineBasicMaterial({color:0x222222,transparent:true,opacity:0.5});
+// Ring of mountains at various distances and sizes
+const mountains=[
+  [60,60,22,18,8],[-70,50,18,14,7],[80,-55,25,20,9],
+  [-65,-70,20,16,8],[30,90,15,12,6],[-90,20,28,22,10],
+  [50,-80,16,13,7],[-40,75,12,10,6],[100,10,30,24,10],
+  [-100,-30,24,18,8],[70,40,14,11,6],[-55,90,19,15,7],
+  [90,-80,22,17,8],[-80,60,16,13,6],[40,-60,12,10,5],
+];
+mountains.forEach(([cx,cz,h,r,s],i)=>{
+  scene.add(makeMountain(cx,cz,h,r,s,i%3===0?mtnMat:mtnMat2));
+});
+
 // ── STARS ───────────────────────────────────────────────────────
 const sG=new THREE.BufferGeometry();
 const sP=new Float32Array(1500*3);
@@ -666,8 +701,14 @@ function resetFlight(){
 }
 function launchFlight(){
   state.launched=true;state.landing=false;state.landed=false;state.startTime=performance.now();
-  state.pitch=0; // 0=vertical nose-up, PI/2=horizontal
+  state.pitch=0;
   state.vy=0.3;
+  // Init all particles at UAV position to prevent line explosion
+  for(let i=0;i<NPART;i++){
+    partPositions[i*3]=0; partPositions[i*3+1]=0; partPositions[i*3+2]=0;
+    partData[i].life=Math.random();
+  }
+  partGeom.attributes.position.needsUpdate=true;
   document.getElementById('land-btn').disabled=false;
   document.getElementById('land-btn').style.borderColor='rgba(255,100,100,0.8)';
   document.getElementById('land-btn').style.color='rgba(255,150,150,1)';
@@ -840,31 +881,22 @@ function animate(){
   const dt=Math.min((now-lastTime)/1000,0.033);
   lastTime=now;simT+=dt;
 
-  // Prop spin — faster with thrust
+  // Prop spin
   propG.rotation.x+=0.08+ctrl.thrustPct*0.006;
 
-  // Gimbal auto-return: as the body rotates toward the gimbal-commanded angle,
-  // the gimbal returns to 0 proportionally — it led the body, body caught up, gimbal centers
-  // This mirrors real V-BAT: pilot deflects gimbal, body follows, gimbal auto-trims to neutral
-  if(state.launched || state.landing){
-    const pitchBodyDeg = state.pitch * 180/Math.PI; // 0=vertical, 90=horizontal
-    const gimbalTarget = ctrl.gimbalPitch;
-    // How much of the commanded rotation has the body completed?
-    // When body has fully rotated to match gimbal intent, return gimbal to 0
-    const completion = Math.abs(gimbalTarget) > 1
-      ? Math.min(1, pitchBodyDeg / Math.max(1, Math.abs(gimbalTarget) * (90/90)))
-      : 0;
-    // Lerp gimbal back toward 0 as body catches up
-    ctrl.gimbalPitch *= (1 - completion * 0.04);
-    if(Math.abs(ctrl.gimbalPitch) < 0.5) ctrl.gimbalPitch = 0;
-    document.getElementById('sl-gpitch').value = ctrl.gimbalPitch;
-    document.getElementById('lbl-gpitch').textContent = ctrl.gimbalPitch.toFixed(0)+'°';
+  // Gimbal auto-trim: slowly return to 0 after body has rotated
+  // Only during flight, not during landing (landing has its own gimbal logic)
+  if(state.launched && !state.landing){
+    ctrl.gimbalPitch *= 0.988; // very slow decay — body keeps rotating, gimbal drifts home
+    if(Math.abs(ctrl.gimbalPitch)<0.5) ctrl.gimbalPitch=0;
+    document.getElementById('sl-gpitch').value=ctrl.gimbalPitch;
+    document.getElementById('lbl-gpitch').textContent=ctrl.gimbalPitch.toFixed(0)+'°';
   }
 
-  const gpRad = ctrl.gimbalPitch * Math.PI/180;
-  const gyRad = ctrl.gimbalYaw   * Math.PI/180;
-  gimbalPitchG.rotation.z += (gpRad - gimbalPitchG.rotation.z) * 0.22;
-  gimbalYawG.rotation.y   += (gyRad - gimbalYawG.rotation.y)   * 0.22;
+  const gpRad=ctrl.gimbalPitch*Math.PI/180;
+  const gyRad=ctrl.gimbalYaw*Math.PI/180;
+  gimbalPitchG.rotation.z+=(gpRad-gimbalPitchG.rotation.z)*0.22;
+  gimbalYawG.rotation.y  +=(gyRad-gimbalYawG.rotation.y  )*0.22;
   M2.opacity=0.22+Math.sin(simT*1.1)*0.05;
   M3.opacity=0.08+Math.sin(simT*0.7)*0.03;
 
