@@ -214,7 +214,8 @@ input[type=range]:hover{background:rgba(255,255,255,0.25);}
     <div class="hud-item"><div class="hud-label">PITCH</div><div class="hud-val"><span id="h-pitch">0</span>°</div></div>
     <div class="hud-item"><div class="hud-label">AoA</div><div class="hud-val"><span id="h-aoa">0</span>°</div></div>
     <div class="sep"></div>
-    <button class="launch-btn" id="launch-btn">▶ LAUNCH VTOL</button>
+    <button class="launch-btn" id="launch-btn">▶ LAUNCH</button>
+    <button class="launch-btn" id="land-btn" style="border-color:rgba(255,100,100,0.4);color:rgba(255,150,150,0.7);margin-left:8px;" disabled>▼ LAND</button>
   </div>
 
   <div id="right">
@@ -471,10 +472,50 @@ gimbalYawG.add(gimbalPitchG);
 UAV.add(gimbalYawG);
 scene.add(UAV);
 
-// ── GROUND GRID ─────────────────────────────────────────────────
-const gridHelper=new THREE.GridHelper(80,80,0x111111,0x0a0a0a);
-gridHelper.position.y=-5;
+// ── GROUND ──────────────────────────────────────────────────────
+// Solid ground plane
+const groundGeo=new THREE.PlaneGeometry(200,200);
+const groundMat=new THREE.MeshBasicMaterial({color:0x0d0d0d,side:THREE.DoubleSide});
+const groundPlane=new THREE.Mesh(groundGeo,groundMat);
+groundPlane.rotation.x=Math.PI/2;
+groundPlane.position.y=-5;
+scene.add(groundPlane);
+
+// Bright grid on top of ground
+const gridHelper=new THREE.GridHelper(120,60,0x2a2a2a,0x1a1a1a);
+gridHelper.position.y=-4.98;
 scene.add(gridHelper);
+
+// Bright border grid lines
+const gridBright=new THREE.GridHelper(120,12,0x404040,0x222222);
+gridBright.position.y=-4.97;
+scene.add(gridBright);
+
+// Launch pad — bright circle on ground
+function mkGroundCircle(r,segs,mat){
+  const pts=[];
+  for(let i=0;i<=segs;i++){const a=i/segs*Math.PI*2;pts.push([Math.cos(a)*r,-4.96,Math.sin(a)*r]);}
+  return mkLine(pts,mat);
+}
+const padMat=new THREE.LineBasicMaterial({color:0x00ffff,transparent:true,opacity:0.6});
+const padMat2=new THREE.LineBasicMaterial({color:0x00ffff,transparent:true,opacity:0.25});
+scene.add(mkGroundCircle(1.2,40,padMat));
+scene.add(mkGroundCircle(2.5,40,padMat2));
+scene.add(mkGroundCircle(0.3,20,padMat));
+// Crosshair on pad
+scene.add(mkLine([[-1.2,-4.96,0],[1.2,-4.96,0]],padMat2));
+scene.add(mkLine([[0,-4.96,-1.2],[0,-4.96,1.2]],padMat2));
+// Cardinal marks
+for(let i=0;i<8;i++){
+  const a=i/8*Math.PI*2;
+  scene.add(mkLine([[Math.cos(a)*1.1,-4.96,Math.sin(a)*1.1],[Math.cos(a)*1.4,-4.96,Math.sin(a)*1.4]],padMat));
+}
+
+// Horizon reference lines (faint)
+for(let d=-40;d<=40;d+=20){
+  scene.add(mkLine([[d,-4.96,-60],[d,-4.96,60]],new THREE.LineBasicMaterial({color:0x333333,transparent:true,opacity:0.4})));
+  scene.add(mkLine([[-60,-4.96,d],[60,-4.96,d]],new THREE.LineBasicMaterial({color:0x333333,transparent:true,opacity:0.4})));
+}
 
 // ── STARS ───────────────────────────────────────────────────────
 const sG=new THREE.BufferGeometry();
@@ -543,7 +584,7 @@ const state={
   vx:0,vy:0,vz:0,
   pitch:0,roll:0,yaw:0,
   dpitch:0,droll:0,dyaw:0,
-  launched:false,mode:'vtol',
+  launched:false,landing:false,landed:false,mode:'vtol',
   time:0,startTime:null,
   pidPitchI:0,pidRollI:0,pidYawI:0,
   prevPitchE:0,prevRollE:0,prevYawE:0,
@@ -615,7 +656,7 @@ document.getElementById('launch-btn').addEventListener('click',()=>{
 function resetFlight(){
   state.x=0;state.y=-5;state.z=0;state.vx=0;state.vy=0;state.vz=0;
   state.pitch=0;state.roll=0;state.yaw=0;state.dpitch=0;state.droll=0;state.dyaw=0;
-  state.launched=false;state.time=0;state.startTime=null;
+  state.launched=false;state.landing=false;state.landed=false;state.time=0;state.startTime=null;
   state.pidPitchI=0;state.pidRollI=0;state.pidYawI=0;
   state.transitionFactor=0;
   trailIdx=0;trailCount=0;
@@ -627,15 +668,24 @@ function resetFlight(){
   document.getElementById('lbl-gyaw').textContent='0°';
 }
 function launchFlight(){
-  state.launched=true;state.startTime=performance.now();
-  // Tail-sitter: UAV stands vertical, nose UP, prop at top pointing straight up
-  // In our coordinate: pitch = -PI/2 means nose pointing up (prop fires upward)
-  state.pitch=-Math.PI/2;
-  state.vy=0.5; // small upward nudge
+  state.launched=true;state.landing=false;state.landed=false;state.startTime=performance.now();
+  state.pitch=0; // 0=vertical nose-up, PI/2=horizontal
+  state.vy=0.3;
+  document.getElementById('land-btn').disabled=false;
+  document.getElementById('land-btn').style.borderColor='rgba(255,100,100,0.8)';
+  document.getElementById('land-btn').style.color='rgba(255,150,150,1)';
 }
 
+document.getElementById('land-btn').addEventListener('click',()=>{
+  if(!state.launched||state.landing) return;
+  state.landing=true;
+  document.getElementById('sys-status').textContent='LANDING SEQ';
+  document.getElementById('land-btn').textContent='↓ DESCENDING';
+  document.getElementById('land-btn').disabled=true;
+});
+
 // ── ORBIT CAMERA STATE ───────────────────────────────────────────
-let orbitTheta=0.5,orbitPhi=0.3,orbitDist=12;
+let orbitTheta=0.6,orbitPhi=0.22,orbitDist=14;
 let isDragging=false,lastMX=0,lastMY=0;
 canvas.addEventListener('mousedown',e=>{isDragging=true;lastMX=e.clientX;lastMY=e.clientY;});
 canvas.addEventListener('mousemove',e=>{
@@ -648,115 +698,143 @@ canvas.addEventListener('mouseup',()=>isDragging=false);
 canvas.addEventListener('wheel',e=>{orbitDist=Math.max(4,Math.min(30,orbitDist+e.deltaY*0.02));},{passive:true});
 
 // ── PHYSICS STEP ────────────────────────────────────────────────
+// V-BAT / tail-sitter model:
+//   - Aircraft body pitch is stored as angle from VERTICAL (0 = nose up, PI/2 = nose forward)
+//   - Gimbal tilts prop relative to body
+//   - Prop offset from body creates a restoring torque that rotates body toward prop direction
+//   - When body aligns with prop → torque = 0 → stable hold at that attitude
+//   - Pilot tilts gimbal → body chases → new equilibrium → gimbal centers → body holds
 function stepPhysics(dt){
-  if(!state.launched)return;
-  state.time+=dt;
+  if(!state.launched && !state.landing) return;
+  state.time += dt;
 
-  const thrust=ctrl.thrustPct/100;
-  const thrustForce=thrust*ctrl.mass*GRAVITY*1.8;
+  // ── AUTO-LAND SEQUENCE ─────────────────────────────────────────
+  if(state.landing){
+    const alt=state.y+5;
+    // Auto-zero the gimbal so prop points straight up → body pitches back to vertical
+    ctrl.gimbalPitch+=(0-ctrl.gimbalPitch)*0.035;
+    ctrl.gimbalYaw  +=(0-ctrl.gimbalYaw  )*0.035;
+    document.getElementById('sl-gpitch').value=ctrl.gimbalPitch;
+    document.getElementById('sl-gyaw').value=ctrl.gimbalYaw;
+    document.getElementById('lbl-gpitch').textContent=ctrl.gimbalPitch.toFixed(0)+'°';
+    document.getElementById('lbl-gyaw').textContent=ctrl.gimbalYaw.toFixed(0)+'°';
+    // How vertical are we? state.pitch=0 is fully vertical
+    const isVertical=Math.abs(state.pitch)<0.3; // 0=vertical
+    if(isVertical && alt>0.5){
+      // Reduce thrust for gentle descent — just enough to sink slowly
+      const targetThrust=Math.max(32, 52-alt*1.5);
+      ctrl.thrustPct+=(targetThrust-ctrl.thrustPct)*0.04;
+      document.getElementById('sl-thrust').value=ctrl.thrustPct;
+      document.getElementById('lbl-thrust').textContent=Math.round(ctrl.thrustPct)+'%';
+    }
+    // Touchdown
+    if(state.y<=-4.9){
+      // Spin prop down
+      ctrl.thrustPct+=(0-ctrl.thrustPct)*0.08;
+      document.getElementById('sl-thrust').value=ctrl.thrustPct;
+      document.getElementById('lbl-thrust').textContent=Math.round(ctrl.thrustPct)+'%';
+      if(ctrl.thrustPct<2){
+        state.landing=false;state.landed=true;state.launched=false;
+        state.vy=0;state.vx*=0.5;state.vz*=0.5;state.y=-5;
+        document.getElementById('sys-status').textContent='LANDED';
+        document.getElementById('launch-btn').textContent='▶ LAUNCH';
+        document.getElementById('launch-btn').classList.remove('active');
+        document.getElementById('land-btn').textContent='▼ LAND';
+        document.getElementById('land-btn').disabled=true;
+        document.getElementById('land-btn').style.borderColor='rgba(255,100,100,0.4)';
+        document.getElementById('land-btn').style.color='rgba(255,150,150,0.7)';
+        return;
+      }
+    }
+  }
 
-  // Live gimbal angles (read from actual animated gimbal groups)
-  const liveGimbalPitch=gimbalPitchG.rotation.z; // pitch tilt
-  const liveGimbalYaw=gimbalYawG.rotation.y;     // yaw tilt
+  const thrust = ctrl.thrustPct / 100;
+  const thrustForce = thrust * ctrl.mass * GRAVITY * 2.0;
 
-  // THE KEY IDEA:
-  // Prop tilt (gimbal) creates a torque that pitches the aircraft body.
-  // Aircraft body pitch FOLLOWS the prop tilt with inertia/lag.
-  // Target body pitch = gimbal pitch offset from vertical
-  // Phase 1 (vertical): prop straight up, aircraft vertical, climbing
-  // Phase 2 (transition): pilot tilts gimbal forward → body pitches over → forward flight
+  // Read gimbal directly from ctrl — not from Three.js groups (those are local UAV space)
+  const gPitch = ctrl.gimbalPitch * Math.PI / 180;
+  const gYaw   = ctrl.gimbalYaw   * Math.PI / 180;
 
-  // Aircraft body pitch target is driven by gimbal tilt
-  // When gimbal tilts forward (negative pitch), aircraft nose should pitch down (rotate toward horizontal)
-  const bodyPitchTarget = -Math.PI/2 + liveGimbalPitch; // starts vertical, gimbal tilt rotates it toward 0 (horizontal)
+  // ── ATTITUDE DYNAMICS ──────────────────────────────────────────
+  // Gimbal offset creates angular acceleration. Body rotates until aligned with prop.
+  const momentArm = 0.5;
+  const inertia   = ctrl.mass * 1.2; // heavier inertia = slower but stable
 
-  // Body follows target with realistic lag (inertia)
-  const pitchErr = bodyPitchTarget - state.pitch;
-  state.pidPitchI += pitchErr * dt;
-  state.pidPitchI = Math.max(-2, Math.min(2, state.pidPitchI));
-  const Kp=1.8, Ki=0.08, Kd=1.2;
-  const pitchCorr = Kp*pitchErr + Ki*state.pidPitchI + Kd*(pitchErr - state.prevPitchE)/Math.max(dt,0.001);
-  state.prevPitchE = pitchErr;
-  state.dpitch += pitchCorr * dt * 0.8;
+  const pitchTorque = thrustForce * momentArm * Math.sin(gPitch) / inertia;
+  const yawTorque   = thrustForce * momentArm * Math.sin(gYaw)   / inertia;
 
-  // Yaw: gimbal yaw steers the nose left/right
-  const yawErr = liveGimbalYaw - state.yaw;
-  state.pidYawI += yawErr * dt;
-  const yawCorr = 1.5*yawErr + 0.06*state.pidYawI;
-  state.dyaw += yawCorr * dt * 0.6;
+  const angDamp = 3.5; // strong damping = no oscillation, smooth rotation
+  state.dpitch += (pitchTorque - angDamp * state.dpitch) * dt;
+  state.dyaw   += (yawTorque   - angDamp * state.dyaw)   * dt;
 
-  // Roll stabilization (keep wings level)
-  const rollCorr = -1.8*state.roll - 1.0*state.droll;
-  state.droll += rollCorr * dt;
+  // Roll: auto-stabilize
+  state.droll += (-4.0 * state.roll - 3.0 * state.droll) * dt;
 
-  // Damping
-  state.dpitch *= 0.94; state.droll *= 0.96; state.dyaw *= 0.96;
+  // Integrate attitude
+  state.pitch += state.dpitch * dt;
+  state.roll  += state.droll  * dt;
+  state.yaw   += state.dyaw   * dt;
 
-  // Thrust vector — prop always pushes along its own axis
-  // In UAV local frame: prop pushes backward (negative X in UAV space = up when vertical)
-  // World thrust direction based on current UAV pitch + gimbal tilt
-  const totalPitch = state.pitch + liveGimbalPitch;
-  const totalYaw   = state.yaw   + liveGimbalYaw;
-  // Thrust points out the "nose" direction of prop disk
-  const thrX = -Math.sin(totalPitch) * Math.cos(totalYaw);
-  const thrY =  Math.cos(totalPitch);
-  const thrZ = -Math.sin(totalPitch) * Math.sin(totalYaw);
+  // Soft clamp — allow full 0 (vertical) to PI/2 (horizontal), gentle stop at limits
+  if(state.pitch > Math.PI/2 - 0.02) { state.pitch = Math.PI/2 - 0.02; state.dpitch = Math.min(0, state.dpitch); }
+  if(state.pitch < -0.1) { state.pitch = -0.1; state.dpitch = Math.max(0, state.dpitch); }
 
-  // Airspeed for aero forces
-  const airspeed = Math.sqrt(state.vx*state.vx + state.vy*state.vy + state.vz*state.vz);
+  // ── THRUST VECTOR IN WORLD SPACE ──────────────────────────────
+  // Body pitch: 0 = vertical (nose up), PI/2 = horizontal (nose forward)
+  // Prop points along body axis + gimbal offset
+  const worldPitch = state.pitch + gPitch;
+  const worldYaw   = state.yaw   + gYaw;
+  // When pitch=0 (vertical), thrust is straight up (Y). 
+  // As pitch increases toward PI/2, thrust tilts forward (X).
+  const thrY =  Math.cos(worldPitch) * Math.cos(gPitch);
+  const thrX =  Math.sin(worldPitch);
+  const thrZ =  Math.sin(worldYaw) * Math.cos(worldPitch);
+
+  // ── TRANSLATION ────────────────────────────────────────────────
   const airspeedH = Math.sqrt(state.vx*state.vx + state.vz*state.vz);
-  const dynamicPressure = 0.5*1.2*airspeedH*airspeedH;
-  const wingArea = 0.35;
-  const aoa = Math.atan2(state.vy, airspeedH+0.001);
-  const liftCoeff = Math.max(0, Math.min(1.8, 0.6 + aoa*1.2));
-  const lift = dynamicPressure * wingArea * liftCoeff;
-  const drag = dynamicPressure * wingArea * 0.06;
+  const dynQ      = 0.5 * 1.2 * airspeedH * airspeedH;
+  const lift      = dynQ * 0.35 * 0.8 * Math.max(0, Math.cos(state.pitch));
+  const drag      = dynQ * 0.35 * 0.06;
 
-  // Transition factor (0=prop dominant, 1=aero dominant)
-  const transRaw = Math.min(1, airspeedH/12);
-  state.transitionFactor += (transRaw - state.transitionFactor)*0.015;
+  const wRad    = ctrl.windDir * Math.PI / 180;
+  const gust    = ctrl.gustInt * (Math.sin(state.time*2.3)*0.5 + Math.random()*0.5);
+  const wx      = (ctrl.windSpeed + gust) * Math.cos(wRad) * 0.035;
+  const wz      = (ctrl.windSpeed + gust) * Math.sin(wRad) * 0.035;
 
-  // Wind + gusts
-  const wRad = ctrl.windDir*Math.PI/180;
-  const gustNow = ctrl.gustInt*(Math.sin(state.time*2.3)*0.5 + Math.random()*0.5);
-  const wx = (ctrl.windSpeed+gustNow)*Math.cos(wRad)*0.04;
-  const wz = (ctrl.windSpeed+gustNow)*Math.sin(wRad)*0.04;
-
-  // Net forces
-  let ax = thrustForce/ctrl.mass * thrX - drag*Math.sign(state.vx)/ctrl.mass + wx;
+  let ax = thrustForce/ctrl.mass * thrX - (drag * Math.sign(state.vx))/ctrl.mass + wx;
   let ay = thrustForce/ctrl.mass * thrY - GRAVITY + lift/ctrl.mass;
-  let az = thrustForce/ctrl.mass * thrZ - drag*Math.sign(state.vz)/ctrl.mass + wz;
+  let az = thrustForce/ctrl.mass * thrZ - (drag * Math.sign(state.vz))/ctrl.mass + wz;
 
-  // Ground
-  if(state.y<=-5){ if(ay<0){ay=0;state.vy=0;} state.dpitch*=0.5; }
+  if(state.y <= -5){ if(ay < 0){ay=0; state.vy=0;} state.dpitch *= 0.3; }
 
-  // Integrate velocity and position
   state.vx += ax*dt; state.vy += ay*dt; state.vz += az*dt;
-  state.x  += state.vx*dt; state.y += state.vy*dt; state.z += state.vz*dt;
-  state.pitch += state.dpitch*dt;
-  state.roll  += state.droll*dt;
-  state.yaw   += state.dyaw*dt;
-  if(state.y<-5){state.y=-5; state.vy=Math.max(0,state.vy);}
+  state.x  += state.vx*dt; state.y  += state.vy*dt; state.z  += state.vz*dt;
+  if(state.y < -5){ state.y = -5; state.vy = Math.max(0, state.vy); }
 
-  // Update PID monitor UI
-  document.getElementById('pid-pe').textContent=pitchErr.toFixed(2);
-  document.getElementById('pid-re').textContent=state.roll.toFixed(2);
-  document.getElementById('pid-ye').textContent=yawErr.toFixed(2);
-  document.getElementById('pid-pe-bar').style.width=Math.min(100,50+pitchErr*40)+'%';
-  document.getElementById('pid-re-bar').style.width=Math.min(100,50+state.roll*40)+'%';
-  document.getElementById('pid-ye-bar').style.width=Math.min(100,50+yawErr*40)+'%';
+  // Transition factor
+  const transRaw = Math.min(1, airspeedH / 10);
+  state.transitionFactor += (transRaw - state.transitionFactor) * 0.02;
 
-  // Control authority bars
-  const tvPct=Math.round((1-state.transitionFactor)*100);
-  const asPct=Math.round(state.transitionFactor*100);
-  document.getElementById('ca-tv').textContent=tvPct+'%';
-  document.getElementById('ca-as').textContent=asPct+'%';
-  document.getElementById('ca-tv-bar').style.width=tvPct+'%';
-  document.getElementById('ca-as-bar').style.width=asPct+'%';
+  // ── UI ─────────────────────────────────────────────────────────
+  const pitchDeg = (state.pitch * 180/Math.PI).toFixed(1);
+  const gPitchDeg = (gPitch * 180/Math.PI).toFixed(1);
+  const yawDeg = (state.yaw * 180/Math.PI).toFixed(1);
+  document.getElementById('pid-pe').textContent = gPitchDeg;
+  document.getElementById('pid-re').textContent = (state.roll*180/Math.PI).toFixed(1);
+  document.getElementById('pid-ye').textContent = gPitchDeg;
+  document.getElementById('pid-pe-bar').style.width = Math.min(100,50+gPitch*60)+'%';
+  document.getElementById('pid-re-bar').style.width = Math.min(100,50+state.roll*60)+'%';
+  document.getElementById('pid-ye-bar').style.width = Math.min(100,50+gYaw*60)+'%';
 
-  // Telemetry: AoA
-  const aoDeg=(Math.atan2(state.vy,airspeedH+0.001)*180/Math.PI).toFixed(1);
-  document.getElementById('h-aoa').textContent=aoDeg;
+  const tvPct = Math.round((1-state.transitionFactor)*100);
+  const asPct = Math.round(state.transitionFactor*100);
+  document.getElementById('ca-tv').textContent = tvPct+'%';
+  document.getElementById('ca-as').textContent = asPct+'%';
+  document.getElementById('ca-tv-bar').style.width = tvPct+'%';
+  document.getElementById('ca-as-bar').style.width = asPct+'%';
+
+  const aoDeg = (Math.atan2(state.vy, airspeedH+0.001)*180/Math.PI).toFixed(1);
+  document.getElementById('h-aoa').textContent = aoDeg;
 }
 
 // ── RENDER LOOP ──────────────────────────────────────────────────
@@ -772,26 +850,26 @@ function animate(){
   // Gimbal angles — smooth lerp to slider target so you SEE it rotate
   const gpRad=ctrl.gimbalPitch*Math.PI/180;
   const gyRad=ctrl.gimbalYaw*Math.PI/180;
-  gimbalPitchG.rotation.z+=(gpRad-gimbalPitchG.rotation.z)*0.12;
-  gimbalYawG.rotation.y+=(gyRad-gimbalYawG.rotation.y)*0.12;
+  gimbalPitchG.rotation.z += (gpRad - gimbalPitchG.rotation.z) * 0.22;
+  gimbalYawG.rotation.y   += (gyRad - gimbalYawG.rotation.y)   * 0.22;
   M2.opacity=0.22+Math.sin(simT*1.1)*0.05;
   M3.opacity=0.08+Math.sin(simT*0.7)*0.03;
 
   // Physics
   stepPhysics(dt);
 
-  // UAV in scene — vertical at rest (nose up), pitches over as gimbal tilts
-  const wy=state.launched?state.y+5:0;
+  // UAV model: nose along +X axis, lying flat by default
+  // To stand vertical (tail-sitter): rotate Z by +PI/2 → nose points UP
+  // As pitch increases (0→PI/2): rotate Z back toward 0 → nose tilts forward
+  const wy = state.launched||state.landing ? state.y+5 : 0;
   UAV.position.set(state.x*0.3, wy*0.3, state.z*0.3);
-  if(!state.launched){
-    // Standing on tail before launch: nose up = pitch = -PI/2
-    UAV.rotation.x=-Math.PI/2;
-    UAV.rotation.z=0;
-    UAV.rotation.y=0;
+  if(!state.launched && !state.landing){
+    UAV.rotation.set(0, 0, Math.PI/2); // nose straight up, standing on tail
   } else {
-    UAV.rotation.x=state.pitch;
-    UAV.rotation.z=state.roll;
-    UAV.rotation.y=state.yaw;
+    // pitch=0 → vertical (Z=PI/2), pitch=PI/2 → horizontal (Z=0)
+    UAV.rotation.x = state.roll;
+    UAV.rotation.y = state.yaw;
+    UAV.rotation.z = Math.PI/2 - state.pitch;
   }
 
   // Trail
@@ -813,8 +891,9 @@ function animate(){
   forceGroup.visible=ctrl.showForces;
 
   if(ctrl.showForces){
-    // Thrust — reads live gimbal group angles so arrow always matches rotor
+    // Thrust arrow — points in direction prop is actually pushing (up when vertical, forward when horizontal)
     const thrustScale=0.5+ctrl.thrustPct/100*2.5;
+    // Arrow lives in UAV local space, so just apply gimbal offset on top
     thrustArrow.rotation.set(gimbalPitchG.rotation.z, gimbalYawG.rotation.y, 0);
     thrustArrow.scale.setScalar(thrustScale);
     THRUST_MAT.opacity=0.7+ctrl.thrustPct/100*0.3;
@@ -844,30 +923,40 @@ function animate(){
     }
   }
 
-  // Particles (thrust flow)
+  // Particles (thrust flow) — spawn at prop disk, fly opposite to thrust (exhaust)
   if(ctrl.showParticles&&state.launched&&ctrl.thrustPct>5){
-    const gp=ctrl.gimbalPitch*Math.PI/180,gy=ctrl.gimbalYaw*Math.PI/180;
-    // Thrust direction in UAV local space, then world
-    const tDir=new THREE.Vector3(Math.sin(gp),Math.cos(gp)*(-1),Math.sin(gy)).normalize();
-    const worldDir=tDir.clone().applyEuler(UAV.rotation);
+    // World-space thrust direction (same calc as physics)
+    const gp=gimbalPitchG.rotation.z, gy=gimbalYawG.rotation.y;
+    // pitch=0→vertical(thrustUp), pitch=PI/2→horizontal(thrustForward)
+    const totalPitch=state.pitch+gp;
+    const exX=-Math.sin(totalPitch);   // exhaust opposite thrust
+    const exY=-Math.cos(totalPitch);
+    const exZ=-Math.sin(gy)*Math.cos(totalPitch);
+    const exLen=Math.sqrt(exX*exX+exY*exY+exZ*exZ)||1;
+    const exDir=new THREE.Vector3(exX/exLen,exY/exLen,exZ/exLen);
+    // Prop disk world position (tail of UAV)
+    const propWorld=new THREE.Vector3(0,0,0).applyEuler(UAV.rotation);
+    const propX=UAV.position.x;
+    const propY=UAV.position.y;
+    const propZ=UAV.position.z;
     for(let i=0;i<NPART;i++){
-      partData[i].life+=dt*2;
+      partData[i].life+=dt*2.5;
       if(partData[i].life>1){
         partData[i].life=0;
-        const spread=0.06;
-        partPositions[i*3]=UAV.position.x+(PX+0.05);
-        partPositions[i*3+1]=UAV.position.y;
-        partPositions[i*3+2]=UAV.position.z;
+        // spawn at prop disk with small random spread
+        const sp=0.08;
+        partPositions[i*3  ]=propX+(Math.random()-.5)*sp;
+        partPositions[i*3+1]=propY+(Math.random()-.5)*sp;
+        partPositions[i*3+2]=propZ+(Math.random()-.5)*sp;
       }
-      const l=partData[i].life;
-      const spd=partData[i].speed*(ctrl.thrustPct/60);
-      partPositions[i*3]+=worldDir.x*spd+(Math.random()-.5)*0.003;
-      partPositions[i*3+1]+=worldDir.y*spd+(Math.random()-.5)*0.003;
-      partPositions[i*3+2]+=worldDir.z*spd+(Math.random()-.5)*0.003;
+      const spd=partData[i].speed*(ctrl.thrustPct/50)*0.8;
+      partPositions[i*3  ]+=exDir.x*spd+(Math.random()-.5)*0.004;
+      partPositions[i*3+1]+=exDir.y*spd+(Math.random()-.5)*0.004;
+      partPositions[i*3+2]+=exDir.z*spd+(Math.random()-.5)*0.004;
     }
     partGeom.attributes.position.needsUpdate=true;
     particles.visible=true;
-    partMat.opacity=0.4+ctrl.thrustPct*0.004;
+    partMat.opacity=0.5+ctrl.thrustPct*0.004;
   }else{particles.visible=false;}
 
   // Camera
@@ -887,14 +976,14 @@ function animate(){
       camera.lookAt(target);break;}
   }
 
-  // Grid follows UAV
-  gridHelper.position.x=UAV.position.x;gridHelper.position.z=UAV.position.z;
-  gridHelper.position.y=Math.min(-5+UAV.position.y*0,-5);
+  // Grid stays fixed at ground — no following
+  // (ground plane is static, only update launch pad visibility)
 
   // Update UI
   const alt=(state.y+5).toFixed(1);
   const spd=Math.sqrt(state.vx*state.vx+state.vy*state.vy+state.vz*state.vz).toFixed(1);
   const vspd=state.vy.toFixed(1);
+  // pitch: 0=vertical 90=horizontal — show as tilt from vertical
   const pitchDeg=(state.pitch*180/Math.PI).toFixed(1);
   const rollDeg=(state.roll*180/Math.PI).toFixed(1);
   const yawDeg=(state.yaw*180/Math.PI).toFixed(1);
