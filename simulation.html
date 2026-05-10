@@ -707,33 +707,33 @@ function stepPhysics(dt){
 
   // ── AUTO-LAND SEQUENCE ─────────────────────────────────────────
   if(state.landing){
-    const alt=state.y+5; // altitude above ground
+    const alt=state.y+5;
 
-    // PHASE 1: Slam gimbal back to 0 — body pitches back to vertical
-    ctrl.gimbalPitch+=(0-ctrl.gimbalPitch)*0.09;
-    ctrl.gimbalYaw  +=(0-ctrl.gimbalYaw  )*0.09;
+    // Just drive gimbal back to 0 — the torque physics does the rest naturally
+    // Body pitches back to vertical exactly like when pilot moves the slider
+    ctrl.gimbalPitch+=(0-ctrl.gimbalPitch)*0.04;
+    ctrl.gimbalYaw  +=(0-ctrl.gimbalYaw  )*0.04;
     document.getElementById('sl-gpitch').value=ctrl.gimbalPitch;
     document.getElementById('sl-gyaw').value=ctrl.gimbalYaw;
     document.getElementById('lbl-gpitch').textContent=ctrl.gimbalPitch.toFixed(0)+'°';
     document.getElementById('lbl-gyaw').textContent=ctrl.gimbalYaw.toFixed(0)+'°';
 
-    // PHASE 2: Once gimbal near zero, reduce thrust → descend
-    // Start reducing thrust proportional to how vertical we are
-    const vertFactor=1-Math.min(1,Math.abs(state.pitch)/(Math.PI/2));// 1=vertical,0=horiz
-    const targetThrust=Math.max(0, 58*vertFactor - alt*0.5);
-    ctrl.thrustPct+=(targetThrust-ctrl.thrustPct)*0.05;
+    // Once body is back vertical (pitch~0), reduce thrust to descend
+    const verticalness = 1 - Math.min(1, Math.abs(state.pitch) / (Math.PI/2));
+    const targetThrust = 55 * verticalness * Math.min(1, alt/3);
+    ctrl.thrustPct += (targetThrust - ctrl.thrustPct) * 0.03;
     document.getElementById('sl-thrust').value=ctrl.thrustPct;
     document.getElementById('lbl-thrust').textContent=Math.round(ctrl.thrustPct)+'%';
 
-    // PHASE 3: Touchdown — kill thrust
+    // Touchdown
     if(state.y<=-4.85){
-      ctrl.thrustPct+=(0-ctrl.thrustPct)*0.12;
+      ctrl.thrustPct+=(0-ctrl.thrustPct)*0.1;
       document.getElementById('sl-thrust').value=ctrl.thrustPct;
       document.getElementById('lbl-thrust').textContent=Math.round(ctrl.thrustPct)+'%';
-      state.vy=0; state.vx*=0.85; state.vz*=0.85;
+      state.vy=0; state.vx*=0.88; state.vz*=0.88;
       if(ctrl.thrustPct<1){
         state.landing=false;state.landed=true;state.launched=false;
-        state.vy=0;state.vx=0;state.vz=0;state.y=-5;state.pitch=0;
+        state.vy=0;state.vx=0;state.vz=0;state.y=-5;
         document.getElementById('sys-status').textContent='LANDED';
         document.getElementById('launch-btn').textContent='▶ LAUNCH';
         document.getElementById('launch-btn').classList.remove('active');
