@@ -3,14 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PHANTOM SIMULATOR — VTOL Demo</title>
+<title>AURA SIMULATOR — VTOL Demo</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{width:100%;height:100%;overflow:hidden;background:#050505;color:#fff;font-family:'Space Mono',monospace;}
 #canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;}
 #canvas2{position:fixed;bottom:128px;right:244px;width:280px;height:180px;z-index:8;border:1px solid rgba(255,255,255,0.15);display:none;}
-.cam2-label{position:fixed;bottom:300px;right:244px;z-index:9;font-size:8px;letter-spacing:.15em;color:rgba(255,255,255,0.4);padding:2px 6px;background:rgba(0,0,0,0.6);pointer-events:none;display:none;}
+#cam2-bar{position:fixed;bottom:308px;right:244px;z-index:9;display:none;gap:2px;background:rgba(0,0,0,0.75);padding:4px;border:1px solid rgba(255,255,255,0.1);border-bottom:none;}
+.cam2-btn{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.08em;padding:3px 7px;background:transparent;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.35);cursor:pointer;text-transform:uppercase;transition:.15s;}
+.cam2-btn:hover,.cam2-btn.active{border-color:rgba(255,255,255,0.5);color:#fff;background:rgba(255,255,255,0.06);}
+.cam2-label{position:fixed;bottom:128px;right:244px;z-index:9;font-size:7px;letter-spacing:.12em;color:rgba(255,255,255,0.4);padding:2px 5px;background:rgba(0,0,0,0.6);pointer-events:none;display:none;}
 #split-toggle{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.1em;padding:5px 10px;background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);cursor:pointer;transition:.2s;text-transform:uppercase;}
 #split-toggle:hover,#split-toggle.active{border-color:rgba(255,255,255,0.5);color:#fff;}
 #ui{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none;display:grid;grid-template-columns:260px 1fr 240px;grid-template-rows:48px 1fr 120px;}
@@ -101,7 +104,7 @@ input[type=range]:hover{background:rgba(255,255,255,0.25);}
 <body>
 
 <div id="splash">
-  <div class="splash-logo">PHANTOM</div>
+  <div class="splash-logo">AURA</div>
   <div class="splash-sub">VTOL SIMULATOR — DEMO</div>
   <div class="splash-bar"><div class="splash-fill" id="sf"></div></div>
   <div class="splash-status" id="ss">INITIALIZING PHYSICS ENGINE</div>
@@ -111,11 +114,18 @@ input[type=range]:hover{background:rgba(255,255,255,0.25);}
 <div id="vignette"></div>
 <canvas id="canvas"></canvas>
 <canvas id="canvas2"></canvas>
-<div class="cam2-label" id="cam2-label">CHASE VIEW</div>
+<div id="cam2-bar">
+  <button class="cam2-btn" data-cam2="chase">CHASE</button>
+  <button class="cam2-btn active" data-cam2="orbit">ORBIT</button>
+  <button class="cam2-btn" data-cam2="side">SIDE</button>
+  <button class="cam2-btn" data-cam2="top">TOP</button>
+  <button class="cam2-btn" data-cam2="rear">REAR</button>
+</div>
+<div class="cam2-label" id="cam2-label">ORBIT</div>
 
 <div id="ui">
   <div id="topbar">
-    <div class="brand">PHANTOM <span>// VTOL SIM v1.0</span></div>
+    <div class="brand">AURA <span>// VTOL SIM v1.0</span></div>
     <div class="topbar-status">
       <div class="status-dot" id="sys-dot"></div>
       <span class="status-label">SYS&nbsp;</span><span class="status-val" id="sys-status">NOMINAL</span>
@@ -214,6 +224,13 @@ input[type=range]:hover{background:rgba(255,255,255,0.25);}
       <button class="cam-btn" data-cam="top">TOP</button>
       <button class="cam-btn" data-cam="rear">REAR</button>
       <button id="split-toggle">⊞ SPLIT</button>
+      <select id="split-cam" style="display:none;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.1em;padding:5px 8px;background:#050505;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.7);cursor:pointer;text-transform:uppercase;">
+        <option value="chase">CHASE</option>
+        <option value="orbit2">ORBIT</option>
+        <option value="top">TOP</option>
+        <option value="side">SIDE</option>
+        <option value="rear">REAR</option>
+      </select>
     </div>
     <div class="sep"></div>
     <div class="hud-item"><div class="hud-label">ALTITUDE</div><div class="hud-val"><span id="h-alt">0</span> m</div></div>
@@ -306,16 +323,26 @@ renderer2.setSize(280,180);
 renderer2.setClearColor(0x050505,1);
 const camera2=new THREE.PerspectiveCamera(50,280/180,0.1,500);
 let splitActive=false;
+let cam2Mode='chase';
 
 document.getElementById('split-toggle').addEventListener('click',()=>{
   splitActive=!splitActive;
   canvas2.style.display=splitActive?'block':'none';
   document.getElementById('cam2-label').style.display=splitActive?'block':'none';
+  document.getElementById('cam2-bar').style.display=splitActive?'flex':'none';
   document.getElementById('split-toggle').classList.toggle('active',splitActive);
 });
+document.querySelectorAll('.cam2-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.cam2-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    cam2Mode=b.dataset.cam2;
+    document.getElementById('cam2-label').textContent=cam2Mode.toUpperCase();
+  });
+});
 const scene=new THREE.Scene();
-scene.fog=new THREE.FogExp2(0x050505,0.018);
-const camera=new THREE.PerspectiveCamera(40,window.innerWidth/window.innerHeight,0.1,500);
+scene.fog=new THREE.FogExp2(0x050505,0.008);
+renderer2.setClearColor(0x050505,1);const camera=new THREE.PerspectiveCamera(40,window.innerWidth/window.innerHeight,0.1,500);
 window.addEventListener('resize',()=>{
   renderer.setSize(window.innerWidth,window.innerHeight);
   camera.aspect=window.innerWidth/window.innerHeight;
@@ -497,17 +524,17 @@ scene.add(UAV);
 
 // ── GROUND ──────────────────────────────────────────────────────
 const groundGeo=new THREE.PlaneGeometry(600,600);
-const groundMat=new THREE.MeshBasicMaterial({color:0x0d0d0d,side:THREE.DoubleSide});
+const groundMat=new THREE.MeshBasicMaterial({color:0xbbbbbb,side:THREE.DoubleSide});
 const groundPlane=new THREE.Mesh(groundGeo,groundMat);
 groundPlane.rotation.x=Math.PI/2;
 groundPlane.position.y=-5;
 scene.add(groundPlane);
 
-const gridHelper=new THREE.GridHelper(600,150,0x252525,0x181818);
+const gridHelper=new THREE.GridHelper(600,150,0x888888,0x999999);
 gridHelper.position.y=-4.98;
 scene.add(gridHelper);
 
-const gridBright=new THREE.GridHelper(600,30,0x383838,0x202020);
+const gridBright=new THREE.GridHelper(600,30,0x444444,0x555555);
 gridBright.position.y=-4.97;
 scene.add(gridBright);
 
@@ -740,6 +767,10 @@ function launchFlight(){
 document.getElementById('land-btn').addEventListener('click',()=>{
   if(!state.launched||state.landing) return;
   state.landing=true;
+  state.vy = Math.min(0, state.vy); // kill any upward velocity immediately
+  ctrl.thrustPct = 48; // snap to just below hover so it starts descending right away
+  document.getElementById('sl-thrust').value = 48;
+  document.getElementById('lbl-thrust').textContent = '48%';
   document.getElementById('sys-status').textContent='LANDING SEQ';
   document.getElementById('land-btn').textContent='↓ DESCENDING';
   document.getElementById('land-btn').disabled=true;
@@ -1109,14 +1140,23 @@ function animate(){
 
   renderer.render(scene,camera);
 
-  // Split view — chase cam always
+  // Split view
   if(splitActive){
     const t2=UAV.position.clone();
-    // Chase: behind and slightly above
-    const behindX = Math.sin(state.yaw)*6;
-    const behindZ = Math.cos(state.yaw)*6;
-    const upY = Math.cos(state.pitch)*3+1.5;
-    camera2.position.set(t2.x-behindX, t2.y+upY, t2.z-behindZ);
+    switch(cam2Mode){
+      case 'chase':{
+        const bx=Math.sin(state.yaw)*6, bz=Math.cos(state.yaw)*6, by=Math.cos(state.pitch)*3+1.5;
+        camera2.position.set(t2.x-bx,t2.y+by,t2.z-bz); break;}
+      case 'orbit':{
+        camera2.position.set(t2.x+Math.sin(orbitTheta+1.2)*10,t2.y+4,t2.z+Math.cos(orbitTheta+1.2)*10); break;}
+      case 'top':{
+        camera2.position.set(t2.x,t2.y+14,t2.z+0.01); break;}
+      case 'side':{
+        camera2.position.set(t2.x,t2.y+1,t2.z+10); break;}
+      case 'rear':{
+        const rd=new THREE.Vector3(-1,0,0).applyEuler(UAV.rotation).multiplyScalar(7);
+        camera2.position.set(t2.x+rd.x,t2.y+rd.y+1,t2.z+rd.z); break;}
+    }
     camera2.lookAt(t2);
     renderer2.render(scene,camera2);
   }
