@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MERCURY AI — Intelligence Framework for Project AURA</title>
+<link rel="icon" href="assets/icon.png" type="image/png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange: #DA7756;
+  --orange-dim: rgba(218,119,86,0.15);
+  --bg: #080808;
+  --surface: #111;
+  --surface2: #181818;
+  --border: #222;
+  --text: #f0f0f0;
+  --dim: #666;
+  --green: #4ade80;
+  --green-dim: rgba(74,222,128,0.12);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; overflow:hidden; height:100vh; }
+
+/* Scanline overlay */
+body::after {
+  content:'';
+  position:fixed;
+  inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+  pointer-events:none;
+  z-index:999;
+}
+
+.deck { position:relative; width:100vw; height:100vh; overflow:hidden; }
+
+.slide {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
+  padding:5vh 8vw;
+  opacity:0; visibility:hidden;
+  transition:opacity 0.5s ease;
+  background:var(--bg);
+}
+.slide.active { opacity:1; visibility:visible; }
+
+/* Corner decorations */
+.slide::before, .slide::after {
+  content:'';
+  position:absolute;
+  width:40px; height:40px;
+  border-color:var(--orange);
+  border-style:solid;
+  opacity:0.3;
+}
+.slide::before { top:24px; left:24px; border-width:2px 0 0 2px; }
+.slide::after  { bottom:24px; right:24px; border-width:0 2px 2px 0; }
+
+.inner { width:100%; max-width:1200px; }
+
+/* Typography */
+.tag {
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.7rem;
+  color:var(--orange);
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+  margin-bottom:1rem;
+  display:flex; align-items:center; gap:0.5rem;
+}
+.tag::before { content:''; width:20px; height:1px; background:var(--orange); }
+
+h1 { font-family:'Space Grotesk',sans-serif; font-weight:700; }
+h2 { font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(1.8rem,4vw,3rem); line-height:1.15; }
+.big { font-size:clamp(3rem,9vw,7rem); line-height:0.9; letter-spacing:-0.03em; }
+.grad { background:linear-gradient(135deg,#DA7756,#f0b090); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+p.lead { font-size:1.1rem; color:#aaa; line-height:1.7; max-width:760px; margin-top:1rem; }
+
+/* Grid */
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-top:2rem; }
+.grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-top:2rem; }
+
+/* Cards */
+.card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:1.5rem;
+  transition:border-color 0.3s;
+}
+.card:hover { border-color:var(--orange); }
+.card .label {
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.65rem;
+  letter-spacing:0.15em;
+  color:var(--orange);
+  text-transform:uppercase;
+  margin-bottom:0.5rem;
+}
+.card h3 { font-family:'Space Grotesk',sans-serif; font-size:1.1rem; margin-bottom:0.4rem; }
+.card p { font-size:0.9rem; color:#888; line-height:1.6; }
+.card.accent { border-color:var(--orange); background:var(--orange-dim); }
+.card.green { border-color:var(--green); background:var(--green-dim); }
+
+/* Pipeline */
+.pipe {
+  display:flex; align-items:center; gap:0;
+  margin-top:2rem; flex-wrap:nowrap;
+  background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  overflow:hidden;
+}
+.pipe-step {
+  flex:1; padding:1.2rem 1rem; text-align:center;
+  border-right:1px solid var(--border);
+  position:relative;
+}
+.pipe-step:last-child { border-right:none; }
+.pipe-step .num { font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--orange); letter-spacing:0.1em; }
+.pipe-step .name { font-family:'Space Grotesk',sans-serif; font-size:0.9rem; margin-top:0.2rem; }
+.pipe-step .tool { font-size:0.72rem; color:#555; margin-top:0.2rem; }
+
+/* Stat boxes */
+.stat-row { display:flex; gap:1.5rem; margin-top:2rem; }
+.stat { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:1.2rem 1.5rem; flex:1; }
+.stat .val { font-family:'Space Grotesk',sans-serif; font-size:2rem; font-weight:700; color:var(--orange); }
+.stat .key { font-size:0.78rem; color:#666; margin-top:0.2rem; }
+
+/* Badge */
+.badge {
+  display:inline-block;
+  background:var(--orange-dim);
+  border:1px solid var(--orange);
+  color:var(--orange);
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.65rem;
+  letter-spacing:0.1em;
+  padding:0.25rem 0.7rem;
+  border-radius:4px;
+  text-transform:uppercase;
+}
+.badge.green { background:var(--green-dim); border-color:var(--green); color:var(--green); }
+
+/* Bullet list */
+ul.checks { list-style:none; display:flex; flex-direction:column; gap:0.75rem; margin-top:1.5rem; }
+ul.checks li { display:flex; align-items:flex-start; gap:0.75rem; font-size:1rem; color:#bbb; line-height:1.5; }
+ul.checks li::before { content:'▸'; color:var(--orange); flex-shrink:0; margin-top:2px; }
+
+/* Nav */
+.progress-bar { position:fixed; top:0; left:0; height:3px; background:var(--orange); transition:width 0.4s; z-index:100; }
+.nav { position:fixed; bottom:2rem; right:2rem; display:flex; gap:0.75rem; align-items:center; z-index:100; }
+.nav-btn {
+  width:40px; height:40px; border-radius:50%;
+  border:1px solid var(--border); background:var(--surface);
+  color:#fff; cursor:pointer; font-size:1rem;
+  display:flex; align-items:center; justify-content:center;
+  transition:border-color 0.3s;
+}
+.nav-btn:hover { border-color:var(--orange); }
+.slide-num { font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--dim); }
+
+/* Keyboard hint */
+.key-hint { position:fixed; bottom:2rem; left:2rem; font-family:'JetBrains Mono',monospace; font-size:0.62rem; color:#333; z-index:100; }
+
+/* Slide-specific */
+#s1 .inner { text-align:center; display:flex; flex-direction:column; align-items:center; }
+#s1 .logo-wrap { width:72px; height:72px; margin-bottom:1.5rem; display:flex; align-items:center; justify-content:center; border:1px solid var(--border); border-radius:16px; background:var(--surface); }
+#s1 .sub { font-family:'JetBrains Mono',monospace; font-size:0.8rem; letter-spacing:0.25em; color:var(--dim); margin-top:1.5rem; text-transform:uppercase; }
+#s1 .badges { display:flex; gap:0.5rem; margin-top:1.5rem; flex-wrap:wrap; justify-content:center; }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="bar"></div>
+<div class="deck">
+
+<!-- S1: TITLE -->
+<div class="slide active" id="s1">
+  <div class="inner">
+    <div class="logo-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#DA7756" stroke-width="1.5" width="36" height="36">
+        <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/>
+      </svg>
+    </div>
+    <h1 class="big grad">MERCURY</h1>
+    <p style="font-size:1.2rem;color:#888;margin-top:0.75rem;">Autonomous Environmental Intelligence Framework</p>
+    <div class="badges">
+      <span class="badge">Project AURA</span>
+      <span class="badge">3D Reconstruction</span>
+      <span class="badge">Vision AI · YOLO26</span>
+      <span class="badge">Live Sensor Fusion</span>
+    </div>
+    <p class="sub">The AI Brain of Project AURA · 2026</p>
+  </div>
+</div>
+
+<!-- S2: WHAT MERCURY DOES -->
+<div class="slide" id="s2">
+  <div class="inner">
+    <div class="tag">The Software</div>
+    <h2>MERCURY — <span class="grad">What it does</span></h2>
+    <p class="lead">A desktop command center that takes raw drone footage and sensor data and converts it into actionable 3D environmental intelligence. Every module, every line, built by us.</p>
+    <div class="grid3" style="margin-top:1.5rem;">
+      <div class="card accent">
+        <div class="label">Module 01</div>
+        <h3>3D Reconstruction</h3>
+        <p>FFmpeg + COLMAP pipeline: video → 5-stage Structure-from-Motion → GPS-tagged PLY point cloud.</p>
+      </div>
+      <div class="card">
+        <div class="label">Module 02</div>
+        <h3>Vision AI · YOLO26</h3>
+        <p>Real-time frame scanning for persons, vehicles, waste, and anomalies — with geofence alerting and GPS tagging.</p>
+      </div>
+      <div class="card">
+        <div class="label">Module 03</div>
+        <h3>Live Sensor Fusion</h3>
+        <p>DHT11 + PMS5003 + MQ gas via Arduino serial bridge. PM2.5, temperature, humidity in real-time.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S3: THE PROBLEM WE SOLVE -->
+<div class="slide" id="s3">
+  <div class="inner">
+    <div class="tag">The Problem</div>
+    <h2>Environmental monitoring is <span class="grad">broken</span></h2>
+    <div class="grid2" style="margin-top:1.5rem;">
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="card">
+          <div class="label">Problem 01</div>
+          <h3>It's Fragmented</h3>
+          <p>Surveyors jump between 5+ different tools — one for flight, one for mapping, one for sensors, one for AI, one for reporting. There's no unified workflow.</p>
+        </div>
+        <div class="card">
+          <div class="label">Problem 02</div>
+          <h3>It's Dangerous</h3>
+          <p>Sending ground crews into polluted zones, illegal dumping sites, or restricted areas is a liability. Manual surveys miss what drones can see.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="card">
+          <div class="label">Problem 03</div>
+          <h3>It's Expensive</h3>
+          <p>Commercial drone monitoring solutions cost AED 50,000–200,000+. Small municipalities, NGOs, and schools simply cannot afford them.</p>
+        </div>
+        <div class="card accent">
+          <div class="label">MERCURY's Answer</div>
+          <h3>One Interface. Full Automation.</h3>
+          <p>From takeoff to final 3D report — one operator, one laptop, one command center. Open-source. Accessible. Intelligent.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S4: THE PIPELINE -->
+<div class="slide" id="s4">
+  <div class="inner">
+    <div class="tag">Under the Hood</div>
+    <h2>Our 5-Stage <span class="grad">Processing Pipeline</span></h2>
+    <div class="pipe">
+      <div class="pipe-step">
+        <div class="num">01</div>
+        <div class="name">Frame Extraction</div>
+        <div class="tool">FFmpeg · frameExtractor.js</div>
+      </div>
+      <div class="pipe-step">
+        <div class="num">02</div>
+        <div class="name">Feature Detection</div>
+        <div class="tool">COLMAP SIFT · colmapRunner.js</div>
+      </div>
+      <div class="pipe-step">
+        <div class="num">03</div>
+        <div class="name">Feature Matching</div>
+        <div class="tool">Exhaustive / Sequential Matcher</div>
+      </div>
+      <div class="pipe-step">
+        <div class="num">04</div>
+        <div class="name">3D Reconstruction</div>
+        <div class="tool">Sparse SfM · Incremental Mapper</div>
+      </div>
+      <div class="pipe-step">
+        <div class="num">05</div>
+        <div class="name">PLY Export</div>
+        <div class="tool">cloudExporter.js · GPS-tagged</div>
+      </div>
+    </div>
+    <p class="lead" style="margin-top:1.5rem;">COLMAP handles the 3D math. We built the UI, automation, error recovery, progress streaming, GPS annotation, and the 3D viewer — every layer of orchestration is ours.</p>
+  </div>
+</div>
+
+<!-- S5: USE CASES -->
+<div class="slide" id="s5">
+  <div class="inner">
+    <div class="tag">Real-World Missions</div>
+    <h2>What MERCURY <span class="grad">monitors</span></h2>
+    <div class="grid2">
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="card green">
+          <div class="label">Air Quality</div>
+          <h3>Industrial Emissions</h3>
+          <p>Particulate (PM2.5/PM10) mapping across factory corridors. Geo-referenced concentration maps — find pollution hotspots invisible from the ground.</p>
+        </div>
+        <div class="card">
+          <div class="label">Marine</div>
+          <h3>Oil Spill Detection</h3>
+          <p>Surface texture + thermal signature analysis to detect illegal discharges in the Arabian Gulf. Automated alert within T+10 min of detection.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="card">
+          <div class="label">Surveillance</div>
+          <h3>Anti-Poaching & Intrusion</h3>
+          <p>YOLO26 detects unauthorized persons, vehicles, and weapons in restricted protected zones. Real-time alerts with GPS coordinates.</p>
+        </div>
+        <div class="card">
+          <div class="label">Environmental</div>
+          <h3>Illegal Dumping</h3>
+          <p>Identifies illegal waste sites, hazardous containers, and pollution sources that ground crews cannot safely access.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S6: YOLO26 -->
+<div class="slide" id="s6">
+  <div class="inner">
+    <div class="tag">Vision AI</div>
+    <h2>Why <span class="grad">YOLO26</span> — The Latest Standard</h2>
+    <p class="lead">Released January 2026, YOLO26 is the current state-of-the-art for aerial object detection. Edge-first, NMS-free, end-to-end — exactly what a drone intelligence system needs.</p>
+    <div class="grid3" style="margin-top:1.5rem;">
+      <div class="card accent">
+        <div class="label">YOLO26 · Our Choice</div>
+        <h3>Fastest + Most Accurate</h3>
+        <p>43% faster CPU inference than predecessors. NMS-free architecture means lower latency — critical for real-time aerial surveillance.</p>
+      </div>
+      <div class="card">
+        <div class="label">Small Target Detection</div>
+        <h3>STAL Algorithm</h3>
+        <p>Small-Target-Aware Label Assignment — detects small objects like humans, traps, and animals from high altitude where they appear as just a few pixels.</p>
+      </div>
+      <div class="card">
+        <div class="label">Multi-Task</div>
+        <h3>5 Vision Tasks</h3>
+        <p>Detection, segmentation, classification, pose estimation, and OBB — all in one model for our diverse environmental missions.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S7: TECH STACK -->
+<div class="slide" id="s7">
+  <div class="inner">
+    <div class="tag">Architecture</div>
+    <h2>What we <span class="grad">actually built</span></h2>
+    <div class="grid2" style="margin-top:1.5rem;">
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="card accent">
+          <div class="label">Shell · Cross-platform</div>
+          <h3>Electron + Node.js</h3>
+          <p>Same tech as VS Code and Discord. Lets us have a premium desktop UI while running FFmpeg, COLMAP, and USB serial — all natively.</p>
+        </div>
+        <div class="card">
+          <div class="label">3D Math · BSD-3-Clause</div>
+          <h3>COLMAP Wrapper</h3>
+          <p>We wrap COLMAP's proven SfM algorithms. We built the UI, orchestration, error recovery, progress streaming, GPS export, and 3D viewer.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="card">
+          <div class="label">Visualization · Three.js</div>
+          <h3>3D Point Cloud Viewer</h3>
+          <p>Real-time PLY rendering. Inspect full reconstructions without leaving the app — rotate, pan, zoom, measure.</p>
+        </div>
+        <div class="card">
+          <div class="label">Mapping · Leaflet.js</div>
+          <h3>GPS Mission Planner</h3>
+          <p>Lawnmower, spiral, and corridor pattern generation. Geofence zone drawing. Live telemetry overlay. NEO-6M GPS + 4G relay support.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S8: ROADMAP -->
+<div class="slide" id="s8">
+  <div class="inner">
+    <div class="tag">Future Vision · Section 8.4 of AURA Doc</div>
+    <h2>MERCURY <span class="grad">Evolution</span></h2>
+    <ul class="checks">
+      <li><b>Dense Reconstruction</b> — Multi-View Stereo (MVS) to generate solid textured 3D meshes, not just sparse point clouds. Measurable distances and volumes.</li>
+      <li><b>QRAM Integration</b> — Persistent memory core allowing MERCURY to retain mission context across flights and identify environmental change over time.</li>
+      <li><b>Multi-Unit Swarm</b> — Coordinate multiple AURA drones from a single MERCURY instance for large-area simultaneous coverage.</li>
+      <li><b>Thermal Fusion</b> — Overlay infrared sensor data directly onto 3D models to detect heat signatures: fires, chemical leaks, search and rescue.</li>
+      <li><b>Cloud Compute Bridge</b> — Offload heavy reconstruction to remote servers for near-instant results when processing power is limited in the field.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- S9: CLOSE -->
+<div class="slide" id="s9">
+  <div class="inner" style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:1.5rem;">
+    <div class="tag" style="justify-content:center;">Mission Statement</div>
+    <h2 style="max-width:760px;">Turning six minutes of flight data into <span class="grad">infinite environmental intelligence.</span></h2>
+    <div class="stat-row" style="margin-top:0;">
+      <div class="stat"><div class="val">5</div><div class="key">Pipeline Stages</div></div>
+      <div class="stat"><div class="val">3</div><div class="key">Core Modules</div></div>
+      <div class="stat"><div class="val">YOLO26</div><div class="key">Vision Model</div></div>
+      <div class="stat"><div class="val">4G</div><div class="key">Relay Support</div></div>
+    </div>
+    <p style="color:#555;font-family:'JetBrains Mono',monospace;font-size:0.8rem;letter-spacing:0.2em;margin-top:1rem;">MERCURY AI · PROJECT AURA · GULF ASIAN ENGLISH SCHOOL · 2026</p>
+    <div style="margin-top:0.5rem;color:var(--orange);font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:600;letter-spacing:0.1em;">QUESTIONS?</div>
+  </div>
+</div>
+
+</div><!-- /.deck -->
+
+<div class="nav">
+  <button class="nav-btn" id="prev">←</button>
+  <span class="slide-num"><span id="cur">1</span> / <span id="tot"></span></span>
+  <button class="nav-btn" id="next">→</button>
+</div>
+<div class="key-hint">← → or SPACE to navigate</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const bar = document.getElementById('bar');
+const cur = document.getElementById('cur');
+const tot = document.getElementById('tot');
+let n = 0;
+tot.textContent = slides.length;
+
+function go(i) {
+  slides[n].classList.remove('active');
+  n = Math.max(0, Math.min(i, slides.length - 1));
+  slides[n].classList.add('active');
+  cur.textContent = n + 1;
+  bar.style.width = ((n + 1) / slides.length * 100) + '%';
+}
+
+document.getElementById('next').onclick = () => go(n + 1);
+document.getElementById('prev').onclick = () => go(n - 1);
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(n + 1); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); go(n - 1); }
+});
+go(0);
+</script>
+</body>
+</html>
