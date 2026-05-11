@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AURA SIMULATOR — VTOL Demo</title>
+<title>PHANTOM SIMULATOR — VTOL Demo</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -101,7 +101,7 @@ input[type=range]:hover{background:rgba(255,255,255,0.25);}
 <body>
 
 <div id="splash">
-  <div class="splash-logo">AURA</div>
+  <div class="splash-logo">PHANTOM</div>
   <div class="splash-sub">VTOL SIMULATOR — DEMO</div>
   <div class="splash-bar"><div class="splash-fill" id="sf"></div></div>
   <div class="splash-status" id="ss">INITIALIZING PHYSICS ENGINE</div>
@@ -115,7 +115,7 @@ input[type=range]:hover{background:rgba(255,255,255,0.25);}
 
 <div id="ui">
   <div id="topbar">
-    <div class="brand">AURA <span>// VTOL SIM v1.0</span></div>
+    <div class="brand">PHANTOM <span>// VTOL SIM v1.0</span></div>
     <div class="topbar-status">
       <div class="status-dot" id="sys-dot"></div>
       <span class="status-label">SYS&nbsp;</span><span class="status-val" id="sys-status">NOMINAL</span>
@@ -138,8 +138,8 @@ input[type=range]:hover{background:rgba(255,255,255,0.25);}
     <div class="panel-section">
       <div class="section-title">PROPULSION</div>
       <div class="ctrl-row">
-        <div class="ctrl-label">THRUST <span class="ctrl-val" id="lbl-thrust">65%</span></div>
-        <input type="range" id="sl-thrust" min="0" max="100" value="65">
+        <div class="ctrl-label">THRUST <span class="ctrl-val" id="lbl-thrust">54%</span></div>
+        <input type="range" id="sl-thrust" min="0" max="100" value="54">
       </div>
       <div class="ctrl-row">
         <div class="ctrl-label">GIMBAL PITCH <span class="ctrl-val" id="lbl-gpitch">0°</span></div>
@@ -651,7 +651,7 @@ let lastTime=performance.now();
 
 // ── CONTROLS STATE ───────────────────────────────────────────────
 const ctrl={
-  thrustPct:65,gimbalPitch:0,gimbalYaw:0,
+  thrustPct:54,gimbalPitch:0,gimbalYaw:0,
   windSpeed:8,windDir:90,gustInt:3,
   mass:2.4,cgOffset:0,
   showForces:true,showParticles:true,pidActive:true,showTrail:false,
@@ -787,8 +787,9 @@ function stepPhysics(dt){
 
     // Once nearly vertical, reduce thrust proportional to altitude → descend
     if(Math.abs(pitchDeg) < 15){
-      const targetThrust = Math.max(0, Math.min(55, alt * 9));
-      ctrl.thrustPct += (targetThrust - ctrl.thrustPct) * 0.05;
+      // Target well below hover (54%) so it definitely descends
+      const targetThrust = Math.max(0, Math.min(48, alt * 7));
+      ctrl.thrustPct += (targetThrust - ctrl.thrustPct) * 0.08;
       document.getElementById('sl-thrust').value = ctrl.thrustPct;
       document.getElementById('lbl-thrust').textContent = Math.round(ctrl.thrustPct)+'%';
     }
@@ -815,17 +816,17 @@ function stepPhysics(dt){
     // Skip rest of physics during landing (no more torque)
     // but still integrate position
     state.vx *= 0.98; state.vz *= 0.98;
-    const thrustNow = (ctrl.thrustPct/100) * ctrl.mass * GRAVITY * 2.8;
+    const thrustNow = (ctrl.thrustPct/100) * ctrl.mass * GRAVITY * 1.85;
     state.vy += (thrustNow/ctrl.mass - GRAVITY) * dt;
     state.y  += state.vy * dt;
     state.x  += state.vx * dt;
     state.z  += state.vz * dt;
     if(state.y < -5){ state.y=-5; state.vy=Math.max(0,state.vy); }
-    return; // skip normal physics
+    return;
   }
 
   const thrust = ctrl.thrustPct / 100;
-  const thrustForce = thrust * ctrl.mass * GRAVITY * 2.8;
+  const thrustForce = thrust * ctrl.mass * GRAVITY * 1.85;
 
   // Read gimbal directly from ctrl — not from Three.js groups (those are local UAV space)
   const gPitch = ctrl.gimbalPitch * Math.PI / 180;
