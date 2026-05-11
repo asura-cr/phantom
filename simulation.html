@@ -3,12 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AURA SIMULATOR — VTOL Demo</title>
+<title>PHANTOM SIMULATOR — VTOL Demo</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{width:100%;height:100%;overflow:hidden;background:#050505;color:#fff;font-family:'Space Mono',monospace;}
 #canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;}
+#canvas2{position:fixed;bottom:128px;right:244px;width:280px;height:180px;z-index:8;border:1px solid rgba(255,255,255,0.15);display:none;}
+.cam2-label{position:fixed;bottom:300px;right:244px;z-index:9;font-size:8px;letter-spacing:.15em;color:rgba(255,255,255,0.4);padding:2px 6px;background:rgba(0,0,0,0.6);pointer-events:none;display:none;}
+#split-toggle{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.1em;padding:5px 10px;background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);cursor:pointer;transition:.2s;text-transform:uppercase;}
+#split-toggle:hover,#split-toggle.active{border-color:rgba(255,255,255,0.5);color:#fff;}
 #ui{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none;display:grid;grid-template-columns:260px 1fr 240px;grid-template-rows:48px 1fr 120px;}
 
 /* NAV */
@@ -97,7 +101,7 @@ input[type=range]:hover{background:rgba(255,255,255,0.25);}
 <body>
 
 <div id="splash">
-  <div class="splash-logo">AURA</div>
+  <div class="splash-logo">PHANTOM</div>
   <div class="splash-sub">VTOL SIMULATOR — DEMO</div>
   <div class="splash-bar"><div class="splash-fill" id="sf"></div></div>
   <div class="splash-status" id="ss">INITIALIZING PHYSICS ENGINE</div>
@@ -106,10 +110,12 @@ input[type=range]:hover{background:rgba(255,255,255,0.25);}
 <div id="scanlines"></div>
 <div id="vignette"></div>
 <canvas id="canvas"></canvas>
+<canvas id="canvas2"></canvas>
+<div class="cam2-label" id="cam2-label">CHASE VIEW</div>
 
 <div id="ui">
   <div id="topbar">
-    <div class="brand">AURA <span>// VTOL SIM v1.0</span></div>
+    <div class="brand">PHANTOM <span>// VTOL SIM v1.0</span></div>
     <div class="topbar-status">
       <div class="status-dot" id="sys-dot"></div>
       <span class="status-label">SYS&nbsp;</span><span class="status-val" id="sys-status">NOMINAL</span>
@@ -207,6 +213,7 @@ input[type=range]:hover{background:rgba(255,255,255,0.25);}
       <button class="cam-btn" data-cam="side">SIDE</button>
       <button class="cam-btn" data-cam="top">TOP</button>
       <button class="cam-btn" data-cam="rear">REAR</button>
+      <button id="split-toggle">⊞ SPLIT</button>
     </div>
     <div class="sep"></div>
     <div class="hud-item"><div class="hud-label">ALTITUDE</div><div class="hud-val"><span id="h-alt">0</span> m</div></div>
@@ -290,6 +297,22 @@ const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
 renderer.setSize(window.innerWidth,window.innerHeight);
 renderer.setClearColor(0x050505,1);
+
+// Second renderer for split view
+const canvas2=document.getElementById('canvas2');
+const renderer2=new THREE.WebGLRenderer({canvas:canvas2,antialias:true,alpha:false});
+renderer2.setPixelRatio(1);
+renderer2.setSize(280,180);
+renderer2.setClearColor(0x050505,1);
+const camera2=new THREE.PerspectiveCamera(50,280/180,0.1,500);
+let splitActive=false;
+
+document.getElementById('split-toggle').addEventListener('click',()=>{
+  splitActive=!splitActive;
+  canvas2.style.display=splitActive?'block':'none';
+  document.getElementById('cam2-label').style.display=splitActive?'block':'none';
+  document.getElementById('split-toggle').classList.toggle('active',splitActive);
+});
 const scene=new THREE.Scene();
 scene.fog=new THREE.FogExp2(0x050505,0.018);
 const camera=new THREE.PerspectiveCamera(40,window.innerWidth/window.innerHeight,0.1,500);
@@ -749,32 +772,36 @@ function stepPhysics(dt){
   // ── AUTO-LAND SEQUENCE ─────────────────────────────────────────
   if(state.landing){
     const alt=state.y+5;
-    const pitchDeg=state.pitch*180/Math.PI; // 0=vertical, 90=horiz
+    const pitchDeg=state.pitch*180/Math.PI;
 
-    // Step 1: push gimbal negative = torques body back toward vertical (same physics as flight)
-    const gimbalTarget = pitchDeg > 5 ? -Math.min(70, pitchDeg) : 0;
-    ctrl.gimbalPitch += (gimbalTarget - ctrl.gimbalPitch) * 0.05;
+    // Directly ease pitch back to 0 (vertical) — smooth, no torque fighting
+    state.pitch  += (0 - state.pitch)  * 0.03;
+    state.dpitch *= 0.7; // kill angular momentum
+    state.droll  *= 0.7;
+    state.roll   += (0 - state.roll)   * 0.05;
+
+    // Update gimbal visual to match (show it returning to 0)
+    ctrl.gimbalPitch += (0 - ctrl.gimbalPitch) * 0.05;
     document.getElementById('sl-gpitch').value = ctrl.gimbalPitch;
     document.getElementById('lbl-gpitch').textContent = ctrl.gimbalPitch.toFixed(0)+'°';
 
-    // Step 2: body is back vertical — zero gimbal, reduce thrust to descend
-    if(pitchDeg < 8){
-      ctrl.gimbalPitch *= 0.9;
-      const targetThrust = Math.max(0, alt * 10);
-      ctrl.thrustPct += (targetThrust - ctrl.thrustPct) * 0.04;
+    // Once nearly vertical, reduce thrust proportional to altitude → descend
+    if(Math.abs(pitchDeg) < 15){
+      const targetThrust = Math.max(0, Math.min(55, alt * 9));
+      ctrl.thrustPct += (targetThrust - ctrl.thrustPct) * 0.05;
       document.getElementById('sl-thrust').value = ctrl.thrustPct;
       document.getElementById('lbl-thrust').textContent = Math.round(ctrl.thrustPct)+'%';
     }
 
-    // Step 3: touchdown — spin down
+    // Touchdown
     if(state.y <= -4.85){
-      ctrl.thrustPct += (0 - ctrl.thrustPct) * 0.12;
+      ctrl.thrustPct += (0 - ctrl.thrustPct) * 0.15;
       document.getElementById('sl-thrust').value = ctrl.thrustPct;
       document.getElementById('lbl-thrust').textContent = Math.round(ctrl.thrustPct)+'%';
-      state.vy=0; state.vx*=0.88; state.vz*=0.88;
+      state.vy=0; state.vx*=0.8; state.vz*=0.8;
       if(ctrl.thrustPct < 1){
         state.landing=false; state.landed=true; state.launched=false;
-        state.vy=0; state.vx=0; state.vz=0; state.y=-5;
+        state.vy=0; state.vx=0; state.vz=0; state.y=-5; state.pitch=0;
         document.getElementById('sys-status').textContent='LANDED';
         document.getElementById('launch-btn').textContent='▶ LAUNCH';
         document.getElementById('launch-btn').classList.remove('active');
@@ -785,6 +812,16 @@ function stepPhysics(dt){
         return;
       }
     }
+    // Skip rest of physics during landing (no more torque)
+    // but still integrate position
+    state.vx *= 0.98; state.vz *= 0.98;
+    const thrustNow = (ctrl.thrustPct/100) * ctrl.mass * GRAVITY * 2.8;
+    state.vy += (thrustNow/ctrl.mass - GRAVITY) * dt;
+    state.y  += state.vy * dt;
+    state.x  += state.vx * dt;
+    state.z  += state.vz * dt;
+    if(state.y < -5){ state.y=-5; state.vy=Math.max(0,state.vy); }
+    return; // skip normal physics
   }
 
   const thrust = ctrl.thrustPct / 100;
@@ -815,8 +852,8 @@ function stepPhysics(dt){
   state.yaw   += state.dyaw   * dt;
 
   // Soft clamp — allow full 0 (vertical) to PI/2 (horizontal), gentle stop at limits
-  if(state.pitch > Math.PI/2 - 0.02) { state.pitch = Math.PI/2 - 0.02; state.dpitch = Math.min(0, state.dpitch); }
-  if(state.pitch < -0.1) { state.pitch = -0.1; state.dpitch = Math.max(0, state.dpitch); }
+  if(state.pitch > Math.PI/2 - 0.02){ state.pitch=Math.PI/2-0.02; state.dpitch=Math.min(0,state.dpitch); }
+  if(state.pitch < -Math.PI/4){ state.pitch=-Math.PI/4; state.dpitch=Math.max(0,state.dpitch); }
 
   // ── THRUST VECTOR IN WORLD SPACE ──────────────────────────────
   // pitch=0 → vertical (thrust UP), pitch=PI/2 → horizontal (thrust FORWARD along X)
@@ -1070,6 +1107,18 @@ function animate(){
   }
 
   renderer.render(scene,camera);
+
+  // Split view — chase cam always
+  if(splitActive){
+    const t2=UAV.position.clone();
+    // Chase: behind and slightly above
+    const behindX = Math.sin(state.yaw)*6;
+    const behindZ = Math.cos(state.yaw)*6;
+    const upY = Math.cos(state.pitch)*3+1.5;
+    camera2.position.set(t2.x-behindX, t2.y+upY, t2.z-behindZ);
+    camera2.lookAt(t2);
+    renderer2.render(scene,camera2);
+  }
 }
 animate();
 
