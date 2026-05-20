@@ -35,17 +35,17 @@
   box-sizing:border-box;
 }
 
-html{
-  scroll-behavior:smooth;
-  overflow-x:hidden;
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip; 
 }
 
-body{
-  background:var(--bg);
-  color:var(--white);
-  font-family:var(--font-sans);
-  overflow-x:hidden;
-  cursor:none;
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font-sans);
+  overflow-x: clip; 
+  cursor: none;
 }
 
 #cur-dot,
@@ -444,9 +444,10 @@ section{
   background:var(--white-30);
 }
 
-.depth-section{
-  height:400vh;
-  position:relative;
+.depth-section {
+  height: 400vh;
+  position: relative;
+  padding: 0; 
 }
 
 .depth-sticky{
@@ -459,21 +460,22 @@ section{
   overflow:hidden;
 }
 
-.depth-text-wrap{
-  perspective:1200px;
-  transform-style:preserve-3d;
-  text-align:center;
-  display:grid;
-  place-items:center;
+.depth-text-wrap {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  text-align: center;
+  display: grid;
+  place-items: center;
+  width: 100%;
 }
 
-.depth-line{
+.depth-line {
   grid-area: 1 / 1;
-  opacity:0;
-  font-size:clamp(32px,5vw,72px);
-  letter-spacing:-.03em;
-  transform-origin:center center -200px;
-  backface-visibility:hidden;
+  opacity: 0;
+  font-size: clamp(32px, 5vw, 72px);
+  letter-spacing: -.03em;
+  transform-origin: center center -200px;
+  backface-visibility: hidden;
 }
 
 .cards-grid{
