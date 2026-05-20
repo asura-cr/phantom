@@ -4,572 +4,673 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PHANTOM — Adaptive UAV Platform</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
-  :root {
-    --bg: #050505;
-    --bg-1: #0a0a0a;
-    --bg-2: #111111;
-    --bg-3: #1a1a1a;
-    --surface: #141414;
-    --border: rgba(255,255,255,0.07);
-    --border-hover: rgba(255,255,255,0.15);
-    --white: #ffffff;
-    --white-80: rgba(255,255,255,0.8);
-    --white-50: rgba(255,255,255,0.5);
-    --white-20: rgba(255,255,255,0.2);
-    --white-08: rgba(255,255,255,0.08);
-    --white-04: rgba(255,255,255,0.04);
-    --accent: #e8e8e8;
-    --glow: rgba(255,255,255,0.06);
-    --font-sans: 'Space Grotesk', sans-serif;
-    --font-mono: 'Space Mono', monospace;
+:root{
+  --bg:#050505;
+  --bg-1:#0a0a0a;
+  --bg-2:#111111;
+  --surface:#141414;
+  --border:rgba(255,255,255,.07);
+  --white:#fff;
+  --white-80:rgba(255,255,255,.8);
+  --white-50:rgba(255,255,255,.5);
+  --white-30:rgba(255,255,255,.3);
+  --white-20:rgba(255,255,255,.2);
+  --white-10:rgba(255,255,255,.1);
+  --white-08:rgba(255,255,255,.08);
+  --white-04:rgba(255,255,255,.04);
+  --font-sans:'Space Grotesk',sans-serif;
+  --font-mono:'Space Mono',monospace;
+}
+
+*,
+*::before,
+*::after{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+  overflow-x:hidden;
+}
+
+body{
+  background:var(--bg);
+  color:var(--white);
+  font-family:var(--font-sans);
+  overflow-x:hidden;
+  cursor:none;
+}
+
+#cur-dot,
+#cur-ring{
+  position:fixed;
+  top:0;
+  left:0;
+  pointer-events:none;
+  z-index:9999;
+  border-radius:50%;
+  will-change:transform;
+}
+
+#cur-dot{
+  width:8px;
+  height:8px;
+  background:#fff;
+  mix-blend-mode:difference;
+}
+
+#cur-ring{
+  width:36px;
+  height:36px;
+  border:1px solid rgba(255,255,255,.6);
+  mix-blend-mode:difference;
+  transition:
+    width .2s ease,
+    height .2s ease,
+    border-color .2s ease;
+}
+
+#cur-ring.active{
+  width:56px;
+  height:56px;
+  border-color:#fff;
+}
+
+nav{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  z-index:100;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:20px 48px;
+  transition:.35s;
+  border-bottom:1px solid transparent;
+}
+
+nav.scrolled{
+  background:rgba(5,5,5,.85);
+  backdrop-filter:blur(20px);
+  border-color:var(--border);
+}
+
+.nav-logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:#fff;
+  text-decoration:none;
+  font-family:var(--font-mono);
+  letter-spacing:.2em;
+  font-size:18px;
+  font-weight:700;
+}
+
+.nav-logo-mark{
+  width:28px;
+  height:28px;
+  object-fit:contain;
+}
+
+.nav-links{
+  display:flex;
+  gap:36px;
+  list-style:none;
+}
+
+.nav-links a{
+  text-decoration:none;
+  color:var(--white-50);
+  font-size:13px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  transition:.2s;
+}
+
+.nav-links a:hover{
+  color:#fff;
+}
+
+.nav-cta{
+  background:#fff;
+  color:#000;
+  text-decoration:none;
+  padding:10px 24px;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  font-family:var(--font-mono);
+  font-weight:700;
+}
+
+.hero{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+  padding:120px 48px 80px;
+}
+
+.hero-grid{
+  position:absolute;
+  inset:0;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:60px 60px;
+  animation:gridPulse 8s ease-in-out infinite;
+}
+
+@keyframes gridPulse{
+  0%,100%{opacity:.4}
+  50%{opacity:.8}
+}
+
+.hero-glow{
+  position:absolute;
+  width:600px;
+  height:600px;
+  background:radial-gradient(circle,rgba(255,255,255,.05),transparent 70%);
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+}
+
+.hero-content{
+  position:relative;
+  z-index:2;
+  text-align:center;
+  max-width:900px;
+}
+
+.hero-eyebrow{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.35em;
+  color:var(--white-50);
+  margin-bottom:28px;
+  font-family:var(--font-mono);
+}
+
+.hero-title{
+  font-size:clamp(64px,10vw,132px);
+  line-height:.92;
+  letter-spacing:-.04em;
+  margin-bottom:32px;
+}
+
+.hero-title .line{
+  overflow:hidden;
+  display:block;
+}
+
+.hero-title .word{
+  display:inline-block;
+  animation:slideUp .9s cubic-bezier(.16,1,.3,1) both;
+}
+
+@keyframes slideUp{
+  from{
+    transform:translateY(110%);
+    opacity:0;
+  }
+  to{
+    transform:translateY(0);
+    opacity:1;
+  }
+}
+
+.hero-subtitle{
+  font-size:17px;
+  line-height:1.7;
+  color:var(--white-50);
+  max-width:540px;
+  margin:0 auto 48px;
+  animation:fadeIn 1s .4s both;
+}
+
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:translateY(14px);
+  }
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+.hero-actions{
+  display:flex;
+  gap:16px;
+  justify-content:center;
+  flex-wrap:wrap;
+  animation:fadeIn 1s .6s both;
+}
+
+.btn-primary,
+.btn-secondary{
+  text-decoration:none;
+  padding:16px 40px;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  font-size:12px;
+  font-weight:700;
+  font-family:var(--font-mono);
+}
+
+.btn-primary{
+  background:#fff;
+  color:#000;
+}
+
+.btn-secondary{
+  border:1px solid var(--white-20);
+  color:#fff;
+}
+
+.hero-stats{
+  margin-top:90px;
+  display:flex;
+  border:1px solid var(--border);
+  position:relative;
+  z-index:2;
+}
+
+.stat-item{
+  padding:24px 48px;
+  text-align:center;
+  border-right:1px solid var(--border);
+}
+
+.stat-item:last-child{
+  border-right:none;
+}
+
+.stat-num{
+  display:block;
+  font-size:32px;
+  font-family:var(--font-mono);
+  margin-bottom:6px;
+}
+
+.stat-label{
+  font-size:11px;
+  color:var(--white-50);
+  text-transform:uppercase;
+  letter-spacing:.15em;
+}
+
+.hero-scroll-hint{
+  position:absolute;
+  bottom:36px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  font-size:10px;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--white-30);
+}
+
+.scroll-line{
+  width:1px;
+  height:40px;
+  background:var(--white-20);
+  overflow:hidden;
+  position:relative;
+}
+
+.scroll-line::after{
+  content:'';
+  position:absolute;
+  top:-100%;
+  left:0;
+  width:100%;
+  height:100%;
+  background:#fff;
+  animation:scrollDrop 2s infinite;
+}
+
+@keyframes scrollDrop{
+  from{top:-100%}
+  to{top:200%}
+}
+
+section{
+  padding:120px 48px;
+  position:relative;
+}
+
+.section-label{
+  font-size:11px;
+  letter-spacing:.3em;
+  text-transform:uppercase;
+  color:var(--white-30);
+  margin-bottom:20px;
+  font-family:var(--font-mono);
+}
+
+.section-title{
+  font-size:clamp(36px,5vw,64px);
+  line-height:1.05;
+  letter-spacing:-.03em;
+  margin-bottom:20px;
+}
+
+.section-desc{
+  max-width:560px;
+  color:var(--white-50);
+  line-height:1.7;
+  font-size:17px;
+}
+
+.reveal{
+  opacity:0;
+  transform:translateY(40px);
+  transition:
+    opacity .8s cubic-bezier(.16,1,.3,1),
+    transform .8s cubic-bezier(.16,1,.3,1);
+}
+
+.reveal.visible{
+  opacity:1;
+  transform:none;
+}
+
+.reveal-delay-1{transition-delay:.1s}
+.reveal-delay-2{transition-delay:.2s}
+.reveal-delay-3{transition-delay:.3s}
+
+.parallax-text,
+.depth-line,
+.card,
+.config-card,
+.sdg-card,
+.reveal{
+  will-change:transform,opacity;
+}
+
+.marquee-band{
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  overflow:hidden;
+  padding:18px 0;
+  background:var(--bg-1);
+}
+
+.marquee-inner{
+  display:flex;
+  white-space:nowrap;
+  animation:marquee 30s linear infinite;
+}
+
+@keyframes marquee{
+  from{transform:translateX(0)}
+  to{transform:translateX(-50%)}
+}
+
+.marquee-item{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:0 48px;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  color:var(--white-30);
+  font-family:var(--font-mono);
+}
+
+.marquee-dot{
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:var(--white-30);
+}
+
+.depth-section{
+  height:400vh;
+  position:relative;
+}
+
+.depth-sticky{
+  position:sticky;
+  top:0;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.depth-text-wrap{
+  perspective:1200px;
+  transform-style:preserve-3d;
+  text-align:center;
+  display:grid;
+  place-items:center;
+}
+
+.depth-line{
+  grid-area: 1 / 1;
+  opacity:0;
+  font-size:clamp(32px,5vw,72px);
+  letter-spacing:-.03em;
+  transform-origin:center center -200px;
+  backface-visibility:hidden;
+}
+
+.cards-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:var(--border);
+  margin-top:80px;
+}
+
+.card{
+  background:var(--bg);
+  padding:48px 40px;
+}
+
+.card-title{
+  font-size:20px;
+  margin-bottom:12px;
+}
+
+.card-text{
+  color:var(--white-50);
+  line-height:1.7;
+  font-size:14px;
+}
+
+.configs-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:var(--border);
+  margin-top:60px;
+}
+
+.config-card{
+  background:var(--bg);
+  padding:36px 32px;
+  position:relative;
+  overflow:hidden;
+}
+
+.config-card::after{
+  content:'';
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:0;
+  height:2px;
+  background:#fff;
+  transition:.4s cubic-bezier(.16,1,.3,1);
+}
+
+.config-card:hover::after{
+  width:100%;
+}
+
+.config-letter{
+  font-size:48px;
+  color:var(--white-08);
+  margin-bottom:16px;
+  font-family:var(--font-mono);
+}
+
+.config-name{
+  font-size:14px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+
+.config-region{
+  color:var(--white-30);
+  margin-bottom:16px;
+  font-size:12px;
+}
+
+.config-desc{
+  color:var(--white-50);
+  line-height:1.6;
+  font-size:13px;
+}
+
+.sdg-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:1px;
+  background:var(--border);
+  margin-top:60px;
+}
+
+.sdg-card{
+  background:var(--bg);
+  padding:32px 28px;
+}
+
+.sdg-num{
+  font-size:36px;
+  margin-bottom:12px;
+  color:var(--white-10);
+  font-family:var(--font-mono);
+}
+
+.sdg-title{
+  margin-bottom:8px;
+}
+
+.sdg-text{
+  color:var(--white-40);
+  line-height:1.6;
+  font-size:12px;
+}
+
+@media(max-width:900px){
+
+  nav{
+    padding:16px 24px;
   }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html { scroll-behavior: smooth; overflow-x: hidden; }
-
-  body {
-    background: var(--bg);
-    color: var(--white);
-    font-family: var(--font-sans);
-    overflow-x: hidden;
-    cursor: none;
+  .nav-links{
+    display:none;
   }
 
-  /* CURSOR */
-  #cur-dot { position:fixed; top:0; left:0; z-index:9999; pointer-events:none; mix-blend-mode:difference; width:8px; height:8px; background:#fff; border-radius:50%; transform:translate(-50%,-50%); transition:transform 0.1s; }
-  #cur-ring { position:fixed; top:0; left:0; z-index:9998; pointer-events:none; mix-blend-mode:difference; width:36px; height:36px; border:1px solid rgba(255,255,255,0.6); border-radius:50%; transform:translate(-50%,-50%); transition:width 0.2s, height 0.2s, border-color 0.2s; }
-  body:has(a:hover) #cur-ring, body:has(button:hover) #cur-ring { width:56px; height:56px; border-color:#fff; }
-
-  /* ── NAV ── */
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 20px 48px;
-    border-bottom: 1px solid transparent;
-    transition: background 0.4s, border-color 0.4s, backdrop-filter 0.4s;
-  }
-  nav.scrolled {
-    background: rgba(5,5,5,0.85);
-    backdrop-filter: blur(20px);
-    border-color: var(--border);
-  }
-  .nav-logo {
-    font-family: var(--font-mono);
-    font-size: 18px; font-weight: 700;
-    letter-spacing: 0.2em; color: var(--white);
-    text-decoration: none;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .nav-logo-mark {
-    width: 28px; height: 28px;
-    display: block;
-    object-fit: contain;
-  }
-  .nav-links { display: flex; gap: 36px; list-style: none; }
-  .nav-links a {
-    color: var(--white-50); text-decoration: none;
-    font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase;
-    transition: color 0.2s;
-  }
-  .nav-links a:hover { color: var(--white); }
-  .nav-cta {
-    background: var(--white); color: var(--bg);
-    padding: 10px 24px; font-family: var(--font-mono);
-    font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
-    text-transform: uppercase; text-decoration: none;
-    transition: background 0.2s, color 0.2s;
-  }
-  .nav-cta:hover { background: var(--white-80); }
-
-  /* ── HERO ── */
-  .hero {
-    min-height: 100vh;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    position: relative; overflow: hidden;
-    padding: 120px 48px 80px;
+  section{
+    padding:80px 24px;
   }
 
-  .hero-grid {
-    position: absolute; inset: 0; z-index: 0;
-    background-image:
-      linear-gradient(var(--border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--border) 1px, transparent 1px);
-    background-size: 60px 60px;
-    animation: gridPulse 8s ease-in-out infinite;
-  }
-  @keyframes gridPulse {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 0.8; }
+  .hero{
+    padding:100px 24px 60px;
   }
 
-  .hero-noise {
-    position: absolute; inset: 0; z-index: 0; opacity: 0.03;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size: 200px;
+  .cards-grid,
+  .configs-grid,
+  .sdg-grid{
+    grid-template-columns:1fr;
   }
 
-  .hero-glow {
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 600px; height: 600px;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.04) 0%, transparent 70%);
-    pointer-events: none; z-index: 0;
+  .hero-stats{
+    flex-direction:column;
   }
 
-  .hero-content { position: relative; z-index: 2; text-align: center; max-width: 900px; }
-
-  .hero-eyebrow {
-    font-family: var(--font-mono); font-size: 11px;
-    letter-spacing: 0.35em; text-transform: uppercase;
-    color: var(--white-50); margin-bottom: 28px;
-    display: flex; align-items: center; justify-content: center; gap: 16px;
-  }
-  .hero-eyebrow::before, .hero-eyebrow::after {
-    content: ''; display: block; width: 40px; height: 1px; background: var(--white-20);
-  }
-
-  .hero-title {
-    font-size: clamp(64px, 10vw, 132px);
-    font-weight: 700; line-height: 0.92;
-    letter-spacing: -0.04em;
-    margin-bottom: 32px;
-  }
-  .hero-title .line { overflow: hidden; display: block; }
-  .hero-title .word {
-    display: inline-block;
-    animation: slideUp 0.9s cubic-bezier(0.16,1,0.3,1) both;
-  }
-  .hero-title .word:nth-child(2) { animation-delay: 0.1s; }
-  @keyframes slideUp {
-    from { transform: translateY(110%); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  .hero-subtitle {
-    font-size: 17px; line-height: 1.7;
-    color: var(--white-50); max-width: 540px; margin: 0 auto 48px;
-    animation: fadeIn 1s 0.5s both;
-  }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-
-  .hero-actions {
-    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
-    animation: fadeIn 1s 0.7s both;
-  }
-  .btn-primary {
-    background: var(--white); color: var(--bg);
-    padding: 16px 40px; font-family: var(--font-mono);
-    font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
-    text-transform: uppercase; text-decoration: none;
-    display: inline-block; transition: transform 0.2s, background 0.2s;
-  }
-  .btn-primary:hover { transform: translateY(-2px); background: var(--white-80); }
-  .btn-secondary {
-    border: 1px solid var(--white-20); color: var(--white);
-    padding: 16px 40px; font-family: var(--font-mono);
-    font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
-    text-transform: uppercase; text-decoration: none;
-    display: inline-block; transition: border-color 0.2s, background 0.2s;
-  }
-  .btn-secondary:hover { border-color: var(--white); background: var(--white-04); }
-
-  .hero-stats {
-    position: relative; z-index: 2;
-    display: flex; gap: 0; margin-top: 100px;
-    border: 1px solid var(--border); width: fit-content; margin-left: auto; margin-right: auto;
-    animation: fadeIn 1s 1s both;
-  }
-  .stat-item {
-    padding: 24px 48px; text-align: center;
-    border-right: 1px solid var(--border);
-  }
-  .stat-item:last-child { border-right: none; }
-  .stat-num {
-    font-family: var(--font-mono); font-size: 32px; font-weight: 700;
-    display: block; margin-bottom: 6px;
-  }
-  .stat-label {
-    font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
-    color: var(--white-50);
-  }
-
-  .hero-scroll-hint {
-    position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
-    z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px;
-    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em;
-    color: var(--white-30); text-transform: uppercase;
-    animation: fadeIn 1s 1.4s both;
-  }
-  .scroll-line {
-    width: 1px; height: 40px; background: var(--white-20);
-    position: relative; overflow: hidden;
-  }
-  .scroll-line::after {
-    content: ''; position: absolute; top: -100%; left: 0;
-    width: 100%; height: 100%; background: var(--white);
-    animation: scrollDrop 2s 1.5s ease-in-out infinite;
-  }
-  @keyframes scrollDrop { 0% { top: -100%; } 100% { top: 200%; } }
-
-  /* ── SECTION BASE ── */
-  section { padding: 120px 48px; position: relative; }
-  .section-label {
-    font-family: var(--font-mono); font-size: 11px;
-    letter-spacing: 0.3em; text-transform: uppercase;
-    color: var(--white-30); margin-bottom: 20px;
-    display: flex; align-items: center; gap: 16px;
-  }
-  .section-label::before {
-    content: ''; width: 24px; height: 1px; background: var(--white-30);
-  }
-  .section-title {
-    font-size: clamp(36px, 5vw, 64px);
-    font-weight: 700; line-height: 1.05; letter-spacing: -0.03em;
-    margin-bottom: 20px;
-  }
-  .section-desc {
-    font-size: 17px; line-height: 1.7; color: var(--white-50);
-    max-width: 560px;
-  }
-
-  /* ── REVEAL ANIMATION ── */
-  .reveal {
-    opacity: 0; transform: translateY(40px);
-    transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1),
-                transform 0.8s cubic-bezier(0.16,1,0.3,1);
-  }
-  .reveal.visible { opacity: 1; transform: none; }
-  .reveal-delay-1 { transition-delay: 0.1s; }
-  .reveal-delay-2 { transition-delay: 0.2s; }
-  .reveal-delay-3 { transition-delay: 0.3s; }
-
-  /* ── MARQUEE BANNER ── */
-  .marquee-band {
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    overflow: hidden; padding: 18px 0; background: var(--bg-1);
-  }
-  .marquee-inner {
-    display: flex; gap: 0; white-space: nowrap;
-    animation: marquee 30s linear infinite;
-  }
-  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-  .marquee-item {
-    font-family: var(--font-mono); font-size: 12px;
-    letter-spacing: 0.2em; text-transform: uppercase;
-    color: var(--white-30); padding: 0 48px;
-    display: flex; align-items: center; gap: 16px;
-  }
-  .marquee-dot { width: 4px; height: 4px; background: var(--white-30); border-radius: 50%; }
-
-  /* ── OVERVIEW CARDS ── */
-  .cards-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
-    background: var(--border); margin-top: 80px;
-  }
-  .card {
-    background: var(--bg); padding: 48px 40px;
-    transition: background 0.3s;
-    position: relative; overflow: hidden;
-  }
-  .card::before {
-    content: ''; position: absolute; inset: 0;
-    background: var(--white-04); opacity: 0;
-    transition: opacity 0.3s;
-  }
-  .card:hover::before { opacity: 1; }
-  .card-num {
-    font-family: var(--font-mono); font-size: 11px;
-    color: var(--white-20); margin-bottom: 40px;
-    letter-spacing: 0.2em;
-  }
-  .card-icon {
-    width: 48px; height: 48px; margin-bottom: 24px;
-    stroke: var(--white-50); fill: none; stroke-width: 1.5;
-  }
-  .card-title {
-    font-size: 20px; font-weight: 600; margin-bottom: 12px;
-    letter-spacing: -0.02em;
-  }
-  .card-text { font-size: 14px; line-height: 1.7; color: var(--white-50); }
-
-  /* ── FEATURE SPLIT ── */
-  .feature-split {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
-  }
-  .feature-split.reverse { direction: rtl; }
-  .feature-split.reverse > * { direction: ltr; }
-  .feature-visual {
-    aspect-ratio: 1; background: var(--surface);
-    border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    position: relative; overflow: hidden;
-  }
-  .feature-visual-inner { position: relative; width: 100%; height: 100%; }
-
-  /* 3D UAV wireframe canvas */
-  .uav-canvas { width: 100%; height: 100%; display: block; }
-
-  .feature-tags {
-    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 32px;
-  }
-  .tag {
-    font-family: var(--font-mono); font-size: 11px;
-    letter-spacing: 0.1em; padding: 6px 14px;
-    border: 1px solid var(--border); color: var(--white-50);
-    text-transform: uppercase;
-  }
-
-  /* ── SPECS TABLE ── */
-  .specs-section { background: var(--bg-1); }
-  .specs-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
-    background: var(--border); margin-top: 60px;
-  }
-  .spec-row {
-    background: var(--bg-1); padding: 20px 32px;
-    display: flex; justify-content: space-between; align-items: center;
-    transition: background 0.2s;
-  }
-  .spec-row:hover { background: var(--bg-2); }
-  .spec-name { font-size: 13px; color: var(--white-50); letter-spacing: 0.05em; }
-  .spec-val {
-    font-family: var(--font-mono); font-size: 14px; font-weight: 700;
-    color: var(--white);
-  }
-
-  /* ── TIMELINE ── */
-  .timeline { margin-top: 80px; position: relative; }
-  .timeline::before {
-    content: ''; position: absolute; left: 50%; top: 0; bottom: 0;
-    width: 1px; background: var(--border); transform: translateX(-50%);
-  }
-  .timeline-item {
-    display: grid; grid-template-columns: 1fr 60px 1fr; gap: 0; margin-bottom: 0;
-    position: relative;
-  }
-  .timeline-content-left { padding: 48px 48px 48px 0; text-align: right; }
-  .timeline-content-right { padding: 48px 0 48px 48px; }
-  .timeline-center {
-    display: flex; flex-direction: column; align-items: center;
-    padding-top: 52px;
-  }
-  .timeline-dot {
-    width: 12px; height: 12px; border: 2px solid var(--white-50);
-    background: var(--bg); border-radius: 50%;
-    position: relative; z-index: 2;
-    transition: border-color 0.3s, background 0.3s;
-  }
-  .timeline-item:hover .timeline-dot { border-color: var(--white); background: var(--white); }
-  .timeline-year {
-    font-family: var(--font-mono); font-size: 28px; font-weight: 700;
-    color: var(--white-20); margin-bottom: 8px;
-  }
-  .timeline-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
-  .timeline-text { font-size: 14px; line-height: 1.7; color: var(--white-50); }
-  .timeline-badge {
-    display: inline-block; margin-top: 12px;
-    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.15em;
-    text-transform: uppercase; padding: 5px 12px;
-    border: 1px solid var(--border); color: var(--white-40);
-  }
-
-  /* ── FOOTER ── */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 60px 48px 40px;
-    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 48px;
-  }
-  .footer-brand .logo {
-    font-family: var(--font-mono); font-size: 18px; font-weight: 700;
-    letter-spacing: 0.2em; margin-bottom: 16px; display: block;
-  }
-  .footer-brand p { font-size: 13px; color: var(--white-40); line-height: 1.7; }
-  .footer-col h4 {
-    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em;
-    text-transform: uppercase; color: var(--white-30); margin-bottom: 20px;
-  }
-  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
-  .footer-col ul li a {
-    font-size: 14px; color: var(--white-50); text-decoration: none;
-    transition: color 0.2s;
-  }
-  .footer-col ul li a:hover { color: var(--white); }
-  .footer-bottom {
-    border-top: 1px solid var(--border);
-    padding: 24px 48px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .footer-bottom p { font-family: var(--font-mono); font-size: 11px; color: var(--white-30); letter-spacing: 0.1em; }
-
-  /* ── 3D DRONE SVG ANIMATION ── */
-  .drone-3d {
-    width: 80%; max-width: 400px;
-    animation: droneFloat 6s ease-in-out infinite;
-    filter: drop-shadow(0 0 30px rgba(255,255,255,0.08));
-  }
-  @keyframes droneFloat {
-    0%, 100% { transform: translateY(0) rotateY(0deg); }
-    25% { transform: translateY(-12px) rotateY(3deg); }
-    75% { transform: translateY(-6px) rotateY(-3deg); }
-  }
-
-  /* ── PARALLAX CONTAINER ── */
-  .parallax-wrapper { perspective: 1px; overflow-x: hidden; overflow-y: auto; height: 100vh; }
-
-  /* ── WING CONFIGS ── */
-  .configs-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
-    background: var(--border); margin-top: 60px;
-  }
-  .config-card {
-    background: var(--bg); padding: 36px 32px;
-    transition: background 0.3s; cursor: default;
-    position: relative; overflow: hidden;
-  }
-  .config-card::after {
-    content: ''; position: absolute; bottom: 0; left: 0;
-    width: 0; height: 2px; background: var(--white);
-    transition: width 0.4s cubic-bezier(0.16,1,0.3,1);
-  }
-  .config-card:hover::after { width: 100%; }
-  .config-card:hover { background: var(--bg-2); }
-  .config-letter {
-    font-family: var(--font-mono); font-size: 48px; font-weight: 700;
-    color: var(--white-08); margin-bottom: 16px; line-height: 1;
-  }
-  .config-name {
-    font-size: 14px; font-weight: 700; letter-spacing: 0.1em;
-    text-transform: uppercase; margin-bottom: 8px; color: var(--white);
-  }
-  .config-region { font-size: 12px; color: var(--white-40); margin-bottom: 16px; font-family: var(--font-mono); }
-  .config-desc { font-size: 13px; color: var(--white-50); line-height: 1.6; }
-
-  /* ── PROGRESS BARS ── */
-  .progress-list { display: flex; flex-direction: column; gap: 24px; margin-top: 40px; }
-  .progress-item {}
-  .progress-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
-  .progress-name { font-size: 13px; color: var(--white-70); }
-  .progress-val { font-family: var(--font-mono); font-size: 12px; color: var(--white-50); }
-  .progress-track { height: 2px; background: var(--white-08); position: relative; }
-  .progress-fill {
-    height: 100%; background: var(--white);
-    width: 0; transition: width 1.2s cubic-bezier(0.16,1,0.3,1);
-  }
-
-  /* ── PARALLAX TEXT ── */
-  .parallax-text {
-    font-size: clamp(60px, 12vw, 160px);
-    font-weight: 700; letter-spacing: -0.05em;
-    color: var(--white-04); white-space: nowrap;
-    line-height: 1; margin: 0 -48px;
-    overflow: hidden;
-  }
-
-  /* ── SDG GRID ── */
-  .sdg-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
-    background: var(--border); margin-top: 60px;
-  }
-  .sdg-card {
-    background: var(--bg); padding: 32px 28px;
-    transition: background 0.3s;
-  }
-  .sdg-card:hover { background: var(--bg-2); }
-  .sdg-num {
-    font-family: var(--font-mono); font-size: 36px; font-weight: 700;
-    color: var(--white-10); margin-bottom: 12px; line-height: 1;
-  }
-  .sdg-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
-  .sdg-text { font-size: 12px; color: var(--white-40); line-height: 1.6; }
-
-  /* ── SCROLL DEPTH 3D ── */
-  .depth-section {
-    padding: 0 48px; overflow: hidden;
-    position: relative; height: 400vh;
-  }
-  .depth-sticky {
-    position: sticky; top: 0; height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden;
-  }
-  .depth-text-wrap {
-    perspective: 800px; text-align: center;
-  }
-  .depth-line {
-    font-size: clamp(32px, 5vw, 72px);
-    font-weight: 700; letter-spacing: -0.03em;
-    display: block; transition: transform 0.05s, opacity 0.05s;
-    transform-origin: center center -200px;
-    opacity: 0;
-  }
-
-  @media (max-width: 900px) {
-    nav { padding: 16px 24px; }
-    .nav-links { display: none; }
-    section { padding: 80px 24px; }
-    .hero { padding: 100px 24px 60px; }
-    .cards-grid, .specs-grid, .configs-grid, .sdg-grid { grid-template-columns: 1fr; }
-    .feature-split { grid-template-columns: 1fr; gap: 40px; }
-    .feature-split.reverse { direction: ltr; }
-    .hero-stats { flex-direction: column; border: none; gap: 1px; background: var(--border); }
-    .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
-    .timeline::before { left: 24px; }
-    .timeline-item { grid-template-columns: 0 48px 1fr; }
-    .timeline-content-left { display: none; }
-    footer { grid-template-columns: 1fr 1fr; }
-    .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
-  }
+  .stat-item{
+    border-right:none;
+    border-bottom:1px solid var(--border);
+  }
+}
 </style>
 </head>
+
 <body>
 
-<!-- CURSOR -->
 <div id="cur-dot"></div>
 <div id="cur-ring"></div>
 
-<!-- NAV -->
 <nav id="mainNav">
-  <a href="index.html" class="nav-logo">
-    <img src="icon.png" alt="PHANTOM" class="nav-logo-mark">
+  <a href="#" class="nav-logo">
+    <img src="icon.png" class="nav-logo-mark">
     PHANTOM
   </a>
+
   <ul class="nav-links">
-    <li><a href="index.html">Overview</a></li>
-    <li><a href="technology.html">Technology</a></li>
-    <li><a href="mercury.html">Mercury AI</a></li>
-    <li><a href="deployment.html">Deployment</a></li>
-    <li><a href="experience.html">3D Experience</a></li>
+    <li><a href="#">Overview</a></li>
+    <li><a href="#">Technology</a></li>
+    <li><a href="#">Mercury AI</a></li>
+    <li><a href="#">Deployment</a></li>
   </ul>
-  <a href="experience.html" class="nav-cta">3D Experience ↗</a>
+
+  <a href="#" class="nav-cta">3D Experience ↗</a>
 </nav>
 
-<!-- HERO -->
 <section class="hero">
+
   <div class="hero-grid"></div>
-  <div class="hero-noise"></div>
   <div class="hero-glow"></div>
 
   <div class="hero-content">
-    <div class="hero-eyebrow">Adaptive UAV Platform — UAE Origin</div>
+
+    <div class="hero-eyebrow">
+      Adaptive UAV Platform — UAE Origin
+    </div>
+
     <h1 class="hero-title">
       <span class="line"><span class="word">ONE</span></span>
       <span class="line"><span class="word">UAV.</span></span>
       <span class="line"><span class="word">INFINITE</span></span>
       <span class="line"><span class="word">MISSIONS.</span></span>
     </h1>
+
     <p class="hero-subtitle">
-      Phantom is a solar-electric modular UAV platform with swappable mission configurations, 
-      real-time AI intelligence, and VTOL capability — engineered for the world's harshest environments.
+      Phantom is a solar-electric modular UAV platform with swappable mission configurations,
+      real-time AI intelligence, and VTOL capability.
     </p>
+
     <div class="hero-actions">
-      <a href="technology.html" class="btn-primary">Explore the Platform</a>
-      <a href="mercury.html" class="btn-secondary">Mercury AI →</a>
+      <a href="#" class="btn-primary">Explore Platform</a>
+      <a href="#" class="btn-secondary">Mercury AI</a>
     </div>
+
   </div>
 
   <div class="hero-stats">
@@ -577,17 +678,15 @@
       <span class="stat-num">6+</span>
       <span class="stat-label">Hours Endurance</span>
     </div>
+
     <div class="stat-item">
       <span class="stat-num">&lt;3min</span>
       <span class="stat-label">Config Swap</span>
     </div>
+
     <div class="stat-item">
       <span class="stat-num">6g</span>
       <span class="stat-label">Load Factor</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-num">∞</span>
-      <span class="stat-label">Solar Daylight</span>
     </div>
   </div>
 
@@ -595,424 +694,356 @@
     <span>Scroll</span>
     <div class="scroll-line"></div>
   </div>
+
 </section>
 
-<!-- MARQUEE -->
 <div class="marquee-band">
   <div class="marquee-inner" id="marqueeInner"></div>
 </div>
 
-<!-- 3D SCROLL DEPTH SECTION -->
 <section class="depth-section" id="depthSection">
+
   <div class="depth-sticky">
-    <div class="depth-text-wrap" id="depthTextWrap">
+
+    <div class="depth-text-wrap">
+
       <span class="depth-line" id="dl1">MODULAR CORE</span>
       <span class="depth-line" id="dl2">SOLAR ELECTRIC</span>
       <span class="depth-line" id="dl3">AI INTELLIGENCE</span>
       <span class="depth-line" id="dl4">UNLIMITED ENDURANCE</span>
+
     </div>
+
   </div>
+
 </section>
 
-<!-- OVERVIEW -->
-<section id="overview" style="background: var(--bg-1);">
-  <div class="section-label reveal">Overview</div>
-  <h2 class="section-title reveal">Architecture of<br>Convergence</h2>
+<section>
+
+  <div class="section-label reveal">
+    Overview
+  </div>
+
+  <h2 class="section-title reveal">
+    Architecture of Convergence
+  </h2>
+
   <p class="section-desc reveal reveal-delay-1">
-    Traditional unmanned systems force compromise. Phantom eliminates this through a single Persistent Core 
-    that accepts any mission configuration through the QRAM interface system.
+    Traditional unmanned systems force compromise.
+    Phantom eliminates this through modular architecture.
   </p>
 
   <div class="cards-grid">
+
     <div class="card reveal">
-      <div class="card-num">01</div>
-      <svg class="card-icon" viewBox="0 0 48 48">
-        <rect x="16" y="20" width="16" height="10" rx="1"/>
-        <line x1="4" y1="24" x2="16" y2="24"/><line x1="32" y1="24" x2="44" y2="24"/>
-        <line x1="24" y1="14" x2="24" y2="20"/><line x1="24" y1="30" x2="24" y2="38"/>
-        <circle cx="4" cy="24" r="2"/><circle cx="44" cy="24" r="2"/>
-        <circle cx="24" cy="14" r="2"/><circle cx="24" cy="38" r="2"/>
-      </svg>
       <div class="card-title">Persistent Core</div>
-      <div class="card-text">One standardized fuselage carries flight control, power management, AI computing, and communications. Mass-producible. Field-repairable. 10-year service life.</div>
+      <div class="card-text">
+        One standardized fuselage carries flight control,
+        power management, AI computing, and communications.
+      </div>
     </div>
+
     <div class="card reveal reveal-delay-1">
-      <div class="card-num">02</div>
-      <svg class="card-icon" viewBox="0 0 48 48">
-        <path d="M8 24 L24 10 L40 24 L24 38 Z"/>
-        <path d="M16 24 L24 16 L32 24 L24 32 Z" stroke-dasharray="3 3"/>
-        <line x1="24" y1="10" x2="24" y2="4"/><line x1="40" y1="24" x2="46" y2="24"/>
-        <line x1="24" y1="38" x2="24" y2="44"/><line x1="8" y1="24" x2="2" y2="24"/>
-      </svg>
       <div class="card-title">QRAM Interface</div>
-      <div class="card-text">Quick-Release Aerodynamic Mount provides mechanical, electrical, and data connectivity between core and mission modules. No tools. No calibration. Three minutes.</div>
+      <div class="card-text">
+        Fast module replacement with unified data and power.
+      </div>
     </div>
+
     <div class="card reveal reveal-delay-2">
-      <div class="card-num">03</div>
-      <svg class="card-icon" viewBox="0 0 48 48">
-        <circle cx="24" cy="24" r="12"/>
-        <path d="M12 24 Q24 10 36 24 Q24 38 12 24"/>
-        <circle cx="24" cy="12" r="2"/><circle cx="36" cy="24" r="2"/>
-        <circle cx="24" cy="36" r="2"/><circle cx="12" cy="24" r="2"/>
-      </svg>
       <div class="card-title">Solar Persistence</div>
-      <div class="card-text">480W peak solar harvest enables unlimited daylight endurance. 222Wh battery bridges nighttime operations. The wing is the energy system.</div>
+      <div class="card-text">
+        High-efficiency solar wing architecture for long endurance.
+      </div>
     </div>
-    <div class="card reveal">
-      <div class="card-num">04</div>
-      <svg class="card-icon" viewBox="0 0 48 48">
-        <path d="M8 36 L24 12 L40 36"/>
-        <path d="M16 28 L24 16 L32 28"/>
-        <line x1="24" y1="36" x2="24" y2="44"/>
-        <line x1="8" y1="36" x2="40" y2="36"/>
-      </svg>
-      <div class="card-title">Thrust Vectoring</div>
-      <div class="card-text">Single-engine gimbal propulsion with 0–90° pitch and ±25° yaw enables vertical launch, hover, and fixed-wing cruise from one propulsion unit.</div>
-    </div>
-    <div class="card reveal reveal-delay-1">
-      <div class="card-num">05</div>
-      <svg class="card-icon" viewBox="0 0 48 48">
-        <rect x="8" y="8" width="14" height="14" rx="1"/>
-        <rect x="26" y="8" width="14" height="14" rx="1"/>
-        <rect x="8" y="26" width="14" height="14" rx="1"/>
-        <rect x="26" y="26" width="14" height="14" rx="1"/>
-        <line x1="22" y1="15" x2="26" y2="15"/><line x1="22" y1="33" x2="26" y2="33"/>
-        <line x1="15" y1="22" x2="15" y2="26"/><line x1="33" y1="22" x2="33" y2="26"/>
-      </svg>
-      <div class="card-title">Mercury AI</div>
-      <div class="card-text">Real-time 3D reconstruction, object detection, swarm coordination, and predictive modeling — running at the edge on NVIDIA Jetson Orin Nano.</div>
-    </div>
-    <div class="card reveal reveal-delay-2">
-      <div class="card-num">06</div>
-      <svg class="card-icon" viewBox="0 0 48 48">
-        <circle cx="24" cy="24" r="16"/>
-        <circle cx="24" cy="24" r="8"/>
-        <line x1="24" y1="8" x2="24" y2="16"/>
-        <line x1="40" y1="24" x2="32" y2="24"/>
-        <line x1="24" y1="40" x2="24" y2="32"/>
-        <line x1="8" y1="24" x2="16" y2="24"/>
-      </svg>
-      <div class="card-title">Global Deployment</div>
-      <div class="card-text">Six wing configurations cover Arabian Desert, Maritime, Alpine, Tropical, High-Speed, and VTOL operations. One platform. Every environment.</div>
-    </div>
+
   </div>
+
 </section>
 
-<!-- WING CONFIGURATIONS -->
-<section id="configurations">
-  <div class="parallax-text" id="parallaxText1">CONFIGURATIONS</div>
+<section>
 
-  <div style="margin-top: 80px;">
-    <div class="section-label reveal">QRAM Wing Modules</div>
-    <h2 class="section-title reveal">Six Wings.<br>One Core.</h2>
-    <p class="section-desc reveal reveal-delay-1">
-      Each wing configuration shares identical QRAM attachment, electrical interface, and flight control laws — 
-      with parameter adaptation for optimal performance in each environment.
-    </p>
+  <div class="parallax-text" id="parallaxText1">
+    CONFIGURATIONS
   </div>
 
-  <div class="configs-grid" style="margin-top: 60px;">
+  <div style="margin-top:80px">
+
+    <div class="section-label reveal">
+      QRAM Wing Modules
+    </div>
+
+    <h2 class="section-title reveal">
+      Six Wings. One Core.
+    </h2>
+
+    <p class="section-desc reveal reveal-delay-1">
+      One architecture adapted for every environment.
+    </p>
+
+  </div>
+
+  <div class="configs-grid">
+
     <div class="config-card reveal">
       <div class="config-letter">A</div>
       <div class="config-name">Desert Hawk</div>
-      <div class="config-region">Arabian Peninsula · North Africa</div>
-      <div class="config-desc">High thermal tolerance, dust sealing, maximum solar exposure. Optimized for 50°C+ operation with integrated wing cooling channels.</div>
+      <div class="config-region">Arabian Peninsula</div>
+      <div class="config-desc">
+        High thermal tolerance and maximum solar exposure.
+      </div>
     </div>
+
     <div class="config-card reveal reveal-delay-1">
       <div class="config-letter">B</div>
       <div class="config-name">Maritime Patrol</div>
-      <div class="config-region">Coastal · Offshore · Littoral</div>
-      <div class="config-desc">Salt-spray resistant composites, extended range for over-water operations, ship-deck landing compatibility.</div>
+      <div class="config-region">Coastal Operations</div>
+      <div class="config-desc">
+        Salt resistant composites and over-water range.
+      </div>
     </div>
+
     <div class="config-card reveal reveal-delay-2">
       <div class="config-letter">C</div>
       <div class="config-name">Alpine Soar</div>
-      <div class="config-region">Mountainous · High Altitude</div>
-      <div class="config-desc">Extended span for thin-air lift generation. Thermal current exploitation. Optimized for 3,000m+ operations.</div>
+      <div class="config-region">High Altitude</div>
+      <div class="config-desc">
+        Extended span optimized for thin-air operations.
+      </div>
     </div>
-    <div class="config-card reveal">
-      <div class="config-letter">D</div>
-      <div class="config-name">Tropical Ops</div>
-      <div class="config-region">Southeast Asia · Equatorial</div>
-      <div class="config-desc">Moisture-resistant sealing, high-humidity electronics protection, storm-avoidance flight envelope.</div>
-    </div>
-    <div class="config-card reveal reveal-delay-1">
-      <div class="config-letter">E</div>
-      <div class="config-name">Rapid Response</div>
-      <div class="config-region">Interception · High-Speed Transit</div>
-      <div class="config-desc">Reduced span for maximum dash speed. Pursuit mode aerodynamics. Priority intercept flight laws.</div>
-    </div>
-    <div class="config-card reveal reveal-delay-2">
-      <div class="config-letter">F</div>
-      <div class="config-name">VTOL Hybrid</div>
-      <div class="config-region">Vertical Launch · No Runway</div>
-      <div class="config-desc">Tri-rotor VTOL module with distributed electric propulsion. Ship deck, urban vertiport, confined space deployment.</div>
-    </div>
+
   </div>
+
 </section>
 
-<!-- DEPLOYMENT ROADMAP -->
-<section id="roadmap" style="background: var(--bg-1);">
-  <div class="section-label reveal">National Deployment</div>
-  <h2 class="section-title reveal">UAE Rollout<br>2026 → 2030</h2>
-  <p class="section-desc reveal reveal-delay-1">
-    From municipal pilot to national saturation — one AURA per 100km² of UAE territory. 
-    Zero operational emissions. Full environmental intelligence coverage.
-  </p>
+<section>
 
-  <div class="timeline">
-    <div class="timeline-item reveal">
-      <div class="timeline-content-left">
-        <div class="timeline-year">2026</div>
-        <div class="timeline-title">Phase 1 — Foundation</div>
-        <div class="timeline-text">100 units across Dubai, Abu Dhabi, and Sharjah municipalities. Urban heat mapping, construction dust enforcement, protected area surveillance.</div>
-        <div class="timeline-badge">100 Units · 1.6M AED Capital</div>
-      </div>
-      <div class="timeline-center"><div class="timeline-dot"></div></div>
-      <div class="timeline-content-right"></div>
-    </div>
-    <div class="timeline-item reveal">
-      <div class="timeline-content-left"></div>
-      <div class="timeline-center"><div class="timeline-dot"></div></div>
-      <div class="timeline-content-right">
-        <div class="timeline-year">2028</div>
-        <div class="timeline-title">Phase 2 — Scale</div>
-        <div class="timeline-text">500 units with national environmental dashboard, border security, critical infrastructure monitoring, and disaster pre-positioning.</div>
-        <div class="timeline-badge">500 Units · Emirate-Wide Coverage</div>
-      </div>
-    </div>
-    <div class="timeline-item reveal">
-      <div class="timeline-content-left">
-        <div class="timeline-year">2030</div>
-        <div class="timeline-title">Phase 3 — Saturation</div>
-        <div class="timeline-text">1,000 units. No environmental event unobserved. 57,500 tonnes CO₂ avoided annually. Equivalent to removing 12,500 cars from UAE roads.</div>
-        <div class="timeline-badge">1,000 Units · Zero Emissions Fleet</div>
-      </div>
-      <div class="timeline-center"><div class="timeline-dot"></div></div>
-      <div class="timeline-content-right"></div>
-    </div>
+  <div class="parallax-text" id="parallaxText2">
+    IMPACT
   </div>
-</section>
 
-<!-- SDG IMPACT -->
-<section id="impact">
-  <div class="parallax-text" id="parallaxText2">IMPACT</div>
+  <div style="margin-top:80px">
 
-  <div style="margin-top: 80px;">
-    <div class="section-label reveal">Sustainable Development</div>
-    <h2 class="section-title reveal">The Platform<br>for Infinite Good</h2>
+    <div class="section-label reveal">
+      Sustainable Development
+    </div>
+
+    <h2 class="section-title reveal">
+      Platform for Infinite Good
+    </h2>
+
     <p class="section-desc reveal reveal-delay-1">
-      Born in the Emirates, built for the world, powered by sun, flown for earth. 
-      Phantom directly contributes to 8 UN Sustainable Development Goals across 20+ countries.
+      Built for global environmental intelligence and sustainability.
     </p>
+
   </div>
 
   <div class="sdg-grid">
+
     <div class="sdg-card reveal">
-      <div class="sdg-num">SDG 2</div>
-      <div class="sdg-title">Zero Hunger</div>
-      <div class="sdg-text">Precision agriculture — irrigation optimization, yield prediction, crop health assessment for food security.</div>
-    </div>
-    <div class="sdg-card reveal reveal-delay-1">
-      <div class="sdg-num">SDG 6</div>
-      <div class="sdg-title">Clean Water</div>
-      <div class="sdg-text">Irrigation leak detection, reservoir monitoring, desalination plant environmental compliance.</div>
-    </div>
-    <div class="sdg-card reveal reveal-delay-2">
       <div class="sdg-num">SDG 13</div>
       <div class="sdg-title">Climate Action</div>
-      <div class="sdg-text">Wildfire early detection, methane leak monitoring, carbon sequestration site verification.</div>
+      <div class="sdg-text">
+        Wildfire detection and methane monitoring.
+      </div>
     </div>
-    <div class="sdg-card reveal reveal-delay-3">
+
+    <div class="sdg-card reveal reveal-delay-1">
       <div class="sdg-num">SDG 14</div>
       <div class="sdg-title">Life Below Water</div>
-      <div class="sdg-text">Coastal ecosystem monitoring, oil spill detection, illegal fishing activity identification.</div>
+      <div class="sdg-text">
+        Coastal monitoring and spill detection.
+      </div>
     </div>
-    <div class="sdg-card reveal">
+
+    <div class="sdg-card reveal reveal-delay-2">
       <div class="sdg-num">SDG 15</div>
       <div class="sdg-title">Life on Land</div>
-      <div class="sdg-text">Protected area surveillance, anti-poaching operations, reforestation monitoring.</div>
+      <div class="sdg-text">
+        Reforestation and anti-poaching operations.
+      </div>
     </div>
-    <div class="sdg-card reveal reveal-delay-1">
-      <div class="sdg-num">SDG 16</div>
-      <div class="sdg-title">Peace & Security</div>
-      <div class="sdg-text">Border monitoring, disaster response, environmental crime enforcement.</div>
-    </div>
-    <div class="sdg-card reveal reveal-delay-2">
-      <div class="sdg-num">SDG 17</div>
-      <div class="sdg-title">Partnerships</div>
-      <div class="sdg-text">UAE technology transfer to developing nations, South-South climate adaptation cooperation.</div>
-    </div>
+
     <div class="sdg-card reveal reveal-delay-3">
       <div class="sdg-num">SDG 9</div>
-      <div class="sdg-title">Industry & Innovation</div>
-      <div class="sdg-text">First student-built UAE UAV environmental sensing system. 500 direct jobs by 2030.</div>
+      <div class="sdg-title">Innovation</div>
+      <div class="sdg-text">
+        Student-built UAV environmental sensing system.
+      </div>
     </div>
+
   </div>
+
 </section>
 
-<!-- FOOTER -->
-<footer>
-  <div class="footer-brand">
-    <span class="logo">PHANTOM</span>
-    <p>Adaptive solar-electric UAV platform.<br>Engineered in the UAE for global environmental intelligence.</p>
-  </div>
-  <div class="footer-col">
-    <h4>Platform</h4>
-    <ul>
-      <li><a href="technology.html">Persistent Core</a></li>
-      <li><a href="technology.html">QRAM System</a></li>
-      <li><a href="technology.html">Propulsion</a></li>
-      <li><a href="technology.html">Energy Systems</a></li>
-    </ul>
-  </div>
-  <div class="footer-col">
-    <h4>Intelligence</h4>
-    <ul>
-      <li><a href="mercury.html">Mercury AI</a></li>
-      <li><a href="mercury.html">Edge Computing</a></li>
-      <li><a href="mercury.html">Swarm Control</a></li>
-      <li><a href="mercury.html">Predictive Models</a></li>
-    </ul>
-  </div>
-  <div class="footer-col">
-    <h4>Deployment</h4>
-    <ul>
-      <li><a href="deployment.html">UAE National Plan</a></li>
-      <li><a href="deployment.html">MENA Expansion</a></li>
-      <li><a href="deployment.html">Global South</a></li>
-      <li><a href="deployment.html">ROI Analysis</a></li>
-    </ul>
-  </div>
-</footer>
-<div class="footer-bottom">
-  <p>© 2026 PHANTOM UAV PLATFORM · UAE ORIGIN</p>
-  <p>BUILT FOR EARTH. POWERED BY SUN.</p>
-</div>
-
 <script>
-(function(){
-'use strict';
-// CURSOR
+(() => {
+
 const curDot = document.getElementById('cur-dot');
 const curRing = document.getElementById('cur-ring');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
-(function animCursor(){
-  curDot.style.left=mx+'px'; curDot.style.top=my+'px';
-  rx+=(mx-rx)*0.14; ry+=(my-ry)*0.14;
-  curRing.style.left=rx+'px'; curRing.style.top=ry+'px';
-  requestAnimationFrame(animCursor);
-})();
 
-// ── NAV SCROLL ──
-window.addEventListener('scroll', () => {
-  document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 60);
+let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
+
+let ringX = mouseX;
+let ringY = mouseY;
+
+document.addEventListener('mousemove', e => {
+
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+
+  curDot.style.transform =
+    `translate3d(${mouseX}px,${mouseY}px,0)`;
+
 });
 
-// ── MARQUEE ──
-const items = ['Persistent Core','QRAM Interface','Solar Electric','Thrust Vectoring','Mercury AI',
-  'UAE Origin','VTOL Capable','Edge Computing','Desert Hawk','Maritime Patrol','Swarm Control','6G Load Factor'];
-const mi = document.getElementById('marqueeInner');
-const str = [...items,...items].map(i =>
-  `<span class="marquee-item"><span class="marquee-dot"></span>${i}</span>`
-).join('');
-mi.innerHTML = str + str;
+function animateCursor(){
 
-// ── REVEAL ON SCROLL ──
+  ringX += (mouseX - ringX) * 0.15;
+  ringY += (mouseY - ringY) * 0.15;
+
+  curRing.style.transform =
+    `translate3d(${ringX}px,${ringY}px,0)`;
+
+  requestAnimationFrame(animateCursor);
+}
+
+animateCursor();
+
+document.querySelectorAll('a,button').forEach(el => {
+
+  el.addEventListener('mouseenter', () => {
+    curRing.classList.add('active');
+  });
+
+  el.addEventListener('mouseleave', () => {
+    curRing.classList.remove('active');
+  });
+
+});
+
+const items = [
+  'Persistent Core',
+  'QRAM Interface',
+  'Solar Electric',
+  'Mercury AI',
+  'UAE Origin',
+  'Swarm Control'
+];
+
+const mi = document.getElementById('marqueeInner');
+
+mi.innerHTML =
+  [...items,...items,...items]
+  .map(i =>
+    `<span class="marquee-item">
+      <span class="marquee-dot"></span>${i}
+    </span>`
+  ).join('');
+
 const revealEls = document.querySelectorAll('.reveal');
-const revealObs = new IntersectionObserver(entries => {
-  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.12 });
+
+const revealObs = new IntersectionObserver((entries) => {
+
+  entries.forEach(entry => {
+
+    if(entry.isIntersecting){
+
+      entry.target.classList.add('visible');
+      revealObs.unobserve(entry.target);
+
+    }
+
+  });
+
+},{
+  threshold:0.15,
+  rootMargin:'0px 0px -80px 0px'
+});
+
 revealEls.forEach(el => revealObs.observe(el));
 
-// ── PARALLAX TEXT ──
+const depthSection = document.getElementById('depthSection');
+
+const depthLines = [
+  document.getElementById('dl1'),
+  document.getElementById('dl2'),
+  document.getElementById('dl3'),
+  document.getElementById('dl4')
+];
+
+let scrollPos = 0;
+
 window.addEventListener('scroll', () => {
-  const sy = window.scrollY;
+  scrollPos = window.scrollY;
+},{ passive:true });
+
+function animate(){
+
+  document
+    .getElementById('mainNav')
+    .classList.toggle('scrolled', scrollPos > 60);
+
   const pt1 = document.getElementById('parallaxText1');
   const pt2 = document.getElementById('parallaxText2');
-  if(pt1) pt1.style.transform = `translateX(${-sy * 0.08}px)`;
-  if(pt2) pt2.style.transform = `translateX(${sy * 0.06}px)`;
-});
 
-// ── 3D SCROLL DEPTH ──
-const depthSection = document.getElementById('depthSection');
-const depthLines = [
-  document.getElementById('dl1'),
-  document.getElementById('dl2'),
-  document.getElementById('dl3'),
-  document.getElementById('dl4')
-];
-
-// ── 3D SCROLL DEPTH ──
-const depthSection = document.getElementById('depthSection');
-const depthLines = [
-  document.getElementById('dl1'),
-  document.getElementById('dl2'),
-  document.getElementById('dl3'),
-  document.getElementById('dl4')
-];
-
-window.addEventListener('scroll', () => {
-  if(!depthSection) return;
-
-  // Get section position in document
-  const sectionRect = depthSection.getBoundingClientRect();
-  const sectionTop = window.scrollY + sectionRect.top;
-  const sectionHeight = depthSection.offsetHeight;
-  const sectionBottom = sectionTop + sectionHeight;
-
-  // Current scroll position
-  const scrollPos = window.scrollY + window.innerHeight / 2; // Middle of viewport
-
-  // How far through the section are we? (0 = start, 1 = end)
-  let progress = (scrollPos - sectionTop) / sectionHeight;
-  progress = Math.max(0, Math.min(1, progress));
-
-  // Only animate if we're in/near the section
-  if(scrollPos < sectionTop || scrollPos > sectionBottom + window.innerHeight) {
-    depthLines.forEach(line => { line.style.opacity = 0; });
-    return;
+  if(pt1){
+    pt1.style.transform =
+      `translate3d(${-scrollPos * .08}px,0,0)`;
   }
 
-  depthLines.forEach((line, i) => {
-    // Each line: 0-25%, 25-50%, 50-75%, 75-100%
-    const start = i * 0.25;
-    const end = (i + 1) * 0.25;
+  if(pt2){
+    pt2.style.transform =
+      `translate3d(${scrollPos * .06}px,0,0)`;
+  }
 
-    if(progress < start || progress > end) {
-      line.style.opacity = 0;
-      return;
-    }
+  if(depthSection){
 
-    // Position within this line's window
-    let p = (progress - start) / 0.25;
-    p = Math.max(0, Math.min(1, p));
+    const rect = depthSection.getBoundingClientRect();
 
-    // Fade in then out
-    let opacity = p < 0.5 ? p * 2 : (1 - p) * 2;
+    const progress =
+      Math.min(
+        Math.max(
+          (-rect.top) / (rect.height - window.innerHeight),
+          0
+        ),
+        1
+      );
 
-    // 3D effect: move forward
-    const z = -400 + p * 400;
-    const scale = 0.7 + p * 0.3;
+    depthLines.forEach((line,i) => {
 
-    line.style.transform = `perspective(800px) translateZ(${z}px) scale(${scale})`;
-    line.style.opacity = opacity;
-  });
-});
+      const start = i * .22;
+      const end = start + .28;
 
-// ── PROGRESS BARS ──
-const progressFills = document.querySelectorAll('.progress-fill');
-const progressObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if(e.isIntersecting) {
-      const target = e.target.dataset.width;
-      setTimeout(() => { e.target.style.width = target + '%'; }, 200);
-    }
-  });
-}, { threshold: 0.5 });
-progressFills.forEach(el => progressObs.observe(el));
+      let p = (progress - start) / (end - start);
+
+      p = Math.max(0,Math.min(1,p));
+
+      const opacity =
+        p < .5
+          ? p * 2
+          : (1 - p) * 2;
+
+      const z = -250 + (p * 250);
+      const scale = .8 + (p * .2);
+
+      line.style.opacity = opacity;
+
+      line.style.transform =
+        `translate3d(0,0,${z}px) scale(${scale})`;
+
+    });
+
+  }
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+
 })();
 </script>
+
 </body>
 </html>
