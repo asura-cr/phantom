@@ -621,6 +621,130 @@ section{
     border-bottom:1px solid var(--border);
   }
 }
+
+.parallax-text {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  font-size: clamp(60px, 12vw, 150px);
+  font-weight: 800;
+  font-family: var(--font-sans);
+  color: rgba(255, 255, 255, 0.02);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 1;
+  text-transform: uppercase;
+}
+
+.alert-banner {
+  position: fixed;
+  top: 68px;
+  left: 0;
+  right: 0;
+  height: 36px;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 99;
+  padding: 0 24px;
+}
+.alert-text {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.alert-cta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: #DA7756;
+  padding: 4px 12px;
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+.alert-cta:hover {
+  background: #e28e70;
+}
+
+.strategic-ops-section {
+  background: var(--bg-1);
+  border-top: 1px solid var(--border);
+  padding: 100px 48px;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  z-index: 10;
+}
+.strategic-ops-container {
+  max-width: 800px;
+  width: 100%;
+}
+.strategic-ops-actions {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+.strategic-ops-actions .btn-primary,
+.strategic-ops-actions .btn-secondary {
+  text-decoration: none;
+  padding: 16px 40px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+.strategic-ops-actions .btn-primary {
+  background: #fff;
+  color: #000;
+  border: 1px solid #fff;
+}
+.strategic-ops-actions .btn-primary:hover {
+  background: transparent;
+  color: #fff;
+}
+.strategic-ops-actions .btn-secondary {
+  border: 1px solid var(--white-20);
+  color: #fff;
+  background: transparent;
+}
+.strategic-ops-actions .btn-secondary:hover {
+  border-color: #fff;
+  background: var(--white-10);
+}
+@media (max-width: 900px) {
+  .alert-banner {
+    top: 64px;
+    height: auto;
+    padding: 8px 16px;
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+  .alert-text {
+    white-space: normal;
+    font-size: 10px;
+  }
+}
 </style>
 </head>
 
@@ -631,7 +755,7 @@ section{
 
 <nav id="mainNav">
   <a href="#" class="nav-logo">
-    <img src="icon.png" class="nav-logo-mark">
+    <img src="icon.svg" class="nav-logo-mark">
     PHANTOM
   </a>
 
@@ -641,9 +765,12 @@ section{
     <li><a href="mercury">Mercury AI</a></li>
     <li><a href="deployment">Deployment</a></li>
   </ul>
-
-  <a href="experience" class="nav-cta">3D Experience ↗</a>
 </nav>
+
+<div class="alert-banner">
+  <span class="alert-text">LIVE FRAMEWORK UPDATES: RESTRUCTURING UNMANNED AERIAL INFRASTRUCTURE FOR SUSTAINED PLANETARY SENSING.</span>
+  <a href="https://www.linkedin.com/company/projectphantom/" target="_blank" class="alert-cta">TRACK VEHICLE DEVELOPMENT</a>
+</div>
 
 <section class="hero">
 
@@ -677,7 +804,7 @@ section{
 
   <div class="hero-stats">
     <div class="stat-item">
-      <span class="stat-num">6+</span>
+      <span class="stat-num">12+</span>
       <span class="stat-label">Hours Endurance</span>
     </div>
 
@@ -746,16 +873,16 @@ section{
     </div>
 
     <div class="card reveal reveal-delay-1">
-      <div class="card-title">QRAM Interface</div>
+      <div class="card-title">Single-Prop VTOL</div>
       <div class="card-text">
-        Fast module replacement with unified data and power.
+        0 Runway required, maximizing aerodynamic glide.
       </div>
     </div>
 
     <div class="card reveal reveal-delay-2">
-      <div class="card-title">Solar Persistence</div>
+      <div class="card-title">Solar Integration</div>
       <div class="card-text">
-        High-efficiency solar wing architecture for long endurance.
+        High-efficiency solar wing architecture yielding 40% Less Energy drain.
       </div>
     </div>
 
@@ -776,7 +903,7 @@ section{
     </div>
 
     <h2 class="section-title reveal">
-      Six Wings. One Core.
+      Modular Swappable Wings
     </h2>
 
     <p class="section-desc reveal reveal-delay-1">
@@ -870,12 +997,26 @@ section{
       <div class="sdg-num">SDG 9</div>
       <div class="sdg-title">Innovation</div>
       <div class="sdg-text">
-        Student-built UAV environmental sensing system.
+        Sovereign enterprise-grade environmental sensing architecture.
       </div>
     </div>
 
   </div>
 
+</section>
+
+<section class="strategic-ops-section">
+  <div class="strategic-ops-container">
+    <div class="section-label">Strategic Operations</div>
+    <h2 class="section-title">STRATEGIC OPERATIONS</h2>
+    <p class="section-desc">
+      Initialize direct communication channels for sovereign enterprise deployments, custom sensor integrations, or defense-grade asset validation.
+    </p>
+    <div class="strategic-ops-actions">
+      <a href="https://www.linkedin.com/company/projectphantom/" target="_blank" class="btn-primary">Connect via LinkedIn</a>
+      <a href="mailto:support@proojectphantom.studio" class="btn-secondary">Secure Communications</a>
+    </div>
+  </div>
 </section>
 
 <script>

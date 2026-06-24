@@ -16,7 +16,7 @@
   body:has(a:hover) #cur-ring, body:has(button:hover) #cur-ring { width:56px; height:56px; border-color:#fff; }
   nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:20px 48px;background:rgba(5,5,5,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
   .nav-logo{font-family:var(--font-mono);font-size:18px;font-weight:700;letter-spacing:0.2em;color:var(--white);text-decoration:none;display:flex;align-items:center;gap:10px;}
-  .nav-logo-mark{width:28px;height:28px;border:1.5px solid var(--white);display:flex;align-items:center;justify-content:center;font-size:10px;}
+  .nav-logo-mark{width:28px;height:28px;display:block;object-fit:contain;}
   .nav-links{display:flex;gap:36px;list-style:none;}
   .nav-links a{color:var(--white-50);text-decoration:none;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;transition:color 0.2s;}
   .nav-links a:hover,.nav-links a.active{color:var(--white);}
@@ -122,6 +122,116 @@
     footer{grid-template-columns:1fr 1fr;}
     .footer-bottom{flex-direction:column;gap:12px;}
   }
+
+.alert-banner {
+  position: fixed;
+  top: 72px;
+  left: 0;
+  right: 0;
+  height: 36px;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 99;
+  padding: 0 24px;
+}
+.alert-text {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.alert-cta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: #DA7756;
+  padding: 4px 12px;
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+.alert-cta:hover {
+  background: #e28e70;
+}
+
+.strategic-ops-section {
+  background: var(--bg-1);
+  border-top: 1px solid var(--border);
+  padding: 100px 48px;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  z-index: 10;
+}
+.strategic-ops-container {
+  max-width: 800px;
+  width: 100%;
+}
+.strategic-ops-actions {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+.strategic-ops-actions .btn-primary,
+.strategic-ops-actions .btn-secondary {
+  text-decoration: none;
+  padding: 16px 40px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+.strategic-ops-actions .btn-primary {
+  background: #fff;
+  color: #000;
+  border: 1px solid #fff;
+}
+.strategic-ops-actions .btn-primary:hover {
+  background: transparent;
+  color: #fff;
+}
+.strategic-ops-actions .btn-secondary {
+  border: 1px solid var(--white-20);
+  color: #fff;
+  background: transparent;
+}
+.strategic-ops-actions .btn-secondary:hover {
+  border-color: #fff;
+  background: var(--white-10);
+}
+@media (max-width: 900px) {
+  .alert-banner {
+    top: 64px;
+    height: auto;
+    padding: 8px 16px;
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+  .alert-text {
+    white-space: normal;
+    font-size: 10px;
+  }
+}
 </style>
 </head>
 <body>
@@ -129,7 +239,7 @@
 <div id="cur-ring"></div>
 
 <nav>
-  <a href="index.html" class="nav-logo"><div class="nav-logo-mark">P</div>PHANTOM</a>
+  <a href="index.html" class="nav-logo"><img src="icon.svg" alt="PHANTOM" class="nav-logo-mark">PHANTOM</a>
   <ul class="nav-links">
     <li><a href="index.html">Overview</a></li>
     <li><a href="technology.html">Technology</a></li>
@@ -138,6 +248,11 @@
   </ul>
   <a href="index.html" class="nav-cta">Back to Overview</a>
 </nav>
+
+<div class="alert-banner">
+  <span class="alert-text">LIVE FRAMEWORK UPDATES: RESTRUCTURING UNMANNED AERIAL INFRASTRUCTURE FOR SUSTAINED PLANETARY SENSING.</span>
+  <a href="https://www.linkedin.com/company/projectphantom/" target="_blank" class="alert-cta">TRACK VEHICLE DEVELOPMENT</a>
+</div>
 
 <div class="page-hero">
   <div class="hero-grid"></div>
@@ -402,6 +517,20 @@
       <div class="transfer-icon">04</div>
       <div class="transfer-name">Climate Data Sharing</div>
       <div class="transfer-desc">Global environmental data consortium. Partner nations contribute and receive shared intelligence network. Science without borders.</div>
+    </div>
+  </div>
+</section>
+
+<section class="strategic-ops-section">
+  <div class="strategic-ops-container">
+    <div class="section-label">Strategic Operations</div>
+    <h2 class="section-title">STRATEGIC OPERATIONS</h2>
+    <p class="section-desc">
+      Initialize direct communication channels for sovereign enterprise deployments, custom sensor integrations, or defense-grade asset validation.
+    </p>
+    <div class="strategic-ops-actions">
+      <a href="https://www.linkedin.com/company/projectphantom/" target="_blank" class="btn-primary">Connect via LinkedIn</a>
+      <a href="mailto:support@proojectphantom.studio" class="btn-secondary">Secure Communications</a>
     </div>
   </div>
 </section>
