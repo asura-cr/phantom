@@ -25,6 +25,8 @@
   --white-04:rgba(255,255,255,.04);
   --font-sans:'Space Grotesk',sans-serif;
   --font-mono:'Space Mono',monospace;
+  --nav-h:68px;
+  --alert-h:36px;
 }
 
 *,
@@ -46,6 +48,20 @@ body {
   font-family: var(--font-sans);
   overflow-x: clip; 
   cursor: none;
+}
+
+/* FIX 4: Mobile/touch cursor ghosting — only hide the native cursor and
+   show the custom dot/ring on devices that actually have a fine pointer
+   (mouse/trackpad). Touch devices keep normal tap behavior, no frozen
+   or erratic custom cursor. */
+@media (hover: none), (pointer: coarse) {
+  body{
+    cursor: auto;
+  }
+  #cur-dot,
+  #cur-ring{
+    display:none;
+  }
 }
 
 #cur-dot,
@@ -83,9 +99,59 @@ body {
   border-color:#fff;
 }
 
+/* FIX 1: Critical usability bug — nav vs alert banner.
+   Alert banner is now pinned to the absolute top (top:0) and the nav
+   is pushed down to sit directly beneath it (top: var(--alert-h)).
+   This removes the overlap entirely instead of relying on two
+   independent fixed offsets that drift apart on mobile. */
+.alert-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--alert-h);
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 101;
+  padding: 0 24px;
+}
+
+.alert-text {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.alert-cta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: #DA7756;
+  padding: 4px 12px;
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+.alert-cta:hover {
+  background: #e28e70;
+}
+
 nav{
   position:fixed;
-  top:0;
+  top: var(--alert-h); /* sits directly under the alert banner */
   left:0;
   right:0;
   z-index:100;
@@ -160,7 +226,9 @@ nav.scrolled{
   justify-content:center;
   position:relative;
   overflow:hidden;
-  padding:120px 48px 80px;
+  /* FIX 1 (cont.): top padding accounts for banner + nav stacked height
+     so hero content never starts underneath them, on load or on resize. */
+  padding: calc(var(--alert-h) + var(--nav-h) + 40px) 48px 80px;
 }
 
 .hero-grid{
@@ -355,6 +423,12 @@ nav.scrolled{
 section{
   padding:120px 48px;
   position:relative;
+}
+
+/* FIX 2 (cont.): scroll-margin-top so anchored sections land below the
+   fixed banner + nav stack instead of being hidden underneath them. */
+section[id]{
+  scroll-margin-top: calc(var(--alert-h) + var(--nav-h) + 16px);
 }
 
 .section-label{
@@ -588,40 +662,6 @@ section{
   font-size:12px;
 }
 
-@media(max-width:900px){
-
-  nav{
-    padding:16px 24px;
-  }
-
-  .nav-links{
-    display:none;
-  }
-
-  section{
-    padding:80px 24px;
-  }
-
-  .hero{
-    padding:100px 24px 60px;
-  }
-
-  .cards-grid,
-  .configs-grid,
-  .sdg-grid{
-    grid-template-columns:1fr;
-  }
-
-  .hero-stats{
-    flex-direction:column;
-  }
-
-  .stat-item{
-    border-right:none;
-    border-bottom:1px solid var(--border);
-  }
-}
-
 .parallax-text {
   position: absolute;
   top: 40px;
@@ -634,50 +674,6 @@ section{
   white-space: nowrap;
   z-index: 1;
   text-transform: uppercase;
-}
-
-.alert-banner {
-  position: fixed;
-  top: 68px;
-  left: 0;
-  right: 0;
-  height: 36px;
-  background: rgba(10, 10, 10, 0.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  z-index: 99;
-  padding: 0 24px;
-}
-.alert-text {
-  font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.alert-cta {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  color: #fff;
-  background: #DA7756;
-  padding: 4px 12px;
-  text-decoration: none;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  transition: background 0.2s ease;
-  white-space: nowrap;
-}
-.alert-cta:hover {
-  background: #e28e70;
 }
 
 .strategic-ops-section {
@@ -731,15 +727,53 @@ section{
   border-color: #fff;
   background: var(--white-10);
 }
-@media (max-width: 900px) {
+
+@media(max-width:900px){
+
+  nav{
+    padding:16px 24px;
+  }
+
+  .nav-links{
+    display:none;
+  }
+
+  section{
+    padding:80px 24px;
+  }
+
+  .hero{
+    padding: calc(var(--alert-h) + var(--nav-h) + 20px) 24px 60px;
+  }
+
+  .cards-grid,
+  .configs-grid,
+  .sdg-grid{
+    grid-template-columns:1fr;
+  }
+
+  .hero-stats{
+    flex-direction:column;
+  }
+
+  .stat-item{
+    border-right:none;
+    border-bottom:1px solid var(--border);
+  }
+
+  /* FIX 1 (cont.): on mobile the banner text wraps to 2 lines, so it
+     grows taller than --alert-h. Let it size naturally and recalc the
+     offset with a CSS var so nav/hero/scroll-margin stay in sync
+     instead of drifting apart like in the original. */
   .alert-banner {
-    top: 64px;
     height: auto;
     padding: 8px 16px;
     flex-direction: column;
     gap: 8px;
     text-align: center;
+    --alert-h: 64px; /* approximate stacked height on small screens */
   }
+
   .alert-text {
     white-space: normal;
     font-size: 10px;
@@ -753,6 +787,11 @@ section{
 <div id="cur-dot"></div>
 <div id="cur-ring"></div>
 
+<div class="alert-banner">
+  <span class="alert-text">PHANTOM IS IN ACTIVE DEVELOPMENT. FOLLOW THE BUILD.</span>
+  <a href="https://www.linkedin.com/company/projectphantom/" target="_blank" class="alert-cta">TRACK DEVELOPMENT</a>
+</div>
+
 <nav id="mainNav">
   <a href="#" class="nav-logo">
     <img src="icon.svg" class="nav-logo-mark">
@@ -760,17 +799,13 @@ section{
   </a>
 
   <ul class="nav-links">
-    <li><a href="#">Overview</a></li>
-    <li><a href="technology">Technology</a></li>
-    <li><a href="mercury">Mercury AI</a></li>
-    <li><a href="deployment">Deployment</a></li>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#technology">Technology</a></li>
+    <li><a href="#configurations">Configurations</a></li>
+    <li><a href="#impact">Impact</a></li>
+    <li><a href="#contact">Contact</a></li>
   </ul>
 </nav>
-
-<div class="alert-banner">
-  <span class="alert-text">PHANTOM IS IN ACTIVE DEVELOPMENT. FOLLOW THE BUILD.</span>
-  <a href="https://www.linkedin.com/company/projectphantom/" target="_blank" class="alert-cta">TRACK DEVELOPMENT</a>
-</div>
 
 <section class="hero">
 
@@ -795,8 +830,8 @@ section{
     </p>
 
     <div class="hero-actions">
-      <a href="#" class="btn-primary">Explore Platform</a>
-      <a href="#" class="btn-secondary">Mercury AI</a>
+      <a href="#technology" class="btn-primary">Explore Platform</a>
+      <a href="#technology" class="btn-secondary">Mercury AI</a>
     </div>
 
   </div>
@@ -846,7 +881,7 @@ section{
 
 </section>
 
-<section>
+<section id="overview">
 
   <div class="section-label reveal">
     Overview
@@ -874,7 +909,7 @@ section{
     <div class="card reveal reveal-delay-1">
       <div class="card-title">Single-Prop VTOL</div>
       <div class="card-text">
-        0 Runway required, maximizing aerodynamic glide.
+        Zero runway required, maximizing aerodynamic glide.
       </div>
     </div>
 
@@ -889,7 +924,7 @@ section{
 
 </section>
 
-<section>
+<section id="technology">
 
   <div class="parallax-text" id="parallaxText1">
     CONFIGURATIONS
@@ -911,7 +946,7 @@ section{
 
   </div>
 
-  <div class="configs-grid">
+  <div class="configs-grid" id="configurations">
 
     <div class="config-card reveal">
       <div class="config-letter">A</div>
@@ -944,7 +979,7 @@ section{
 
 </section>
 
-<section>
+<section id="impact">
 
   <div class="parallax-text" id="parallaxText2">
     IMPACT
@@ -1004,16 +1039,16 @@ section{
 
 </section>
 
-<section class="strategic-ops-section">
+<section class="strategic-ops-section" id="contact">
   <div class="strategic-ops-container">
     <div class="section-label">Strategic Operations</div>
-    <h2 class="section-title">STRATEGIC OPERATIONS</h2>
-    <p class="section-desc">
-      Initialize direct communication channels for sovereign enterprise deployments, custom sensor integrations, or defense-grade asset validation.
+    <h2 class="section-title">SYSTEM INTEGRATION &amp; COLLABORATION</h2>
+    <p class="section-desc" style="margin:0 auto;">
+      Initialize direct channels for enterprise deployments, open research collaboration, or technical inquiries. Whether you are looking to integrate custom sensing hardware, explore architectural applications, or connect with our engineering roadmap, our ecosystem is open for development.
     </p>
     <div class="strategic-ops-actions">
       <a href="https://www.linkedin.com/company/projectphantom/" target="_blank" class="btn-primary">Connect via LinkedIn</a>
-      <a href="mailto:support@proojectphantom.studio" class="btn-secondary">Secure Communications</a>
+      <a href="mailto:rithishwork@gmail.com" class="btn-secondary">Initiate Collaboration</a>
     </div>
   </div>
 </section>
@@ -1024,46 +1059,54 @@ section{
 const curDot = document.getElementById('cur-dot');
 const curRing = document.getElementById('cur-ring');
 
-let mouseX = window.innerWidth / 2;
-let mouseY = window.innerHeight / 2;
+// Guard against touch devices where these elements are hidden via CSS
+// but the script would otherwise still run pointless RAF/listener work.
+const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-let ringX = mouseX;
-let ringY = mouseY;
+if(hasFinePointer){
 
-document.addEventListener('mousemove', e => {
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
 
-  mouseX = e.clientX;
-  mouseY = e.clientY;
+  let ringX = mouseX;
+  let ringY = mouseY;
 
-  curDot.style.transform =
-    `translate3d(${mouseX}px,${mouseY}px,0)`;
+  document.addEventListener('mousemove', e => {
 
-});
+    mouseX = e.clientX;
+    mouseY = e.clientY;
 
-function animateCursor(){
+    curDot.style.transform =
+      `translate3d(${mouseX}px,${mouseY}px,0)`;
 
-  ringX += (mouseX - ringX) * 0.15;
-  ringY += (mouseY - ringY) * 0.15;
+  });
 
-  curRing.style.transform =
-    `translate3d(${ringX}px,${ringY}px,0)`;
+  function animateCursor(){
 
-  requestAnimationFrame(animateCursor);
+    ringX += (mouseX - ringX) * 0.15;
+    ringY += (mouseY - ringY) * 0.15;
+
+    curRing.style.transform =
+      `translate3d(${ringX}px,${ringY}px,0)`;
+
+    requestAnimationFrame(animateCursor);
+  }
+
+  animateCursor();
+
+  document.querySelectorAll('a,button').forEach(el => {
+
+    el.addEventListener('mouseenter', () => {
+      curRing.classList.add('active');
+    });
+
+    el.addEventListener('mouseleave', () => {
+      curRing.classList.remove('active');
+    });
+
+  });
+
 }
-
-animateCursor();
-
-document.querySelectorAll('a,button').forEach(el => {
-
-  el.addEventListener('mouseenter', () => {
-    curRing.classList.add('active');
-  });
-
-  el.addEventListener('mouseleave', () => {
-    curRing.classList.remove('active');
-  });
-
-});
 
 const items = [
   'Persistent Core',
