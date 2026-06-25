@@ -676,6 +676,184 @@ section[id]{
   text-transform: uppercase;
 }
 
+.team-section{
+  position:relative;
+}
+
+.team-intro{
+  max-width:640px;
+}
+
+.team-tag{
+  display:inline-block;
+  border:1px solid var(--white-20);
+  padding:8px 16px;
+  font-family:var(--font-mono);
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--white-80);
+  margin-top:8px;
+  margin-bottom:28px;
+}
+
+.team-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:48px 32px;
+  margin-top:72px;
+}
+
+.team-card{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  text-decoration:none;
+  color:inherit;
+}
+
+.avatar-ring{
+  position:relative;
+  width:140px;
+  height:140px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:24px;
+}
+
+.avatar-ring::before{
+  content:'';
+  position:absolute;
+  inset:-6px;
+  border-radius:50%;
+  border:1px solid var(--white-20);
+  transition: border-color .4s ease, transform .6s cubic-bezier(.16,1,.3,1);
+}
+
+.avatar-ring::after{
+  content:'';
+  position:absolute;
+  inset:-6px;
+  border-radius:50%;
+  border:1px solid transparent;
+  border-top-color:#fff;
+  border-right-color:#fff;
+  animation: spinRing 7s linear infinite;
+  opacity:0;
+  transition: opacity .4s ease;
+}
+
+.team-card:hover .avatar-ring::after{
+  opacity:1;
+}
+
+.team-card:hover .avatar-ring::before{
+  border-color:var(--white-50);
+  transform:scale(1.04);
+}
+
+@keyframes spinRing{
+  from{ transform: rotate(0deg); }
+  to{ transform: rotate(360deg); }
+}
+
+.avatar-photo{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  overflow:hidden;
+  background:var(--bg-2);
+  border:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  z-index:1;
+  transition: transform .4s cubic-bezier(.16,1,.3,1);
+}
+
+.team-card:hover .avatar-photo{
+  transform:scale(1.03);
+}
+
+.avatar-photo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.avatar-initials{
+  font-family:var(--font-mono);
+  font-size:36px;
+  font-weight:700;
+  color:var(--white-30);
+  letter-spacing:.05em;
+}
+
+.avatar-linkedin-badge{
+  position:absolute;
+  bottom:2px;
+  right:2px;
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:2;
+  border:2px solid var(--bg);
+  transition: transform .3s cubic-bezier(.16,1,.3,1);
+}
+
+.team-card:hover .avatar-linkedin-badge{
+  transform:scale(1.1);
+}
+
+.avatar-linkedin-badge svg{
+  width:14px;
+  height:14px;
+}
+
+.team-name{
+  font-size:16px;
+  font-weight:600;
+  margin-bottom:6px;
+  letter-spacing:-.01em;
+}
+
+.team-role{
+  font-family:var(--font-mono);
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--white-50);
+  margin-bottom:10px;
+}
+
+.team-desc{
+  font-size:13px;
+  line-height:1.6;
+  color:var(--white-30);
+  max-width:220px;
+}
+
+@media(max-width:900px){
+  .team-grid{
+    grid-template-columns:repeat(2,1fr);
+    gap:48px 24px;
+  }
+}
+
+@media(max-width:560px){
+  .team-grid{
+    grid-template-columns:1fr;
+  }
+}
+
 .strategic-ops-section {
   background: var(--bg-1);
   border-top: 1px solid var(--border);
@@ -803,6 +981,7 @@ section[id]{
     <li><a href="#technology">Technology</a></li>
     <li><a href="#configurations">Configurations</a></li>
     <li><a href="#impact">Impact</a></li>
+    <li><a href="#team">Team</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
 </nav>
@@ -1034,6 +1213,90 @@ section[id]{
         Sovereign enterprise-grade environmental sensing architecture.
       </div>
     </div>
+
+  </div>
+
+</section>
+
+<section class="team-section" id="team">
+
+  <div class="team-intro">
+    <div class="section-label reveal">
+      The Team
+    </div>
+
+    <h2 class="section-title reveal">
+      Meet the Team
+    </h2>
+
+    <p class="section-desc reveal reveal-delay-1">
+      One of the UAE's first youth-led initiatives dedicated to autonomous fixed-wing aerospace development.
+    </p>
+
+    <div class="team-tag reveal reveal-delay-1">UAE &middot; Founded by Students, Built for the Sky</div>
+  </div>
+
+  <div class="team-grid">
+
+    <a href="https://www.linkedin.com/in/rithishdharanidharan" target="_blank" rel="noopener" class="team-card reveal">
+      <div class="avatar-ring">
+        <div class="avatar-photo">
+          <img src="https://media.licdn.com/dms/image/v2/D4D03AQH2bgsWH9s_2g/profile-displayphoto-crop_800_800/B4DZvuodI8JoAI-/0/1769235144584?e=1784160000&v=beta&t=WxlyhMNr4L-3v68y0WDm7nw3uPj8Ap5e0Y14FiyNW-k" alt="Rithish Dharanidharan" loading="lazy" onerror="this.style.display='none'; this.parentElement.querySelector('.avatar-initials').style.display='flex';">
+          <span class="avatar-initials" style="display:none;">RD</span>
+        </div>
+        <div class="avatar-linkedin-badge">
+          <svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+        </div>
+      </div>
+      <div class="team-name">Rithish Dharanidharan</div>
+      <div class="team-role">Founder</div>
+      <div class="team-desc">Leads overall UAV development and platform direction.</div>
+    </a>
+
+    <a href="https://www.linkedin.com/in/meherab-hossain-mokter/" target="_blank" rel="noopener" class="team-card reveal reveal-delay-1">
+      <div class="avatar-ring">
+        <div class="avatar-photo">
+          <img src="https://media.licdn.com/dms/image/v2/D4D03AQGiWsV0PcsaVA/profile-displayphoto-crop_800_800/B4DZvbYdxoHgAI-/0/1768912184018?e=1784160000&v=beta&t=Z8lC7ZTtGZKa6-q2t0fmZX_o3czDk9-sh689lR4JZII" alt="Meherab Hossain Mokter" loading="lazy" onerror="this.style.display='none'; this.parentElement.querySelector('.avatar-initials').style.display='flex';">
+          <span class="avatar-initials" style="display:none;">MH</span>
+        </div>
+        <div class="avatar-linkedin-badge">
+          <svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+        </div>
+      </div>
+      <div class="team-name">Meherab Hossain Mokter</div>
+      <div class="team-role">Co-Founder</div>
+      <div class="team-desc">Leads communications and supports cross-team development.</div>
+    </a>
+
+    <a href="https://www.linkedin.com/in/mufeed-kakkidi-021368397/" target="_blank" rel="noopener" class="team-card reveal reveal-delay-2">
+      <div class="avatar-ring">
+        <div class="avatar-photo">
+          <img src="https://media.licdn.com/dms/image/v2/D4D03AQFDC0Jx4Owf2Q/profile-displayphoto-crop_800_800/B4DZu725sbJMAI-/0/1768383290895?e=1784160000&v=beta&t=lUP4IVKx4dMJKD6hdBv4hi_r5RGth_Li1lxcsltrUZY" alt="Mufeed Kakkidi" loading="lazy" onerror="this.style.display='none'; this.parentElement.querySelector('.avatar-initials').style.display='flex';">
+          <span class="avatar-initials" style="display:none;">MK</span>
+        </div>
+        <div class="avatar-linkedin-badge">
+          <svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+        </div>
+      </div>
+      <div class="team-name">Mufeed Kakkidi</div>
+      <div class="team-role">Co-Founder</div>
+      <div class="team-desc">Leads AI and software development.</div>
+    </a>
+
+    <a href="https://www.linkedin.com/in/ashwin-krishnakumar-074a973a7/" target="_blank" rel="noopener" class="team-card reveal reveal-delay-3">
+      <div class="avatar-ring">
+        <div class="avatar-photo">
+          <img src="https://media.licdn.com/dms/image/v2/D4E03AQHYRnBx_5Sy4Q/profile-displayphoto-scale_400_400/B4EZvr1gr1GoAg-/0/1769188236848?e=1784160000&v=beta&t=JkIdQGzTCC_bbODAC3fM8piltHbqHs7-iFlWwxNl2vc" alt="Ashwin Krishnakumar" loading="lazy" onerror="this.style.display='none'; this.parentElement.querySelector('.avatar-initials').style.display='flex';">
+          <span class="avatar-initials" style="display:none;">AK</span>
+        </div>
+        <div class="avatar-linkedin-badge">
+          <svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+        </div>
+      </div>
+      <div class="team-name">Ashwin Krishnakumar</div>
+      <div class="team-role">Co-Founder</div>
+      <div class="team-desc">Supports AI and software development.</div>
+    </a>
 
   </div>
 
