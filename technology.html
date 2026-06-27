@@ -59,7 +59,10 @@
 
   /* PAGE HERO */
   .page-hero{padding:calc(var(--alert-h) + var(--nav-h) + 60px) 48px 80px;position:relative;overflow:hidden;border-bottom:1px solid var(--border);}
-  .page-hero-bg{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:80px 80px;opacity:0.3;}
+  .page-hero-bg{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:80px 80px;opacity:0.3;animation:gridPulse 8s ease-in-out infinite;}
+  .page-hero-glow{position:absolute;width:680px;height:680px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.05),transparent 70%);top:50%;left:70%;transform:translate(-50%,-50%);animation:glowDrift 12s ease-in-out infinite;pointer-events:none;}
+  @keyframes gridPulse{0%,100%{opacity:0.22}50%{opacity:0.38}}
+  @keyframes glowDrift{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-46%,-54%) scale(1.12)}}
   .page-hero-label{font-family:var(--font-mono);font-size:11px;letter-spacing:0.35em;text-transform:uppercase;color:var(--white-30);margin-bottom:24px;display:flex;align-items:center;gap:16px;position:relative;z-index:2;}
   .page-hero-label::before{content:'';width:24px;height:1px;background:var(--white-30);}
   .page-hero h1{font-size:clamp(48px,7vw,96px);font-weight:700;line-height:0.95;letter-spacing:-0.04em;margin-bottom:28px;position:relative;z-index:2;}
@@ -67,9 +70,10 @@
 
   /* CHAPTER TABS — sticky just below banner+nav stack */
   .chapter-nav{position:sticky;top:calc(var(--alert-h) + var(--nav-h));z-index:50;background:var(--bg-1);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;}
-  .chapter-tab{padding:18px 32px;font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--white-40);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:color 0.2s,border-color 0.2s;white-space:nowrap;}
+  .chapter-tab{padding:18px 32px;font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--white-40);cursor:pointer;border:none;background:none;transition:color 0.25s;white-space:nowrap;position:relative;}
   .chapter-tab:hover{color:var(--white-80);}
-  .chapter-tab.active{color:var(--white);border-bottom-color:var(--white);}
+  .chapter-tab.active{color:var(--white);}
+  .chapter-nav-indicator{position:absolute;bottom:0;height:2px;background:#fff;transition:transform 0.4s cubic-bezier(0.16,1,0.3,1),width 0.4s cubic-bezier(0.16,1,0.3,1);transform:translateX(0);box-shadow:0 0 12px rgba(255,255,255,0.5);}
 
   section{padding:100px 48px;position:relative;}
   section[id]{scroll-margin-top:calc(var(--alert-h) + var(--nav-h) + 56px);}
@@ -94,8 +98,8 @@
 
   /* FEATURE GRID */
   .feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border);}
-  .feat-cell{background:var(--bg);padding:48px 40px;transition:background 0.3s;}
-  .feat-cell:hover{background:var(--bg-2);}
+  .feat-cell{background:var(--bg);padding:48px 40px;transition:background 0.3s,transform 0.3s cubic-bezier(0.16,1,0.3,1);}
+  .feat-cell:hover{background:var(--bg-2);transform:translateY(-4px);}
   .feat-num{font-family:var(--font-mono);font-size:11px;color:var(--white-20);margin-bottom:32px;letter-spacing:0.2em;}
   .feat-title{font-size:22px;font-weight:600;letter-spacing:-0.02em;margin-bottom:12px;}
   .feat-text{font-size:14px;line-height:1.7;color:var(--white-50);}
@@ -114,15 +118,26 @@
 
   /* PROPULSION SPECS */
   .prop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-top:60px;}
-  .prop-cell{background:var(--bg-1);padding:36px 32px;}
-  .prop-cell:hover{background:var(--bg-2);}
-  .prop-icon{font-family:var(--font-mono);font-size:36px;font-weight:700;color:var(--white-10);margin-bottom:16px;}
+  .prop-cell{background:var(--bg-1);padding:36px 32px;transition:background 0.3s,transform 0.3s cubic-bezier(0.16,1,0.3,1);}
+  .prop-cell:hover{background:var(--bg-2);transform:translateY(-4px);}
+  .prop-icon{font-family:var(--font-mono);font-size:36px;font-weight:700;color:var(--white-10);margin-bottom:16px;display:inline-block;transition:color 0.3s;}
+  .prop-cell:hover .prop-icon{color:var(--white-30);}
+  .prop-icon .spin-arrow{display:inline-block;animation:iconSpin 6s linear infinite;}
+  .prop-icon.pulse{animation:iconPulse 2.6s ease-in-out infinite;}
+  @keyframes iconSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  @keyframes iconPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.92)}}
   .prop-title{font-size:16px;font-weight:600;margin-bottom:8px;letter-spacing:-0.01em;}
   .prop-detail{font-size:13px;color:var(--white-40);line-height:1.6;}
 
   /* SOLAR ARCHITECTURE */
   .solar-split{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;margin-top:60px;}
-  .solar-viz{background:var(--bg-1);border:1px solid var(--border);padding:48px;display:flex;align-items:center;justify-content:center;min-height:400px;}
+  .solar-viz{background:var(--bg-1);border:1px solid var(--border);padding:48px;display:flex;align-items:center;justify-content:center;min-height:400px;position:relative;overflow:hidden;}
+  .solar-viz::before{content:'';position:absolute;width:280px;height:280px;border-radius:50%;border:1px solid var(--white-08);animation:solarRing 16s linear infinite;}
+  .solar-viz::after{content:'';position:absolute;width:380px;height:380px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,rgba(255,255,255,0.06) 40deg,transparent 90deg);animation:solarSweep 6s linear infinite;}
+  .solar-viz img{position:relative;z-index:2;animation:logoGlow 4s ease-in-out infinite;}
+  @keyframes solarRing{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  @keyframes solarSweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  @keyframes logoGlow{0%,100%{filter:drop-shadow(0 0 20px rgba(255,255,255,0.08))}50%{filter:drop-shadow(0 0 36px rgba(255,255,255,0.18))}}
   .solar-info{}
   .solar-gen{display:flex;flex-direction:column;gap:1px;background:var(--border);}
   .solar-gen-row{background:var(--bg);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;transition:background 0.2s;}
@@ -180,6 +195,12 @@
     }
     .alert-text { white-space: normal; font-size: 10px; }
   }
+  @media (prefers-reduced-motion: reduce) {
+    .page-hero-bg, .page-hero-glow, .spin-arrow, .prop-icon.pulse,
+    .solar-viz::before, .solar-viz::after, .solar-viz img {
+      animation: none !important;
+    }
+  }
 </style>
 </head>
 <body>
@@ -208,6 +229,7 @@
 
 <div class="page-hero">
   <div class="page-hero-bg"></div>
+  <div class="page-hero-glow"></div>
   <div class="page-hero-label">Engineering Deep Dive</div>
   <h1>Platform<br>Technology</h1>
   <p class="page-hero-desc">
@@ -222,11 +244,12 @@
   <button class="chapter-tab" data-target="propulsion">Propulsion</button>
   <button class="chapter-tab" data-target="energy">Energy Systems</button>
   <button class="chapter-tab" data-target="structural">Structure</button>
+  <div class="chapter-nav-indicator" id="chapterIndicator"></div>
 </div>
 
 <!-- PERSISTENT CORE -->
 <section id="persistent-core" style="background:var(--bg-1);">
-  <div class="section-label reveal">Ch 8.1</div>
+  <div class="section-label reveal">Core Architecture</div>
   <h2 class="section-title reveal">Persistent Core</h2>
   <p class="section-desc reveal reveal-delay-1">
     The Core contains everything that does not change: flight control, power management, computing, 
@@ -268,7 +291,7 @@
 
 <!-- QRAM -->
 <section id="qram">
-  <div class="section-label reveal">Ch 8.1 cont.</div>
+  <div class="section-label reveal">Mission Interface</div>
   <h2 class="section-title reveal">QRAM System</h2>
   <p class="section-desc reveal reveal-delay-1">
     Quick-Release Aerodynamic Mount: the mechanical, electrical, and data interface between Persistent Core 
@@ -293,8 +316,8 @@
     </div>
     <div class="feat-cell reveal reveal-delay-1">
       <div class="feat-num">PNEUMATIC</div>
-      <div class="feat-title">VTOL-Ready Interface</div>
-      <div class="feat-text">Future VTOL tri-rotor module uses same QRAM interface with additional pneumatic channel. Standard wing for routine missions. VTOL wing for special operations. Three-minute swap, identical procedure.</div>
+      <div class="feat-title">Mission-Ready Interface</div>
+      <div class="feat-text">Coaxial propulsion and gimbal vectoring are built into the Persistent Core, so every wing swap keeps full VTOL capability by default. The QRAM channel carries mission-specific sensor and payload variants — same swap procedure, same interface, no separate VTOL retrofit required.</div>
       <div class="feat-metric">
         <div class="metric-box"><span class="metric-val">&lt;3min</span><span class="metric-label">Full Swap</span></div>
         <div class="metric-box"><span class="metric-val">6</span><span class="metric-label">Wing Configs</span></div>
@@ -330,43 +353,45 @@
 
 <!-- PROPULSION -->
 <section id="propulsion" style="background:var(--bg-1);">
-  <div class="section-label reveal">Ch 8.2</div>
-  <h2 class="section-title reveal">Advanced Propulsion</h2>
+  <div class="section-label reveal">Propulsion Architecture</div>
+  <h2 class="section-title reveal">Coaxial Propulsion</h2>
   <p class="section-desc reveal reveal-delay-1">
-    One engine. One propeller. Two axes of motion. The propeller gimbals — 0–90° pitch for vertical-to-horizontal 
-    thrust transition, ±25° yaw for directional control in hover. No tilt mechanisms. No single-point failures.
+    Dual counter-rotating motors on a single thrust axis, mounted on a 2-axis gimbal with continuously 
+    variable-pitch blades. Pitch vectors ±15–25°, yaw vectors ±10–15° for hover stability and transition 
+    control. Counter-rotation cancels reactive torque without a tail rotor — fewer single-point failures, 
+    less mechanical complexity, more usable thrust per watt than an equivalent single-rotor system.
   </p>
 
   <div class="prop-grid">
     <div class="prop-cell reveal">
-      <div class="prop-icon">01°</div>
-      <div class="prop-title">Thrust Vectoring Gimbal</div>
-      <div class="prop-detail">Servo-driven gimbal with 0–90° pitch range and ±25° yaw authority. Carbon fiber gimbal frame, 2213 hollow shaft motor, 11×4.7" propeller (takeoff). Custom dynamic inversion mixer in INAV flight controller.</div>
+      <div class="prop-icon pulse">01°</div>
+      <div class="prop-title">Coaxial Counter-Rotating Drive</div>
+      <div class="prop-detail">Dual brushless motors on a shared thrust axis, contra-rotating to cancel reactive torque. Eliminates the need for a tail rotor or reaction wheel, reduces drag relative to side-by-side multi-rotor layouts, and concentrates thrust on a single, structurally simpler axis.</div>
     </div>
     <div class="prop-cell reveal reveal-delay-1">
-      <div class="prop-icon">02⟳</div>
-      <div class="prop-title">Variable-Geometry Propeller</div>
-      <div class="prop-detail">Morphing blade: span via Nitinol shape-memory alloy (0.3s), sweep via electric screwjack (0.5s), pitch continuously variable 15–45°. 25% hover efficiency gain, 15% cruise gain, 40% max speed improvement vs. fixed compromise.</div>
+      <div class="prop-icon">02<span class="spin-arrow">⟳</span></div>
+      <div class="prop-title">Variable-Pitch Propellers</div>
+      <div class="prop-detail">Carbon propeller blades rotate continuously about their root axis in flight. Low pitch for hover gives maximum static thrust and lift; higher pitch in cruise cuts motor load and extends range. One propulsion set, tuned in real time for whichever flight phase it's in.</div>
     </div>
     <div class="prop-cell reveal reveal-delay-2">
-      <div class="prop-icon">03↑</div>
-      <div class="prop-title">Rocket-Style Vertical Launch</div>
-      <div class="prop-detail">Automated launch sequence: spool to 100% thrust, gimbal to 90° (vertical), launch. Vertical ascent to transition altitude, gimbal sweeps 90°→0°, fixed-wing mode. 15–20% more energy than runway takeoff — acceptable for runway independence.</div>
+      <div class="prop-icon pulse">03↑</div>
+      <div class="prop-title">Vertical Launch Sequence</div>
+      <div class="prop-detail">Spool to commanded thrust, gimbal to vertical, ascend under low-pitch blade settings for maximum lift. At transition altitude the gimbal sweeps toward horizontal as blade pitch increases, carrying the aircraft smoothly from hover into fixed-wing cruise.</div>
     </div>
     <div class="prop-cell reveal">
-      <div class="prop-icon">04↓</div>
-      <div class="prop-title">Starship-Style Landing</div>
-      <div class="prop-detail">Unlike Starship's suicide burn, Phantom maintains hover capability throughout descent. Throttle margin preserved. Slope tolerance ±5°, roughness 50mm, substrate-independent. 15 km/h wind limit, 25 km/h gusts.</div>
+      <div class="prop-icon pulse">04↓</div>
+      <div class="prop-title">Controlled Vertical Landing</div>
+      <div class="prop-detail">Hover capability is preserved throughout descent — throttle margin is never fully committed. Gimbal and pitch authority allow touchdown on sloped or uneven, substrate-independent surfaces within defined wind and gust limits.</div>
     </div>
     <div class="prop-cell reveal reveal-delay-1">
-      <div class="prop-icon">05△</div>
-      <div class="prop-title">VTOL Tri-Rotor Module</div>
-      <div class="prop-detail">Optional QRAM attachment: 2× wing root motors (2212 900KV, 10" counter-rotating), 1× tail motor (tilts 0–90°). 120A peak hover, 40A cruise. +1.2kg, –25% endurance. Same QRAM interface, 3-minute swap.</div>
+      <div class="prop-icon">05<span class="spin-arrow">⟲</span></div>
+      <div class="prop-title">Hover Stabilization</div>
+      <div class="prop-detail">Propeller wash from the coaxial drive passes directly over the X-tail ruddervators, giving pitch, yaw, and roll correction in hover without auxiliary lift motors. Combined with gimbal authority, this holds position and attitude through crosswinds and gusts.</div>
     </div>
     <div class="prop-cell reveal reveal-delay-1">
-      <div class="prop-icon">06⚡</div>
+      <div class="prop-icon pulse">06⚡</div>
       <div class="prop-title">Transition Control</div>
-      <div class="prop-detail">INAV with custom dynamic inversion mixer. Ailerons and V-tail active above 30% airspeed. Thrust vectoring primary below 30%. Gain-scheduled blended region during transition — continuous control authority transition between flight modes.</div>
+      <div class="prop-detail">Control authority blends progressively between thrust vectoring (hover, low airspeed) and aerodynamic surfaces — ailerons and X-tail ruddervators (cruise, high airspeed) — through a gain-scheduled transition region, keeping the aircraft stable across the full flight envelope.</div>
     </div>
   </div>
 
@@ -374,16 +399,16 @@
     <div class="section-label" style="margin-bottom:20px;">Propulsion Specifications</div>
     <table class="spec-table">
       <thead><tr>
-        <th>Parameter</th><th>Takeoff / Hover</th><th>Cruise</th><th>Notes</th>
+        <th>Parameter</th><th>Hover / VTOL</th><th>Cruise</th><th>Notes</th>
       </tr></thead>
       <tbody>
-        <tr><td>Motor</td><td class="val">2213 Hollow Shaft</td><td class="val">Same</td><td class="cat">Single engine philosophy</td></tr>
-        <tr><td>Propeller (takeoff)</td><td class="val">11×4.7"</td><td class="val">—</td><td class="cat">Variable geometry</td></tr>
-        <tr><td>Propeller (cruise)</td><td class="val">—</td><td class="val">9×6"</td><td class="cat">Morphed for efficiency</td></tr>
-        <tr><td>Pitch range</td><td class="val">15°</td><td class="val">45°</td><td class="cat">Continuous, in-flight</td></tr>
-        <tr><td>Gimbal pitch</td><td class="val">90° (vertical)</td><td class="val">0° (horizontal)</td><td class="cat">0.3s transition</td></tr>
-        <tr><td>Gimbal yaw</td><td class="val">±25°</td><td class="val">0°</td><td class="cat">Hover directional control</td></tr>
-        <tr><td>Hover figure of merit</td><td class="val">+25% vs fixed</td><td class="val">—</td><td class="cat">Variable geometry benefit</td></tr>
+        <tr><td>Drive configuration</td><td class="val">Coaxial, Counter-Rotating</td><td class="val">Same</td><td class="cat">Single thrust axis</td></tr>
+        <tr><td>Propeller diameter</td><td class="val">30–36"</td><td class="val">30–36"</td><td class="cat">Variable-pitch carbon</td></tr>
+        <tr><td>Peak power draw</td><td class="val">4–6 kW</td><td class="val">600–900 W</td><td class="cat">Climb: 1.5–2.5 kW</td></tr>
+        <tr><td>Battery voltage</td><td class="val">12S–14S</td><td class="val">Same</td><td class="cat">High-density Li-ion</td></tr>
+        <tr><td>Gimbal pitch authority</td><td class="val">±15° to ±25°</td><td class="val">Neutral</td><td class="cat">Hover & transition control</td></tr>
+        <tr><td>Gimbal yaw authority</td><td class="val">±10° to ±15°</td><td class="val">Neutral</td><td class="cat">Hover directional control</td></tr>
+        <tr><td>Minimum hover thrust</td><td class="val">&gt;1.3× MTOW</td><td class="val">—</td><td class="cat">Stable ascent margin</td></tr>
       </tbody>
     </table>
   </div>
@@ -391,7 +416,7 @@
 
 <!-- ENERGY -->
 <section id="energy">
-  <div class="section-label reveal">Ch 8.3</div>
+  <div class="section-label reveal">Power Architecture</div>
   <h2 class="section-title reveal">Energy & Solar Systems</h2>
   <p class="section-desc reveal reveal-delay-1">
     Solar-electric architecture with photovoltaic cells laminated directly into wing skin. 
@@ -401,7 +426,7 @@
   <div class="solar-split">
     <div>
       <div class="solar-viz reveal">
-        <img src="icon.svg" alt="PHANTOM Logo" style="width:160px;height:160px;filter:drop-shadow(0 0 20px rgba(255,255,255,0.08));">
+        <img src="icon.svg" alt="PHANTOM Logo" style="width:160px;height:160px;">
       </div>
     </div>
     <div class="solar-info reveal reveal-delay-1">
@@ -576,15 +601,49 @@ const revealEls=document.querySelectorAll('.reveal');
 const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.1});
 revealEls.forEach(el=>obs.observe(el));
 
-// CHAPTER TABS
-document.querySelectorAll('.chapter-tab').forEach(tab=>{
+// CHAPTER TABS — sliding indicator + scroll-spy
+const chapterTabs=document.querySelectorAll('.chapter-tab');
+const chapterIndicator=document.getElementById('chapterIndicator');
+const chapterNavEl=document.getElementById('chapterNav');
+
+function moveIndicatorTo(tab){
+  if(!tab||!chapterIndicator) return;
+  const navRect=chapterNavEl.getBoundingClientRect();
+  const tabRect=tab.getBoundingClientRect();
+  chapterIndicator.style.width=tabRect.width+'px';
+  chapterIndicator.style.transform='translateX('+(tabRect.left-navRect.left+chapterNavEl.scrollLeft)+'px)';
+}
+
+chapterTabs.forEach(tab=>{
   tab.addEventListener('click',()=>{
-    document.querySelectorAll('.chapter-tab').forEach(t=>t.classList.remove('active'));
+    chapterTabs.forEach(t=>t.classList.remove('active'));
     tab.classList.add('active');
+    moveIndicatorTo(tab);
     const target=document.getElementById(tab.dataset.target);
     if(target) target.scrollIntoView({behavior:'smooth',block:'start'});
   });
 });
+
+// Position indicator on load and on resize
+window.addEventListener('load',()=>moveIndicatorTo(document.querySelector('.chapter-tab.active')));
+window.addEventListener('resize',()=>moveIndicatorTo(document.querySelector('.chapter-tab.active')));
+
+// Scroll-spy: keep indicator + active tab in sync with the section actually in view
+const chapterSections=['persistent-core','qram','propulsion','energy','structural']
+  .map(id=>document.getElementById(id)).filter(Boolean);
+const spyObs=new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      const match=document.querySelector('.chapter-tab[data-target="'+entry.target.id+'"]');
+      if(match && !match.classList.contains('active')){
+        chapterTabs.forEach(t=>t.classList.remove('active'));
+        match.classList.add('active');
+        moveIndicatorTo(match);
+      }
+    }
+  });
+},{threshold:0.3,rootMargin:'-120px 0px -50% 0px'});
+chapterSections.forEach(sec=>spyObs.observe(sec));
 
 // ENERGY BARS
 const bars=document.querySelectorAll('.energy-bar');
