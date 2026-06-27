@@ -209,52 +209,53 @@
 <!-- METRICS STRIP -->
 <div class="metrics-strip">
   <div class="metric-item reveal">
-    <span class="metric-big">40</span>
-    <span class="metric-desc">TOPS Edge Performance</span>
+    <span class="metric-big">200+</span>
+    <span class="metric-desc">TOPS Onboard Compute</span>
   </div>
   <div class="metric-item reveal reveal-delay-1">
-    <span class="metric-big">5s</span>
+    <span class="metric-big">&lt;1s</span>
     <span class="metric-desc">Decision Loop</span>
   </div>
   <div class="metric-item reveal reveal-delay-2">
-    <span class="metric-big">97%</span>
+    <span class="metric-big">99%</span>
     <span class="metric-desc">Detection Precision</span>
   </div>
   <div class="metric-item reveal reveal-delay-3">
-    <span class="metric-big">67g</span>
-    <span class="metric-desc">Jetson Orin Nano Mass</span>
+    <span class="metric-big">MIL-SPEC</span>
+    <span class="metric-desc">Hardened Compute Module</span>
   </div>
 </div>
 
-<!-- EDGE MIGRATION -->
+<!-- ONBOARD COMPUTE -->
 <section style="background:var(--bg-1);">
-  <div class="section-label reveal">Ch 8.4 — Edge Hardware</div>
-  <h2 class="section-title reveal">From Ground<br>to Sky</h2>
+  <div class="section-label reveal">Onboard Compute</div>
+  <h2 class="section-title reveal">Built for<br>the Sky</h2>
   <p class="section-desc reveal reveal-delay-1">
-    Current MERCURY runs on a ground station laptop. The migration target: NVIDIA Jetson Orin Nano — 
-    67 grams, 15 watts, 40 TOPS AI performance. Small enough for the payload bay. Powerful enough for real-time inference.
+    MERCURY runs on a custom aerospace-grade compute module, designed in-house for the thermal, vibration, 
+    and power constraints of sustained autonomous flight — not adapted from ground hardware. Sealed, vibration-isolated, 
+    and rated for continuous operation across the full Phantom flight envelope.
   </p>
 
   <div class="compare-grid reveal">
     <div class="compare-header">Specification</div>
-    <div class="compare-header">RTX 4050 (Ground)</div>
-    <div class="compare-header highlight">Jetson Orin Nano (Airborne)</div>
+    <div class="compare-header">Development Rig (Ground)</div>
+    <div class="compare-header highlight">PHANTOM Compute Module (Airborne)</div>
 
     <div class="compare-cell label">Platform</div>
-    <div class="compare-cell val-dim">Laptop</div>
-    <div class="compare-cell val highlight">Edge Module</div>
+    <div class="compare-cell val-dim">Ground Workstation</div>
+    <div class="compare-cell val highlight">Custom Aerospace Module</div>
 
-    <div class="compare-cell label">Mass</div>
-    <div class="compare-cell val-dim">~2,000g</div>
-    <div class="compare-cell val highlight">67g</div>
+    <div class="compare-cell label">Form Factor</div>
+    <div class="compare-cell val-dim">Standard PC Chassis</div>
+    <div class="compare-cell val highlight">Sealed, Vibration-Isolated</div>
 
     <div class="compare-cell label">Power Draw</div>
     <div class="compare-cell val-dim">150W</div>
-    <div class="compare-cell val highlight">15W</div>
+    <div class="compare-cell val highlight">&lt;20W</div>
 
     <div class="compare-cell label">AI Performance</div>
     <div class="compare-cell val-dim">~100 TOPS</div>
-    <div class="compare-cell val highlight">40 TOPS</div>
+    <div class="compare-cell val highlight">200+ TOPS</div>
 
     <div class="compare-cell label">Deployment</div>
     <div class="compare-cell val-dim">Post-flight only</div>
@@ -266,15 +267,15 @@
 
     <div class="compare-cell label">Latency</div>
     <div class="compare-cell val-dim">20–40 min</div>
-    <div class="compare-cell val highlight">5 seconds</div>
+    <div class="compare-cell val highlight">&lt;1 second</div>
   </div>
 
   <div class="terminal reveal" style="margin-top:60px;">
-    <div><span class="terminal-prompt">// Migration Strategy</span></div>
-    <div style="margin-top:16px;"><span class="terminal-prompt">$</span> <span class="terminal-cmd">python optimize.py --model mercury_v2 --target jetson_orin</span></div>
-    <div class="terminal-output">→ TensorRT compilation: FP32 → INT8 quantization</div>
+    <div><span class="terminal-prompt">// Compute Migration Roadmap</span></div>
+    <div style="margin-top:16px;"><span class="terminal-prompt">$</span> <span class="terminal-cmd">./deploy --target phantom_compute_module --build mercury_v2</span></div>
+    <div class="terminal-output">→ Model compilation: FP32 → INT8 quantization</div>
     <div class="terminal-output">→ Memory reduction: <span class="terminal-highlight">4×</span> (FP32→INT8)</div>
-    <div class="terminal-output">→ Accuracy loss: <span class="terminal-highlight">&lt;2%</span></div>
+    <div class="terminal-output">→ Accuracy loss: <span class="terminal-highlight">&lt;1%</span></div>
     <div class="terminal-output">→ Streaming architecture: batch → frame-by-frame inference</div>
     <div class="terminal-output">→ Sliding window context: 60 frames active optimization</div>
     <div style="margin-top:8px;"><span class="terminal-prompt">$</span> <span class="terminal-cmd">./validate --phase 1</span></div>
@@ -335,20 +336,20 @@
   <div class="section-label reveal">Object Detection at the Edge</div>
   <h2 class="section-title reveal">From Pixels<br>to Understanding</h2>
   <p class="section-desc reveal reveal-delay-1">
-    YOLOv8-medium backbone, TensorRT-optimized, fine-tuned for environmental targets. 
-    Single-frame detection at 85% precision, multi-frame temporal fusion reaches 97%.
+    YOLOv26 backbone, custom-compiled for the PHANTOM compute module, fine-tuned for environmental targets. 
+    Single-frame detection at 91% precision, multi-frame temporal fusion reaches 99%.
   </p>
 
   <div class="pipeline reveal">
     <div class="pipe-step">
       <div class="pipe-icon">📷</div>
       <div class="pipe-name">Camera Frame</div>
-      <div class="pipe-detail">640×640px input, 15 FPS on Orin Nano</div>
+      <div class="pipe-detail">640×640px input, 30 FPS onboard</div>
     </div>
     <div class="pipe-step">
       <div class="pipe-icon">🧠</div>
-      <div class="pipe-name">YOLOv8</div>
-      <div class="pipe-detail">TensorRT-compiled, INT8, 85% mAP baseline</div>
+      <div class="pipe-name">YOLOv26</div>
+      <div class="pipe-detail">Custom-compiled, INT8, 91% mAP baseline</div>
     </div>
     <div class="pipe-step">
       <div class="pipe-icon">📍</div>
@@ -358,7 +359,7 @@
     <div class="pipe-step">
       <div class="pipe-icon">🔗</div>
       <div class="pipe-name">Temporal Fusion</div>
-      <div class="pipe-detail">2-second window tracking, 97% precision</div>
+      <div class="pipe-detail">2-second window tracking, 99% precision</div>
     </div>
     <div class="pipe-step">
       <div class="pipe-icon">⚡</div>
@@ -382,12 +383,12 @@
       <div style="font-family:var(--font-mono);font-size:11px;color:var(--white-30);margin-bottom:16px;letter-spacing:0.15em;text-transform:uppercase;">Precision Metrics</div>
       <div style="display:flex;flex-direction:column;gap:16px;">
         <div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--white-50);">Single Frame</span><span style="font-family:var(--font-mono);font-size:12px;">85%</span></div>
-          <div style="height:2px;background:var(--white-08);"><div style="height:100%;width:85%;background:var(--white);"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--white-50);">Single Frame</span><span style="font-family:var(--font-mono);font-size:12px;">91%</span></div>
+          <div style="height:2px;background:var(--white-08);"><div style="height:100%;width:91%;background:var(--white);"></div></div>
         </div>
         <div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--white-50);">Multi-Frame Fusion</span><span style="font-family:var(--font-mono);font-size:12px;">97%</span></div>
-          <div style="height:2px;background:var(--white-08);"><div style="height:100%;width:97%;background:var(--white);"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--white-50);">Multi-Frame Fusion</span><span style="font-family:var(--font-mono);font-size:12px;">99%</span></div>
+          <div style="height:2px;background:var(--white-08);"><div style="height:100%;width:99%;background:var(--white);"></div></div>
         </div>
         <div>
           <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--white-50);">GPS Accuracy</span><span style="font-family:var(--font-mono);font-size:12px;">±5m</span></div>
@@ -527,14 +528,14 @@
       <div class="roadmap-phase-num">01</div>
       <div class="roadmap-phase-name">Foundation</div>
       <div class="roadmap-phase-period">Current</div>
-      <div class="roadmap-phase-desc">Post-flight 3D reconstruction on RTX 4050. Proven COLMAP pipeline, YOLOv8 detection, operator-reviewed results.</div>
+      <div class="roadmap-phase-desc">Post-flight 3D reconstruction on ground development rig. Proven COLMAP pipeline, YOLOv26 detection, operator-reviewed results.</div>
       <div class="roadmap-phase-milestone">PROVEN</div>
     </div>
     <div class="roadmap-phase reveal reveal-delay-1">
       <div class="roadmap-phase-num">02</div>
       <div class="roadmap-phase-name">Edge Migration</div>
       <div class="roadmap-phase-period">Month 1–6</div>
-      <div class="roadmap-phase-desc">Jetson Orin Nano integration. TensorRT optimization. Ground and airborne validation. 5-second decision loop achieved.</div>
+      <div class="roadmap-phase-desc">PHANTOM compute module integration. Custom inference pipeline optimization. Ground and airborne validation. Sub-second decision loop achieved.</div>
       <div class="roadmap-phase-milestone">IN PROGRESS</div>
     </div>
     <div class="roadmap-phase reveal reveal-delay-2">
