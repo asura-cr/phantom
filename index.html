@@ -3,405 +3,1495 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>
-  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768) {
-    window.location.replace("index-legacy.html");
-  }
-</script>
-<title>Project Phantom — One UAV. Infinite Missions.</title>
-<meta name="description" content="Project Phantom is a solar-electric VTOL platform. Modular wings, autonomous Mercury AI, zero-emission endurance. Made in the UAE, built for the world.">
-<link rel="icon" href="favicon.ico">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="phantom.css">
-<style>
-/* kinetic word-reveal masks (Active-Theory style, scroll-scrubbed) */
-.w{display:inline-block;overflow:hidden;vertical-align:top;line-height:1.06}
-.wi{display:inline-block;will-change:transform}
+<title>Project Phantom</title>
 
-/* monochrome void overrides */
-.display,.h2{color:#fff}
-.eyebrow{color:var(--w-50)}
-.lead{color:var(--w-50)}
-.scrim{background:radial-gradient(120% 120% at 50% 30%,transparent 45%,rgba(0,0,0,.6) 100%)}
-/* dark halo keeps white text readable when the white drone flies directly behind it */
-.display .hl,#hero .eyebrow,#hero .lead,
-main .section .h2,main .section .lead,main .section .eyebrow{
-  text-shadow:0 0 14px rgba(0,0,0,.92),0 0 38px rgba(0,0,0,.8),0 2px 6px rgba(0,0,0,.9);
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#050505;
+  --bg-1:#0a0a0a;
+  --bg-2:#111111;
+  --surface:#141414;
+  --border:rgba(255,255,255,.07);
+  --white:#fff;
+  --white-80:rgba(255,255,255,.8);
+  --white-50:rgba(255,255,255,.5);
+  --white-30:rgba(255,255,255,.3);
+  --white-20:rgba(255,255,255,.2);
+  --white-10:rgba(255,255,255,.1);
+  --white-08:rgba(255,255,255,.08);
+  --white-04:rgba(255,255,255,.04);
+  --font-sans:'Space Grotesk',sans-serif;
+  --font-mono:'Space Mono',monospace;
+  --nav-h:68px;
+  --alert-h:36px;
 }
 
-#hero{min-height:250vh;padding:0;display:block}
-.hero-sticky{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:clamp(96px,12vh,150px) clamp(20px,5vw,80px) clamp(48px,7vh,96px)}
-#hero .display{font-size:clamp(38px,6.2vw,92px);margin:12px 0 22px}
-.hero-row{display:flex;align-items:flex-end;justify-content:space-between;gap:40px;flex-wrap:wrap}
-.hero-actions{display:flex;gap:14px;flex-wrap:wrap}
-.statbar{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid rgba(255,255,255,.18);margin-top:clamp(22px,3.4vh,46px);max-width:560px;background:rgba(10,18,28,.28);backdrop-filter:blur(8px)}
-.statbar .s{padding:22px 26px;border-right:1px solid rgba(255,255,255,.14)}
-.statbar .s:last-child{border-right:none}
-.statbar b{display:block;font-family:var(--mono);font-weight:700;font-size:clamp(22px,2.4vw,32px);letter-spacing:-.02em}
-.statbar span{display:block;margin-top:6px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.7)}
-@media(max-width:560px){.statbar{grid-template-columns:1fr}.statbar .s{border-right:none;border-bottom:1px solid rgba(255,255,255,.14)}}
-.scroll-cue{position:absolute;bottom:30px;left:clamp(20px,5vw,80px);display:flex;flex-direction:column;align-items:center;gap:10px;font-family:var(--mono);font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.55)}
-.scroll-cue .l{width:1px;height:46px;background:rgba(255,255,255,.4);position:relative;overflow:hidden}
-.scroll-cue .l::after{content:'';position:absolute;left:0;top:-100%;width:100%;height:100%;background:#fff;animation:drop 2.1s cubic-bezier(.7,0,.3,1) infinite}
-@keyframes drop{to{top:200%}}
-.split{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,6vw,90px);align-items:center}
-@media(max-width:900px){.split{grid-template-columns:1fr;gap:40px}}
-.copy .eyebrow{margin-bottom:26px}.copy .h2{margin-bottom:24px}
-.team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(28px,3vw,44px);margin-top:64px}
-@media(max-width:900px){.team-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:520px){.team-grid{grid-template-columns:1fr}}
-.member{display:flex;flex-direction:column;align-items:center;text-align:center;text-decoration:none;color:inherit}
-.ring{position:relative;width:132px;height:132px;display:grid;place-items:center;margin-bottom:22px}
-.ring::before{content:'';position:absolute;inset:-7px;border-radius:50%;border:1px solid rgba(255,255,255,.3);transition:border-color .4s,transform .6s cubic-bezier(.16,1,.3,1)}
-.ring::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:1px solid transparent;border-top-color:#fff;border-right-color:#fff;opacity:0;transition:opacity .4s;animation:spin 7s linear infinite}
-.member:hover .ring::after{opacity:1}.member:hover .ring::before{border-color:rgba(255,255,255,.6);transform:scale(1.05)}
-@keyframes spin{to{transform:rotate(360deg)}}
-.photo{width:100%;height:100%;border-radius:50%;overflow:hidden;background:#0c1620;border:1px solid var(--line);display:grid;place-items:center;position:relative;z-index:1;transition:transform .4s cubic-bezier(.16,1,.3,1)}
-.member:hover .photo{transform:scale(1.04)}
-.photo img{width:100%;height:100%;object-fit:cover;display:block}
-.initials{font-family:var(--mono);font-weight:700;font-size:34px;color:var(--w-35)}
-.badge{position:absolute;bottom:2px;right:2px;width:30px;height:30px;border-radius:50%;background:#fff;display:grid;place-items:center;z-index:2;border:2px solid #0a1622;transition:transform .3s}
-.member:hover .badge{transform:scale(1.12)}.badge svg{width:14px;height:14px}
-.member .nm{font-size:16px;font-weight:600;margin-bottom:5px;color:#fff}
-.member .rl{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.65);margin-bottom:10px}
-.member .ds{font-size:12.5px;line-height:1.6;color:rgba(255,255,255,.5);max-width:210px}
-#contact{text-align:center;align-items:center}#contact .wrap{max-width:880px}
-#contact .h2{margin:22px auto 26px}#contact .lead{margin:0 auto 44px}
-.contact-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
-/* short viewports: shrink the hero so the headline never reaches the top bar */
-@media(max-height:820px){
-  #hero .display{font-size:clamp(34px,4.6vw,68px);margin:8px 0 16px}
-  .hero-sticky{padding-top:92px;padding-bottom:40px}
-  #hero .lead{font-size:14px}
-  .statbar{margin-top:16px}
-  .statbar .s{padding:16px 20px}
+*,
+*::before,
+*::after{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip; 
+}
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font-sans);
+  overflow-x: clip; 
+  cursor: none;
+}
+
+/* FIX 4: Mobile/touch cursor ghosting — only hide the native cursor and
+   show the custom dot/ring on devices that actually have a fine pointer
+   (mouse/trackpad). Touch devices keep normal tap behavior, no frozen
+   or erratic custom cursor. */
+@media (hover: none), (pointer: coarse) {
+  body{
+    cursor: auto;
+  }
+  #cur-dot,
+  #cur-ring{
+    display:none;
+  }
+}
+
+#cur-dot,
+#cur-ring{
+  position:fixed;
+  top:0;
+  left:0;
+  pointer-events:none;
+  z-index:9999;
+  border-radius:50%;
+  will-change:transform;
+}
+
+#cur-dot{
+  width:8px;
+  height:8px;
+  background:#fff;
+  mix-blend-mode:difference;
+}
+
+#cur-ring{
+  width:36px;
+  height:36px;
+  border:1px solid rgba(255,255,255,.6);
+  mix-blend-mode:difference;
+  transition:
+    width .2s ease,
+    height .2s ease,
+    border-color .2s ease;
+}
+
+#cur-ring.active{
+  width:56px;
+  height:56px;
+  border-color:#fff;
+}
+
+/* FIX 1: Critical usability bug — nav vs alert banner.
+   Alert banner is now pinned to the absolute top (top:0) and the nav
+   is pushed down to sit directly beneath it (top: var(--alert-h)).
+   This removes the overlap entirely instead of relying on two
+   independent fixed offsets that drift apart on mobile. */
+.alert-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--alert-h);
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 101;
+  padding: 0 24px;
+}
+
+.alert-text {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.alert-cta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: #DA7756;
+  padding: 4px 12px;
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+.alert-cta:hover {
+  background: #e28e70;
+}
+
+nav{
+  position:fixed;
+  top: var(--alert-h); /* sits directly under the alert banner */
+  left:0;
+  right:0;
+  z-index:100;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:20px 48px;
+  transition:.35s;
+  border-bottom:1px solid transparent;
+}
+
+nav.scrolled{
+  background:rgba(5,5,5,.85);
+  backdrop-filter:blur(20px);
+  border-color:var(--border);
+}
+
+.nav-logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:#fff;
+  text-decoration:none;
+  font-family:var(--font-mono);
+  letter-spacing:.2em;
+  font-size:18px;
+  font-weight:700;
+}
+
+.nav-logo-mark{
+  width:28px;
+  height:28px;
+  object-fit:contain;
+}
+
+.nav-links{
+  display:flex;
+  gap:36px;
+  list-style:none;
+}
+
+.nav-links a{
+  text-decoration:none;
+  color:var(--white-50);
+  font-size:13px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  transition:.2s;
+}
+
+.nav-links a:hover{
+  color:#fff;
+}
+
+.nav-cta{
+  background:#fff;
+  color:#000;
+  text-decoration:none;
+  padding:10px 24px;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  font-family:var(--font-mono);
+  font-weight:700;
+}
+
+.hero{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+  /* FIX 1 (cont.): top padding accounts for banner + nav stacked height
+     so hero content never starts underneath them, on load or on resize. */
+  padding: calc(var(--alert-h) + var(--nav-h) + 40px) 48px 80px;
+}
+
+.hero-grid{
+  position:absolute;
+  inset:0;
+  background-image:
+    linear-gradient(var(--border) 1px,transparent 1px),
+    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:60px 60px;
+  animation:gridPulse 8s ease-in-out infinite;
+}
+
+@keyframes gridPulse{
+  0%,100%{opacity:.4}
+  50%{opacity:.8}
+}
+
+.hero-glow{
+  position:absolute;
+  width:600px;
+  height:600px;
+  background:radial-gradient(circle,rgba(255,255,255,.05),transparent 70%);
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+}
+
+.hero-content{
+  position:relative;
+  z-index:2;
+  text-align:center;
+  max-width:900px;
+}
+
+.hero-eyebrow{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.35em;
+  color:var(--white-50);
+  margin-bottom:28px;
+  font-family:var(--font-mono);
+}
+
+.hero-title{
+  font-size:clamp(64px,10vw,132px);
+  line-height:.92;
+  letter-spacing:-.04em;
+  margin-bottom:32px;
+}
+
+.hero-title .line{
+  overflow:hidden;
+  display:block;
+}
+
+.hero-title .word{
+  display:inline-block;
+  animation:slideUp .9s cubic-bezier(.16,1,.3,1) both;
+}
+
+@keyframes slideUp{
+  from{
+    transform:translateY(110%);
+    opacity:0;
+  }
+  to{
+    transform:translateY(0);
+    opacity:1;
+  }
+}
+
+.hero-subtitle{
+  font-size:17px;
+  line-height:1.7;
+  color:var(--white-50);
+  max-width:540px;
+  margin:0 auto 48px;
+  animation:fadeIn 1s .4s both;
+}
+
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:translateY(14px);
+  }
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+.hero-actions{
+  display:flex;
+  gap:16px;
+  justify-content:center;
+  flex-wrap:wrap;
+  animation:fadeIn 1s .6s both;
+}
+
+.btn-primary,
+.btn-secondary{
+  text-decoration:none;
+  padding:16px 40px;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  font-size:12px;
+  font-weight:700;
+  font-family:var(--font-mono);
+}
+
+.btn-primary{
+  background:#fff;
+  color:#000;
+}
+
+.btn-secondary{
+  border:1px solid var(--white-20);
+  color:#fff;
+}
+
+.hero-stats{
+  margin-top:90px;
+  display:flex;
+  border:1px solid var(--border);
+  position:relative;
+  z-index:2;
+}
+
+.stat-item{
+  padding:24px 48px;
+  text-align:center;
+  border-right:1px solid var(--border);
+}
+
+.stat-item:last-child{
+  border-right:none;
+}
+
+.stat-num{
+  display:block;
+  font-size:32px;
+  font-family:var(--font-mono);
+  margin-bottom:6px;
+}
+
+.stat-label{
+  font-size:11px;
+  color:var(--white-50);
+  text-transform:uppercase;
+  letter-spacing:.15em;
+}
+
+.hero-scroll-hint{
+  position:absolute;
+  bottom:36px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  font-size:10px;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--white-30);
+}
+
+.scroll-line{
+  width:1px;
+  height:40px;
+  background:var(--white-20);
+  overflow:hidden;
+  position:relative;
+}
+
+.scroll-line::after{
+  content:'';
+  position:absolute;
+  top:-100%;
+  left:0;
+  width:100%;
+  height:100%;
+  background:#fff;
+  animation:scrollDrop 2s infinite;
+}
+
+@keyframes scrollDrop{
+  from{top:-100%}
+  to{top:200%}
+}
+
+section{
+  padding:120px 48px;
+  position:relative;
+}
+
+/* FIX 2 (cont.): scroll-margin-top so anchored sections land below the
+   fixed banner + nav stack instead of being hidden underneath them. */
+section[id]{
+  scroll-margin-top: calc(var(--alert-h) + var(--nav-h) + 16px);
+}
+
+.section-label{
+  font-size:11px;
+  letter-spacing:.3em;
+  text-transform:uppercase;
+  color:var(--white-30);
+  margin-bottom:20px;
+  font-family:var(--font-mono);
+}
+
+.section-title{
+  font-size:clamp(36px,5vw,64px);
+  line-height:1.05;
+  letter-spacing:-.03em;
+  margin-bottom:20px;
+}
+
+.section-desc{
+  max-width:560px;
+  color:var(--white-50);
+  line-height:1.7;
+  font-size:17px;
+}
+
+.reveal{
+  opacity:0;
+  transform:translateY(40px);
+  transition:
+    opacity .8s cubic-bezier(.16,1,.3,1),
+    transform .8s cubic-bezier(.16,1,.3,1);
+}
+
+.reveal.visible{
+  opacity:1;
+  transform:none;
+}
+
+.reveal-delay-1{transition-delay:.1s}
+.reveal-delay-2{transition-delay:.2s}
+.reveal-delay-3{transition-delay:.3s}
+
+.parallax-text,
+.depth-line,
+.card,
+.config-card,
+.sdg-card,
+.reveal{
+  will-change:transform,opacity;
+}
+
+.marquee-band{
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  overflow:hidden;
+  padding:18px 0;
+  background:var(--bg-1);
+}
+
+.marquee-inner{
+  display:flex;
+  white-space:nowrap;
+  animation:marquee 30s linear infinite;
+}
+
+@keyframes marquee{
+  from{transform:translateX(0)}
+  to{transform:translateX(-50%)}
+}
+
+.marquee-item{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:0 48px;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  color:var(--white-30);
+  font-family:var(--font-mono);
+}
+
+.marquee-dot{
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:var(--white-30);
+}
+
+.depth-section {
+  height: 400vh;
+  position: relative;
+  padding: 0; 
+}
+
+.depth-sticky{
+  position:sticky;
+  top:0;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.depth-text-wrap {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  text-align: center;
+  display: grid;
+  place-items: center;
+  width: 100%;
+}
+
+.depth-line {
+  grid-area: 1 / 1;
+  opacity: 0;
+  font-size: clamp(32px, 5vw, 72px);
+  letter-spacing: -.03em;
+  transform-origin: center center -200px;
+  backface-visibility: hidden;
+}
+
+.cards-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:var(--border);
+  margin-top:80px;
+}
+
+.card{
+  background:var(--bg);
+  padding:48px 40px;
+}
+
+.card-title{
+  font-size:20px;
+  margin-bottom:12px;
+}
+
+.card-text{
+  color:var(--white-50);
+  line-height:1.7;
+  font-size:14px;
+}
+
+.configs-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:var(--border);
+  margin-top:60px;
+}
+
+.config-card{
+  background:var(--bg);
+  padding:36px 32px;
+  position:relative;
+  overflow:hidden;
+}
+
+.config-card::after{
+  content:'';
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:0;
+  height:2px;
+  background:#fff;
+  transition:.4s cubic-bezier(.16,1,.3,1);
+}
+
+.config-card:hover::after{
+  width:100%;
+}
+
+.config-letter{
+  font-size:48px;
+  color:var(--white-08);
+  margin-bottom:16px;
+  font-family:var(--font-mono);
+}
+
+.config-name{
+  font-size:14px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+
+.config-region{
+  color:var(--white-30);
+  margin-bottom:16px;
+  font-size:12px;
+}
+
+.config-desc{
+  color:var(--white-50);
+  line-height:1.6;
+  font-size:13px;
+}
+
+.sdg-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:1px;
+  background:var(--border);
+  margin-top:60px;
+}
+
+.sdg-card{
+  background:var(--bg);
+  padding:32px 28px;
+}
+
+.sdg-num{
+  font-size:36px;
+  margin-bottom:12px;
+  color:var(--white-10);
+  font-family:var(--font-mono);
+}
+
+.sdg-title{
+  margin-bottom:8px;
+}
+
+.sdg-text{
+  color:var(--white-40);
+  line-height:1.6;
+  font-size:12px;
+}
+
+.parallax-text {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  font-size: clamp(60px, 12vw, 150px);
+  font-weight: 800;
+  font-family: var(--font-sans);
+  color: rgba(255, 255, 255, 0.02);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 1;
+  text-transform: uppercase;
+}
+
+.team-section{
+  position:relative;
+}
+
+.team-intro{
+  max-width:640px;
+}
+
+.team-tag{
+  display:inline-block;
+  border:1px solid var(--white-20);
+  padding:8px 16px;
+  font-family:var(--font-mono);
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--white-80);
+  margin-top:8px;
+  margin-bottom:28px;
+}
+
+.team-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:48px 32px;
+  margin-top:72px;
+}
+
+.team-card{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  text-decoration:none;
+  color:inherit;
+}
+
+.avatar-ring{
+  position:relative;
+  width:140px;
+  height:140px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:24px;
+}
+
+.avatar-ring::before{
+  content:'';
+  position:absolute;
+  inset:-6px;
+  border-radius:50%;
+  border:1px solid var(--white-20);
+  transition: border-color .4s ease, transform .6s cubic-bezier(.16,1,.3,1);
+}
+
+.avatar-ring::after{
+  content:'';
+  position:absolute;
+  inset:-6px;
+  border-radius:50%;
+  border:1px solid transparent;
+  border-top-color:#fff;
+  border-right-color:#fff;
+  animation: spinRing 7s linear infinite;
+  opacity:0;
+  transition: opacity .4s ease;
+}
+
+.team-card:hover .avatar-ring::after{
+  opacity:1;
+}
+
+.team-card:hover .avatar-ring::before{
+  border-color:var(--white-50);
+  transform:scale(1.04);
+}
+
+@keyframes spinRing{
+  from{ transform: rotate(0deg); }
+  to{ transform: rotate(360deg); }
+}
+
+.avatar-photo{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  overflow:hidden;
+  background:var(--bg-2);
+  border:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  z-index:1;
+  transition: transform .4s cubic-bezier(.16,1,.3,1);
+}
+
+.team-card:hover .avatar-photo{
+  transform:scale(1.03);
+}
+
+.avatar-photo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.avatar-initials{
+  font-family:var(--font-mono);
+  font-size:36px;
+  font-weight:700;
+  color:var(--white-30);
+  letter-spacing:.05em;
+}
+
+.avatar-linkedin-badge{
+  position:absolute;
+  bottom:2px;
+  right:2px;
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:2;
+  border:2px solid var(--bg);
+  transition: transform .3s cubic-bezier(.16,1,.3,1);
+}
+
+.team-card:hover .avatar-linkedin-badge{
+  transform:scale(1.1);
+}
+
+.avatar-linkedin-badge svg{
+  width:14px;
+  height:14px;
+}
+
+.team-name{
+  font-size:16px;
+  font-weight:600;
+  margin-bottom:6px;
+  letter-spacing:-.01em;
+}
+
+.team-role{
+  font-family:var(--font-mono);
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--white-50);
+  margin-bottom:10px;
+}
+
+.team-desc{
+  font-size:13px;
+  line-height:1.6;
+  color:var(--white-30);
+  max-width:220px;
+}
+
+@media(max-width:900px){
+  .team-grid{
+    grid-template-columns:repeat(2,1fr);
+    gap:48px 24px;
+  }
+}
+
+@media(max-width:560px){
+  .team-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+.strategic-ops-section {
+  background: var(--bg-1);
+  border-top: 1px solid var(--border);
+  padding: 100px 48px;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  z-index: 10;
+}
+.strategic-ops-container {
+  max-width: 800px;
+  width: 100%;
+}
+.strategic-ops-actions {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+.strategic-ops-actions .btn-primary,
+.strategic-ops-actions .btn-secondary {
+  text-decoration: none;
+  padding: 16px 40px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+.strategic-ops-actions .btn-primary {
+  background: #fff;
+  color: #000;
+  border: 1px solid #fff;
+}
+.strategic-ops-actions .btn-primary:hover {
+  background: transparent;
+  color: #fff;
+}
+.strategic-ops-actions .btn-secondary {
+  border: 1px solid var(--white-20);
+  color: #fff;
+  background: transparent;
+}
+.strategic-ops-actions .btn-secondary:hover {
+  border-color: #fff;
+  background: var(--white-10);
+}
+
+@media(max-width:900px){
+
+  nav{
+    padding:16px 24px;
+  }
+
+  .nav-links{
+    display:none;
+  }
+
+  section{
+    padding:80px 24px;
+  }
+
+  .hero{
+    padding: calc(var(--alert-h) + var(--nav-h) + 20px) 24px 60px;
+  }
+
+  .cards-grid,
+  .configs-grid,
+  .sdg-grid{
+    grid-template-columns:1fr;
+  }
+
+  .hero-stats{
+    flex-direction:column;
+  }
+
+  .stat-item{
+    border-right:none;
+    border-bottom:1px solid var(--border);
+  }
+
+  /* FIX 1 (cont.): on mobile the banner text wraps to 2 lines, so it
+     grows taller than --alert-h. Let it size naturally and recalc the
+     offset with a CSS var so nav/hero/scroll-margin stay in sync
+     instead of drifting apart like in the original. */
+  .alert-banner {
+    height: auto;
+    padding: 8px 16px;
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+    --alert-h: 64px; /* approximate stacked height on small screens */
+  }
+
+  .alert-text {
+    white-space: normal;
+    font-size: 10px;
+  }
 }
 </style>
 </head>
-<body>
-<div id="loader"><div class="load-mark">PHANTOM</div><div class="load-bar"><i id="loadFill"></i></div><div class="load-num"><span id="loadNum">000</span> — SPOOLING ROTORS</div></div>
-<div id="cur-dot"></div><div id="cur-ring"></div>
-<canvas id="webgl"></canvas><div class="scrim"></div>
 
-<div class="statusline"><span class="dot"></span>Phantom · Active Development · Solar-Electric VTOL</div>
-<nav id="nav">
-  <a href="index.html" class="nav-logo"><img src="icon.svg" alt="">PHANTOM</a>
+<body>
+
+<div id="cur-dot"></div>
+<div id="cur-ring"></div>
+
+<div class="alert-banner">
+  <span class="alert-text">PHANTOM IS IN ACTIVE DEVELOPMENT. FOLLOW THE BUILD.</span>
+  <a href="https://www.linkedin.com/company/projectphantom/" target="_blank" class="alert-cta">TRACK DEVELOPMENT</a>
+</div>
+
+<nav id="mainNav">
+  <a href="index.html" class="nav-logo">
+    <img src="icon.svg" class="nav-logo-mark">
+    PHANTOM
+  </a>
+
   <ul class="nav-links">
-    <li><a href="index.html" class="here">Overview</a></li>
+    <li><a href="index.html">Overview</a></li>
     <li><a href="technology.html">Technology</a></li>
     <li><a href="mercury.html">Mercury AI</a></li>
     <li><a href="deployment.html">Deployment</a></li>
+    <li><a href="#team">Team</a></li>
+    <li><a href="#contact">Contact</a></li>
   </ul>
-  <a href="#contact" class="nav-cta">Connect</a>
 </nav>
 
-<main>
-  <section id="hero">
-    <div class="hero-sticky">
-    <div class="wrap">
-      <div class="eyebrow r" data-rev>Adaptive UAV Platform — Made in the UAE</div>
-      <h1 class="display">
-        <span class="mask"><span class="hl">ONE UAV.</span></span>
-        <span class="mask"><span class="hl">INFINITE</span></span>
-        <span class="mask"><span class="hl">MISSIONS.</span></span>
-      </h1>
-      <div class="hero-row">
-        <p class="lead r" data-rev>A solar-electric VTOL platform engineered for maximum aerodynamic efficiency and zero-emission flight. Low-profile vertical lift, an optimised fixed-wing frame, and surface-embedded solar — complete runway independence without compromising range or payload.</p>
-        <div class="hero-actions r" data-rev>
-          <a href="technology.html" class="btn btn-fill">Explore Platform</a>
-          <a href="mercury.html" class="btn btn-ghost">Mercury AI</a>
+<section class="hero">
+
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+
+  <div class="hero-content">
+
+    <div class="hero-eyebrow">
+      Adaptive UAV Platform — Made In Uae, Built For The World
+    </div>
+
+    <h1 class="hero-title">
+      <span class="line"><span class="word">ONE</span></span>
+      <span class="line"><span class="word">UAV.</span></span>
+      <span class="line"><span class="word">INFINITE</span></span>
+      <span class="line"><span class="word">MISSIONS.</span></span>
+    </h1>
+
+    <p class="hero-subtitle">
+      Project Phantom is a single-propeller VTOL platform designed for maximum aerodynamic efficiency and zero-emission flight. By combining low-profile vertical lift pods with an optimized fixed-wing frame, the aircraft achieves complete runway independence while maintaining a low-drag profile during cruise. Powered by a high-efficiency electric propulsion system and supported by surface-embedded solar cells, the platform delivers zero-carbon operational range over vast spatial scales without sacrificing payload capacity or deployment speed.
+    </p>
+
+    <div class="hero-actions">
+      <a href="technology.html" class="btn-primary">Explore Platform</a>
+      <a href="mercury.html" class="btn-secondary">Mercury AI</a>
+    </div>
+
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat-item">
+      <span class="stat-num">12+</span>
+      <span class="stat-label">Hours Endurance</span>
+    </div>
+
+    <div class="stat-item">
+      <span class="stat-num">&lt;3min</span>
+      <span class="stat-label">Config Swap</span>
+    </div>
+
+    <div class="stat-item">
+      <span class="stat-num">6g</span>
+      <span class="stat-label">Load Factor</span>
+    </div>
+  </div>
+
+  <div class="hero-scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+
+</section>
+
+<div class="marquee-band">
+  <div class="marquee-inner" id="marqueeInner"></div>
+</div>
+
+<section class="depth-section" id="depthSection">
+
+  <div class="depth-sticky">
+
+    <div class="depth-text-wrap">
+
+      <span class="depth-line" id="dl1">MODULAR CORE</span>
+      <span class="depth-line" id="dl2">SOLAR ELECTRIC</span>
+      <span class="depth-line" id="dl3">AI INTELLIGENCE</span>
+      <span class="depth-line" id="dl4">UNLIMITED ENDURANCE</span>
+
+    </div>
+
+  </div>
+
+</section>
+
+<section id="overview">
+
+  <div class="section-label reveal">
+    Overview
+  </div>
+
+  <h2 class="section-title reveal">
+    Architecture of Convergence
+  </h2>
+
+  <p class="section-desc reveal reveal-delay-1">
+    Traditional unmanned systems force compromise.
+    Phantom eliminates this through modular architecture.
+  </p>
+
+  <div class="cards-grid">
+
+    <div class="card reveal">
+      <div class="card-title">Persistent Core</div>
+      <div class="card-text">
+        One standardized fuselage carries flight control,
+        power management, AI computing, and communications.
+      </div>
+    </div>
+
+    <div class="card reveal reveal-delay-1">
+      <div class="card-title">Single-Prop VTOL</div>
+      <div class="card-text">
+        Zero runway required, maximizing aerodynamic glide.
+      </div>
+    </div>
+
+    <div class="card reveal reveal-delay-2">
+      <div class="card-title">Solar Integration</div>
+      <div class="card-text">
+        High-efficiency solar wing architecture yielding 40% Less Energy drain.
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<section id="technology">
+
+  <div class="parallax-text" id="parallaxText1">
+    CONFIGURATIONS
+  </div>
+
+  <div style="margin-top:80px">
+
+    <div class="section-label reveal">
+      QRAM Wing Modules
+    </div>
+
+    <h2 class="section-title reveal">
+      Modular Swappable Wings
+    </h2>
+
+    <p class="section-desc reveal reveal-delay-1">
+      One architecture adapted for every environment.
+    </p>
+
+  </div>
+
+  <div class="configs-grid" id="configurations">
+
+    <div class="config-card reveal">
+      <div class="config-letter">A</div>
+      <div class="config-name">Desert Hawk</div>
+      <div class="config-region">Arabian Peninsula</div>
+      <div class="config-desc">
+        High thermal tolerance and maximum solar exposure.
+      </div>
+    </div>
+
+    <div class="config-card reveal reveal-delay-1">
+      <div class="config-letter">B</div>
+      <div class="config-name">Maritime Patrol</div>
+      <div class="config-region">Coastal Operations</div>
+      <div class="config-desc">
+        Salt resistant composites and over-water range.
+      </div>
+    </div>
+
+    <div class="config-card reveal reveal-delay-2">
+      <div class="config-letter">C</div>
+      <div class="config-name">Alpine Soar</div>
+      <div class="config-region">High Altitude</div>
+      <div class="config-desc">
+        Extended span optimized for thin-air operations.
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<section id="impact">
+
+  <div class="parallax-text" id="parallaxText2">
+    IMPACT
+  </div>
+
+  <div style="margin-top:80px">
+
+    <div class="section-label reveal">
+      Sustainable Development
+    </div>
+
+    <h2 class="section-title reveal">
+      Platform for Infinite Good
+    </h2>
+
+    <p class="section-desc reveal reveal-delay-1">
+      Built for global environmental intelligence and sustainability.
+    </p>
+
+  </div>
+
+  <div class="sdg-grid">
+
+    <div class="sdg-card reveal">
+      <div class="sdg-num">SDG 13</div>
+      <div class="sdg-title">Climate Action</div>
+      <div class="sdg-text">
+        Wildfire detection and methane monitoring.
+      </div>
+    </div>
+
+    <div class="sdg-card reveal reveal-delay-1">
+      <div class="sdg-num">SDG 14</div>
+      <div class="sdg-title">Life Below Water</div>
+      <div class="sdg-text">
+        Coastal monitoring and spill detection.
+      </div>
+    </div>
+
+    <div class="sdg-card reveal reveal-delay-2">
+      <div class="sdg-num">SDG 15</div>
+      <div class="sdg-title">Life on Land</div>
+      <div class="sdg-text">
+        Reforestation and anti-poaching operations.
+      </div>
+    </div>
+
+    <div class="sdg-card reveal reveal-delay-3">
+      <div class="sdg-num">SDG 9</div>
+      <div class="sdg-title">Innovation</div>
+      <div class="sdg-text">
+        Sovereign enterprise-grade environmental sensing architecture.
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<section class="team-section" id="team">
+
+  <div class="team-intro">
+    <div class="section-label reveal">
+      The Team
+    </div>
+
+    <h2 class="section-title reveal">
+      Meet the Team
+    </h2>
+
+    <p class="section-desc reveal reveal-delay-1">
+      UAE's first youth-led initiative for autonomous fixed-wing aerospace research.
+    </p>
+
+    <div class="team-tag reveal reveal-delay-1">UAE &middot; Founded by Students, Built for the Sky</div>
+  </div>
+
+  <div class="team-grid">
+
+    <a href="https://www.linkedin.com/in/rithishdharanidharan" target="_blank" rel="noopener" class="team-card reveal">
+      <div class="avatar-ring">
+        <div class="avatar-photo">
+          <img src="https://media.licdn.com/dms/image/v2/D4D03AQH2bgsWH9s_2g/profile-displayphoto-crop_800_800/B4DZvuodI8JoAI-/0/1769235144584?e=1784160000&v=beta&t=WxlyhMNr4L-3v68y0WDm7nw3uPj8Ap5e0Y14FiyNW-k" alt="Rithish Dharanidharan" loading="lazy" onerror="this.style.display='none'; this.parentElement.querySelector('.avatar-initials').style.display='flex';">
+          <span class="avatar-initials" style="display:none;">RD</span>
+        </div>
+        <div class="avatar-linkedin-badge">
+          <svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
         </div>
       </div>
-      <div class="statbar r" data-rev>
-        <div class="s"><b>12+</b><span>Hrs Endurance</span></div>
-        <div class="s"><b>&lt;3min</b><span>Config Swap</span></div>
-        <div class="s"><b>6g</b><span>Load Factor</span></div>
+      <div class="team-name">Rithish Dharanidharan</div>
+      <div class="team-role">Founder & Aerospace Lead</div>
+      <div class="team-desc">Leads overall UAV engineering, system architecture, and platform direction.</div>
+    </a>
+
+    <a href="https://www.linkedin.com/in/meherab-hossain-mokter/" target="_blank" rel="noopener" class="team-card reveal reveal-delay-1">
+      <div class="avatar-ring">
+        <div class="avatar-photo">
+          <img src="https://media.licdn.com/dms/image/v2/D4D03AQGiWsV0PcsaVA/profile-displayphoto-crop_800_800/B4DZvbYdxoHgAI-/0/1768912184018?e=1784160000&v=beta&t=Z8lC7ZTtGZKa6-q2t0fmZX_o3czDk9-sh689lR4JZII" alt="Meherab Hossain Mokter" loading="lazy" onerror="this.style.display='none'; this.parentElement.querySelector('.avatar-initials').style.display='flex';">
+          <span class="avatar-initials" style="display:none;">MH</span>
+        </div>
+        <div class="avatar-linkedin-badge">
+          <svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+        </div>
       </div>
-    </div>
-    <div class="scroll-cue"><span>Scroll to fly</span><span class="l"></span></div>
-    </div>
-  </section>
+      <div class="team-name">Meherab Hossain Mokter</div>
+      <div class="team-role">Co-Founder & Operations Lead</div>
+      <div class="team-desc">Leads strategic communications, ecosystem partnerships, and cross-team coordination.</div>
+    </a>
 
-  <div class="marquee"><div class="track" id="marquee"></div></div>
-
-  <section class="section" id="overview">
-    <div class="watermark" data-wm style="top:8%;left:0;right:0">ARCHITECTURE</div>
-    <div class="wrap split">
-      <div class="copy">
-        <div class="eyebrow r" data-rev>01 — Overview</div>
-        <h2 class="h2 r" data-rev>Architecture of convergence.</h2>
-        <p class="lead r" data-rev>Traditional unmanned systems force compromise between endurance, payload and deployment. Phantom dissolves that trade-off through a modular architecture — one persistent core, infinite mission skins.</p>
+    <a href="https://www.linkedin.com/in/mufeed-kakkidi-021368397/" target="_blank" rel="noopener" class="team-card reveal reveal-delay-2">
+      <div class="avatar-ring">
+        <div class="avatar-photo">
+          <img src="https://media.licdn.com/dms/image/v2/D4D03AQFDC0Jx4Owf2Q/profile-displayphoto-crop_800_800/B4DZu725sbJMAI-/0/1768383290895?e=1784160000&v=beta&t=lUP4IVKx4dMJKD6hdBv4hi_r5RGth_Li1lxcsltrUZY" alt="Mufeed Kakkidi" loading="lazy" onerror="this.style.display='none'; this.parentElement.querySelector('.avatar-initials').style.display='flex';">
+          <span class="avatar-initials" style="display:none;">MK</span>
+        </div>
+        <div class="avatar-linkedin-badge">
+          <svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+        </div>
       </div>
-      <div class="grid-3" style="grid-template-columns:1fr">
-        <div class="cell r" data-rev><div class="idx">/ 01</div><h3>Persistent Core</h3><p>One standardised fuselage carries flight control, power management, AI compute and comms across every mission profile.</p></div>
-        <div class="cell r" data-rev><div class="idx">/ 02</div><h3>Solar-Electric VTOL</h3><p>Zero runway required. Vertical lift retracts into a low-drag cruise frame for maximum aerodynamic glide.</p></div>
-        <div class="cell r" data-rev><div class="idx">/ 03</div><h3>Solar Integration</h3><p>High-efficiency solar wing skin yields up to 40% less energy drain — extending zero-carbon range over vast distances.</p></div>
+      <div class="team-name">Mufeed Kakkidi</div>
+      <div class="team-role">Co-Founder & AI Architect</div>
+      <div class="team-desc">Leads autonomous flight intelligence, deep learning integration, and core software development.</div>
+    </a>
+
+    <a href="https://www.linkedin.com/in/ashwin-krishnakumar-074a973a7/" target="_blank" rel="noopener" class="team-card reveal reveal-delay-3">
+      <div class="avatar-ring">
+        <div class="avatar-photo">
+          <img src="https://media.licdn.com/dms/image/v2/D4E03AQHYRnBx_5Sy4Q/profile-displayphoto-scale_400_400/B4EZvr1gr1GoAg-/0/1769188236848?e=1784160000&v=beta&t=JkIdQGzTCC_bbODAC3fM8piltHbqHs7-iFlWwxNl2vc" alt="Ashwin Krishnakumar" loading="lazy" onerror="this.style.display='none'; this.parentElement.querySelector('.avatar-initials').style.display='flex';">
+          <span class="avatar-initials" style="display:none;">AK</span>
+        </div>
+        <div class="avatar-linkedin-badge">
+          <svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+        </div>
       </div>
+      <div class="team-name">Ashwin Krishnakumar</div>
+      <div class="team-role">Co-Founder & Communications Lead</div>
+      <div class="team-desc">Leads project pitch strategy, presentation delivery, and visual branding assets.</div>
+    </a>
+
+  </div>
+
+</section>
+
+<section class="strategic-ops-section" id="contact">
+  <div class="strategic-ops-container">
+    <div class="section-label">Strategic Operations</div>
+    <h2 class="section-title">SYSTEM INTEGRATION &amp; COLLABORATION</h2>
+    <p class="section-desc" style="margin:0 auto;">
+      Initialize direct channels for enterprise deployments, open research collaboration, or technical inquiries. Whether you are looking to integrate custom sensing hardware, explore architectural applications, or connect with our engineering roadmap, our ecosystem is open for development.
+    </p>
+    <div class="strategic-ops-actions">
+      <a href="https://www.linkedin.com/company/projectphantom/" target="_blank" class="btn-primary">Connect via LinkedIn</a>
+      <a href="https://www.instagram.com/projectphantom.ae/" target="_blank" class="btn-secondary">Follow on Instagram</a>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="section" id="config">
-    <div class="watermark" data-wm style="bottom:6%;left:0;right:0;text-align:right">MODULAR</div>
-    <div class="wrap">
-      <div class="eyebrow r" data-rev>02 — QRAM Wing Modules</div>
-      <h2 class="h2 r" data-rev style="margin:22px 0 18px;max-width:16ch">Modular swappable wings.</h2>
-      <p class="lead r" data-rev style="margin-bottom:54px">One architecture, adapted for every environment — swapped in under three minutes.</p>
-      <div class="grid-3">
-        <div class="cell r" data-rev><div class="big">A</div><div class="sub">Arabian Peninsula</div><h3>Desert Hawk</h3><p>High thermal tolerance and maximum solar exposure for sustained operations across extreme arid terrain.</p></div>
-        <div class="cell r" data-rev><div class="big">B</div><div class="sub">Coastal Operations</div><h3>Maritime Patrol</h3><p>Salt-resistant composites and extended over-water range for persistent littoral surveillance.</p></div>
-        <div class="cell r" data-rev><div class="big">C</div><div class="sub">High Altitude</div><h3>Alpine Soar</h3><p>Extended-span aerofoil optimised for thin-air lift and stable high-altitude loiter.</p></div>
-      </div>
-    </div>
-  </section>
+<script>
+(() => {
 
-  <section class="section" id="impact">
-    <div class="wrap">
-      <div class="eyebrow r" data-rev>03 — Sustainable Development</div>
-      <h2 class="h2 r" data-rev style="margin:22px 0 18px;max-width:18ch">A platform for infinite good.</h2>
-      <p class="lead r" data-rev style="margin-bottom:54px">Built for global environmental intelligence and sustainable operations.</p>
-      <div class="grid-4">
-        <div class="cell r" data-rev><div class="big" style="font-size:clamp(24px,2.4vw,32px)">13</div><div class="sub">SDG 13</div><h3>Climate Action</h3><p>Wildfire detection and methane plume monitoring at scale.</p></div>
-        <div class="cell r" data-rev><div class="big" style="font-size:clamp(24px,2.4vw,32px)">14</div><div class="sub">SDG 14</div><h3>Life Below Water</h3><p>Coastal health surveys and rapid oil-spill detection.</p></div>
-        <div class="cell r" data-rev><div class="big" style="font-size:clamp(24px,2.4vw,32px)">15</div><div class="sub">SDG 15</div><h3>Life on Land</h3><p>Reforestation mapping and anti-poaching patrol support.</p></div>
-        <div class="cell r" data-rev><div class="big" style="font-size:clamp(24px,2.4vw,32px)">09</div><div class="sub">SDG 9</div><h3>Innovation</h3><p>Sovereign, enterprise-grade environmental sensing architecture.</p></div>
-      </div>
-    </div>
-  </section>
+const curDot = document.getElementById('cur-dot');
+const curRing = document.getElementById('cur-ring');
 
-  <section class="section" id="team">
-    <div class="wrap">
-      <div class="eyebrow r" data-rev>04 — The Team</div>
-      <h2 class="h2 r" data-rev style="margin:22px 0 16px">Built by students, for the sky.</h2>
-      <p class="lead r" data-rev>UAE's first youth-led initiative for autonomous fixed-wing aerospace research.</p>
-      <div class="team-grid">
-        <a href="https://www.linkedin.com/in/rithishdharanidharan" target="_blank" rel="noopener" class="member r" data-rev>
-          <div class="ring"><div class="photo"><img src="https://media.licdn.com/dms/image/v2/D4D03AQH2bgsWH9s_2g/profile-displayphoto-crop_800_800/B4DZvuodI8JoAI-/0/1769235144584?e=1784160000&v=beta&t=WxlyhMNr4L-3v68y0WDm7nw3uPj8Ap5e0Y14FiyNW-k" alt="Rithish Dharanidharan" loading="lazy" onerror="this.style.display='none';this.parentElement.querySelector('.initials').style.display='grid'"><span class="initials" style="display:none">RD</span></div><div class="badge"><svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></div></div>
-          <div class="nm">Rithish Dharanidharan</div><div class="rl">Founder · Aerospace Lead</div><div class="ds">Leads UAV engineering, system architecture and platform direction.</div>
-        </a>
-        <a href="https://www.linkedin.com/in/meherab-hossain-mokter/" target="_blank" rel="noopener" class="member r" data-rev>
-          <div class="ring"><div class="photo"><img src="https://media.licdn.com/dms/image/v2/D4D03AQGiWsV0PcsaVA/profile-displayphoto-crop_800_800/B4DZvbYdxoHgAI-/0/1768912184018?e=1784160000&v=beta&t=Z8lC7ZTtGZKa6-q2t0fmZX_o3czDk9-sh689lR4JZII" alt="Meherab Hossain Mokter" loading="lazy" onerror="this.style.display='none';this.parentElement.querySelector('.initials').style.display='grid'"><span class="initials" style="display:none">MH</span></div><div class="badge"><svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></div></div>
-          <div class="nm">Meherab Hossain Mokter</div><div class="rl">Co-Founder · Operations</div><div class="ds">Leads communications, ecosystem partnerships and coordination.</div>
-        </a>
-        <a href="https://www.linkedin.com/in/mufeed-kakkidi-021368397/" target="_blank" rel="noopener" class="member r" data-rev>
-          <div class="ring"><div class="photo"><img src="https://media.licdn.com/dms/image/v2/D4D03AQFDC0Jx4Owf2Q/profile-displayphoto-crop_800_800/B4DZu725sbJMAI-/0/1768383290895?e=1784160000&v=beta&t=lUP4IVKx4dMJKD6hdBv4hi_r5RGth_Li1lxcsltrUZY" alt="Mufeed Kakkidi" loading="lazy" onerror="this.style.display='none';this.parentElement.querySelector('.initials').style.display='grid'"><span class="initials" style="display:none">MK</span></div><div class="badge"><svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></div></div>
-          <div class="nm">Mufeed Kakkidi</div><div class="rl">Co-Founder · AI Architect</div><div class="ds">Leads autonomous flight intelligence and core software.</div>
-        </a>
-        <a href="https://www.linkedin.com/in/ashwin-krishnakumar-074a973a7/" target="_blank" rel="noopener" class="member r" data-rev>
-          <div class="ring"><div class="photo"><img src="https://media.licdn.com/dms/image/v2/D4E03AQHYRnBx_5Sy4Q/profile-displayphoto-scale_400_400/B4EZvr1gr1GoAg-/0/1769188236848?e=1784160000&v=beta&t=JkIdQGzTCC_bbODAC3fM8piltHbqHs7-iFlWwxNl2vc" alt="Ashwin Krishnakumar" loading="lazy" onerror="this.style.display='none';this.parentElement.querySelector('.initials').style.display='grid'"><span class="initials" style="display:none">AK</span></div><div class="badge"><svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg></div></div>
-          <div class="nm">Ashwin Krishnakumar</div><div class="rl">Co-Founder · Communications</div><div class="ds">Leads pitch strategy, presentation delivery and branding.</div>
-        </a>
-      </div>
-    </div>
-  </section>
+// Guard against touch devices where these elements are hidden via CSS
+// but the script would otherwise still run pointless RAF/listener work.
+const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-  <section class="section" id="contact">
-    <div class="wrap">
-      <div class="eyebrow r" data-rev style="justify-content:center">05 — Strategic Operations</div>
-      <h2 class="h2 r" data-rev>System integration &amp; collaboration.</h2>
-      <p class="lead r" data-rev>Open channels for enterprise deployments, research collaboration and technical inquiries. Custom sensing hardware, architectural applications, or our engineering roadmap — the ecosystem is open for development.</p>
-      <div class="contact-actions r" data-rev>
-        <a href="https://www.linkedin.com/company/projectphantom/" target="_blank" rel="noopener" class="btn btn-fill">Connect via LinkedIn</a>
-        <a href="https://www.instagram.com/projectphantom.ae/" target="_blank" rel="noopener" class="btn btn-ghost">Follow on Instagram</a>
-      </div>
-    </div>
-  </section>
+if(hasFinePointer){
 
-  <footer><span>© 2026 Project Phantom — UAE</span><span><a href="https://www.linkedin.com/company/projectphantom/" target="_blank" rel="noopener">LinkedIn</a> · <a href="https://www.instagram.com/projectphantom.ae/" target="_blank" rel="noopener">Instagram</a></span></footer>
-</main>
+  let mouseX = window.innerWidth / 2;
+  let mouseY = window.innerHeight / 2;
 
-<div class="hint"><span>Scroll</span><span class="b">fly the mission</span></div>
+  let ringX = mouseX;
+  let ringY = mouseY;
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
-<script type="importmap">
-{"imports":{"three":"https://unpkg.com/three@0.161.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.161.0/examples/jsm/"}}
-</script>
-<script type="module">
-import {THREE,REDUCED,MOBILE,gsap,ScrollTrigger,makeRenderer,setEnvironment,studioLights,makeComposer,onResize,
-        buildPhantom,spinAll,initCursor,initLenis,initReveals,heroIntro,runLoader,fillMarquee} from './phantom-core.js';
+  document.addEventListener('mousemove', e => {
 
-initCursor();
-fillMarquee('marquee',['Solar Electric','Zero Emission','Persistent Core','QRAM Interface','Mercury AI','UAE Origin','Autonomous','Swarm Control']);
+    mouseX = e.clientX;
+    mouseY = e.clientY;
 
-let renderer,scene,camera,composer,drone,built;
-const clock=new THREE.Clock();
-const camOff={x:0.8,y:0.6,z:-3.0};               // starts as a screen-filling close-up
-const intro={x:0,y:-6.7,z:-1};                    // takeoff offset over the curve start (close-up on the ground)
-let pmx=0,pmy=0,tmx=0,tmy=0;                       // smoothed + target mouse (-0.5..0.5)
-const lookAt=new THREE.Vector3(0,3,3);            // lagged look target (lets the drone drift in frame)
-// flight model: the CRUISE follows ONE smooth arc-length CatmullRom curve — constant speed and
-// continuous tangents, so there's no stop/start pumping at waypoints. Orientation reads from the
-// curve's tangent (heading + climb) and curvature (bank); every smoothing step is frame-rate-independent.
-let flightCurve=null;
-const cruise={u:0};
-const posV=new THREE.Vector3(), tanV=new THREE.Vector3(), tanA=new THREE.Vector3(), camGoal=new THREE.Vector3();
-let yaw=Math.PI, roll=0, pitch=0, camDamped=false;
-const damp=(a,b,lambda,dt)=>a+(b-a)*(1-Math.exp(-lambda*dt)); // frame-rate-independent smoothing
-let ok=true;
+    curDot.style.transform =
+      `translate3d(${mouseX}px,${mouseY}px,0)`;
 
-addEventListener('pointermove',e=>{tmx=e.clientX/innerWidth-0.5;tmy=e.clientY/innerHeight-0.5;},{passive:true});
+  });
 
-function init3D(){
-  renderer=makeRenderer(document.getElementById('webgl'));
-  if(!renderer){ ok=false; document.body.classList.add('no-webgl'); return; }
-  renderer.toneMappingExposure=0.5;          // tame the bright white drone under studio lights
-  scene=new THREE.Scene();
-  scene.fog=new THREE.Fog(0x050505,40,260);
-  camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,2000);
+  function animateCursor(){
 
-  // monochrome studio — reflections + lights, no sky/ground (matches inner pages)
-  setEnvironment(renderer,scene);
-  studioLights(scene);
+    ringX += (mouseX - ringX) * 0.15;
+    ringY += (mouseY - ringY) * 0.15;
 
-  // white dust field spanning the whole flight corridor (parallax + sense of speed)
-  const M=MOBILE?2400:5400;
-  const pg=new THREE.BufferGeometry(), pp=new Float32Array(M*3);
-  for(let i=0;i<M;i++){
-    pp[i*3]   =(Math.random()-0.5)*170;
-    pp[i*3+1] =(Math.random()-0.5)*80+3;
-    pp[i*3+2] =-30+Math.random()*210;
+    curRing.style.transform =
+      `translate3d(${ringX}px,${ringY}px,0)`;
+
+    requestAnimationFrame(animateCursor);
   }
-  pg.setAttribute('position',new THREE.BufferAttribute(pp,3));
-  const dust=new THREE.Points(pg,new THREE.PointsMaterial({color:0xffffff,size:0.04,transparent:true,opacity:0.5,depthWrite:false,blending:THREE.AdditiveBlending}));
-  scene.add(dust);
 
-  // white drone, black rear pusher prop
-  built=buildPhantom({white:true,pusher:true});
-  drone=built.group; drone.rotation.y=Math.PI; // nose toward +Z (travel direction)
-  scene.add(drone); window.__drone=drone; window.__cam=camera;
+  animateCursor();
 
-  // smooth cruise path — waypoints in world space, sampled by arc length for constant speed
-  flightCurve=new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0,3.2,0),    new THREE.Vector3(-3,6.6,16),  new THREE.Vector3(3.4,1.6,34),
-    new THREE.Vector3(-2,-1.4,54), new THREE.Vector3(2.6,5.2,76), new THREE.Vector3(-0.6,-2.4,98),
-    new THREE.Vector3(0,1.6,118)
-  ],false,'catmullrom',0.5);
+  document.querySelectorAll('a,button').forEach(el => {
 
-  composer=makeComposer(renderer,scene,camera,{bloom:true,bloomStrength:0.12,grain:0.02});
-  onResize(renderer,camera,composer);
-}
+    el.addEventListener('mouseenter', () => {
+      curRing.classList.add('active');
+    });
 
-let hdrDone=false,descDone=false;
-function revealHeader(){ if(hdrDone)return; hdrDone=true;
-  gsap.to('#hero .eyebrow',{opacity:1,y:0,duration:.8,ease:'power3.out'});
-  gsap.to('#hero .hl',{yPercent:0,duration:1.1,stagger:.1,ease:'power4.out'});
-}
-function revealDesc(){ if(descDone)return; descDone=true;
-  gsap.to('#hero .lead, #hero .hero-actions, #hero .statbar',{opacity:1,y:0,duration:.9,stagger:.1,ease:'power3.out'});
-}
+    el.addEventListener('mouseleave', () => {
+      curRing.classList.remove('active');
+    });
 
-// ---- Active-Theory style: split headings into masked words ----
-function splitWords(el){
-  const text=el.textContent; el.textContent='';
-  text.split(/(\s+)/).forEach(tok=>{
-    if(tok==='') return;
-    if(/^\s+$/.test(tok)){ el.appendChild(document.createTextNode(' ')); return; }
-    const w=document.createElement('span'); w.className='w';
-    const wi=document.createElement('span'); wi.className='wi'; wi.textContent=tok;
-    w.appendChild(wi); el.appendChild(w);
   });
-  return el.querySelectorAll('.wi');
+
 }
-function kineticReveals(){
-  // headings: words rise into place as you scroll/fly into the section (scroll-scrubbed = synced to the flight)
-  document.querySelectorAll('main .section .h2').forEach(h=>{
-    gsap.set(h,{opacity:1});
-    const words=splitWords(h);
-    gsap.set(words,{yPercent:115});
-    gsap.to(words,{yPercent:0,stagger:0.05,ease:'power3.out',
-      scrollTrigger:{trigger:h,start:'top 88%',end:'top 48%',scrub:0.6}});
+
+const items = [
+  'Persistent Core',
+  'QRAM Interface',
+  'Solar Electric',
+  'Mercury AI',
+  'UAE Origin',
+  'Swarm Control'
+];
+
+const mi = document.getElementById('marqueeInner');
+
+mi.innerHTML =
+  [...items,...items,...items]
+  .map(i =>
+    `<span class="marquee-item">
+      <span class="marquee-dot"></span>${i}
+    </span>`
+  ).join('');
+
+const revealEls = document.querySelectorAll('.reveal');
+
+const revealObs = new IntersectionObserver((entries) => {
+
+  entries.forEach(entry => {
+
+    if(entry.isIntersecting){
+
+      entry.target.classList.add('visible');
+      revealObs.unobserve(entry.target);
+
+    }
+
   });
-  // leads + eyebrows: fade/clip up, scrubbed
-  document.querySelectorAll('main .section .lead, main .section .eyebrow').forEach(p=>{
-    gsap.fromTo(p,{opacity:0,y:24},{opacity:1,y:0,ease:'none',
-      scrollTrigger:{trigger:p,start:'top 90%',end:'top 64%',scrub:0.6}});
-  });
-}
 
-function cruiseTweens(tl,at){
-  // one continuous sweep of the progress value along the smooth curve — no per-beat stop/start
-  tl.to(cruise,{u:1,duration:9,ease:'none'},at);
-}
-
-function setupFlight(){
-  // ONE scrubbed timeline over the whole document drives BOTH the takeoff and the cruise.
-  // The tall #hero holds its text via CSS position:sticky during the takeoff portion (no pin needed).
-  if(REDUCED){
-    Object.assign(intro,{x:0,y:0,z:0,roll:0,pitch:0}); Object.assign(camOff,{x:3.0,y:1.8,z:-7.8});
-    revealHeader(); revealDesc();
-    const t=gsap.timeline({scrollTrigger:{trigger:document.documentElement,start:'top top',end:'bottom bottom',scrub:1}});
-    cruiseTweens(t,0); return;
-  }
-  const tl=gsap.timeline({defaults:{ease:'none'},
-    scrollTrigger:{trigger:document.documentElement,start:'top top',end:'bottom bottom',scrub:1,
-      onUpdate:s=>{ if(s.progress>0.16) revealHeader(); if(s.progress>0.28) revealDesc(); }}});
-  // takeoff (~first third of scroll): close-up -> climb to sky (header) -> descend to cruise height (descriptive)
-  tl.to(camOff,{x:3.0,y:1.8,z:-7.8,duration:1.8,ease:'power2.out'},0)        // pull back from close-up
-    .to(intro,{y:2.3,z:0,pitch:0,roll:0,duration:1.8,ease:'power2.out'},0)   // climb up into the sky
-    .to(intro,{y:0,duration:1.5,ease:'power1.inOut'},1.8);                   // come back down to cruise height
-  cruiseTweens(tl,3.1);                                                      // then the continuous curved cruise (slight overlap)
-}
-
-function render(){
-  if(!ok)return;
-  const dt=Math.min(clock.getDelta(),0.05),t=clock.getElapsedTime();
-  spinAll(built.spinners,dt);
-  // frame-rate-independent mouse smoothing
-  const mk=1-Math.exp(-6*dt);
-  pmx+=(tmx-pmx)*mk; pmy+=(tmy-pmy)*mk;
-
-  // position: takeoff is the `intro` offset over the curve's start; cruise advances `u` along the curve
-  const u=cruise.u;
-  flightCurve.getPointAt(u,posV);
-  const px=posV.x+intro.x, py=posV.y+intro.y, pz=posV.z+intro.z;
-
-  // orientation straight from the curve geometry (smooth + persistent, independent of scroll speed)
-  flightCurve.getTangentAt(u,tanV);
-  flightCurve.getTangentAt(Math.min(u+0.02,1),tanA);
-  const horiz=Math.max(Math.hypot(tanV.x,tanV.z),1e-3);
-  const cruiseAmt=THREE.MathUtils.smoothstep(u,0,0.06);                       // keep takeoff straight; ramp heading+bank in
-  const tYaw=Math.PI + Math.atan2(tanV.x,tanV.z)*cruiseAmt;                   // nose into travel
-  const tPitch=THREE.MathUtils.clamp(-Math.atan2(tanV.y,horiz)*0.6,-0.3,0.3); // nose with climb/dive
-  const turn=tanV.z*tanA.x-tanV.x*tanA.z;                                     // signed curvature
-  const tRoll=THREE.MathUtils.clamp(turn*7.5,-0.5,0.5)*cruiseAmt;             // bank into the turn
-  let dY=tYaw-yaw; while(dY>Math.PI)dY-=2*Math.PI; while(dY<-Math.PI)dY+=2*Math.PI;
-  yaw=damp(yaw,yaw+dY,5,dt); roll=damp(roll,tRoll,4,dt); pitch=damp(pitch,tPitch,4,dt);
-
-  const bob=Math.sin(t*0.8)*0.07;
-  drone.position.set(px,py+bob,pz);
-  drone.rotation.set(pitch - pmy*0.16, yaw + pmx*0.12, roll - pmx*0.20 + Math.sin(t*0.5)*0.012);
-
-  // camera: close-up during takeoff (tweened camOff), then a smooth chase that sweeps behind the heading
-  const blend=THREE.MathUtils.smoothstep(u,0,0.08);
-  const cx=-tanV.x*9 + Math.sin(u*Math.PI*2)*5.5;     // behind heading + slow cinematic side sweep
-  const cy=2.7 + Math.sin(u*Math.PI*1.3)*2.2;
-  const cz=-tanV.z*9;
-  const ox=camOff.x+(cx-camOff.x)*blend, oy=camOff.y+(cy-camOff.y)*blend, oz=camOff.z+(cz-camOff.z)*blend;
-  camGoal.set(px+ox + pmx*4.0, py+bob+oy - pmy*2.6, pz+oz);
-  if(!camDamped){ camera.position.copy(camGoal); camDamped=true; }
-  else camera.position.lerp(camGoal,1-Math.exp(-7*dt));
-  lookAt.x=damp(lookAt.x,px,5,dt);
-  lookAt.y=damp(lookAt.y,py-0.3,5,dt);
-  lookAt.z=damp(lookAt.z,pz+3,7,dt);
-  camera.lookAt(lookAt.x + pmx*2.2, lookAt.y - pmy*1.3, lookAt.z);
-
-  if(composer._grain) composer._grain.uniforms.uTime.value=t;
-  composer.render();
-}
-
-init3D();
-runLoader(()=>{
-  if(ok) gsap.ticker.add(render);
-  // mark section headings/leads/eyebrows so the generic fade skips them — kinetic reveal handles them
-  document.querySelectorAll('main .section .h2, main .section .lead, main .section .eyebrow').forEach(el=>el.setAttribute('data-split',''));
-  initLenis();
-  initReveals();      // generic fade for the rest (cards, members, stats…)
-  kineticReveals();   // scroll-scrubbed word reveals for headings, synced to the flight
-  if(ok) setupFlight(); else { revealHeader(); revealDesc(); }
-  ScrollTrigger.refresh();
+},{
+  threshold:0.15,
+  rootMargin:'0px 0px -80px 0px'
 });
+
+revealEls.forEach(el => revealObs.observe(el));
+
+const depthSection = document.getElementById('depthSection');
+
+const depthLines = [
+  document.getElementById('dl1'),
+  document.getElementById('dl2'),
+  document.getElementById('dl3'),
+  document.getElementById('dl4')
+];
+
+let scrollPos = 0;
+
+window.addEventListener('scroll', () => {
+  scrollPos = window.scrollY;
+},{ passive:true });
+
+function animate(){
+
+  document
+    .getElementById('mainNav')
+    .classList.toggle('scrolled', scrollPos > 60);
+
+  const pt1 = document.getElementById('parallaxText1');
+  const pt2 = document.getElementById('parallaxText2');
+
+  if(pt1){
+    pt1.style.transform =
+      `translate3d(${-scrollPos * .08}px,0,0)`;
+  }
+
+  if(pt2){
+    pt2.style.transform =
+      `translate3d(${scrollPos * .06}px,0,0)`;
+  }
+
+  if(depthSection){
+
+    const rect = depthSection.getBoundingClientRect();
+
+    const progress =
+      Math.min(
+        Math.max(
+          (-rect.top) / (rect.height - window.innerHeight),
+          0
+        ),
+        1
+      );
+
+    depthLines.forEach((line,i) => {
+
+      const start = i * .22;
+      const end = start + .28;
+
+      let p = (progress - start) / (end - start);
+
+      p = Math.max(0,Math.min(1,p));
+
+      const opacity =
+        p < .5
+          ? p * 2
+          : (1 - p) * 2;
+
+      const z = -250 + (p * 250);
+      const scale = .8 + (p * .2);
+
+      line.style.opacity = opacity;
+
+      line.style.transform =
+        `translate3d(0,0,${z}px) scale(${scale})`;
+
+    });
+
+  }
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+
+})();
 </script>
+
 </body>
 </html>
