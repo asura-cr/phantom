@@ -50,10 +50,6 @@ body {
   cursor: none;
 }
 
-/* FIX 4: Mobile/touch cursor ghosting — only hide the native cursor and
-   show the custom dot/ring on devices that actually have a fine pointer
-   (mouse/trackpad). Touch devices keep normal tap behavior, no frozen
-   or erratic custom cursor. */
 @media (hover: none), (pointer: coarse) {
   body{
     cursor: auto;
@@ -99,11 +95,6 @@ body {
   border-color:#fff;
 }
 
-/* FIX 1: Critical usability bug — nav vs alert banner.
-   Alert banner is now pinned to the absolute top (top:0) and the nav
-   is pushed down to sit directly beneath it (top: var(--alert-h)).
-   This removes the overlap entirely instead of relying on two
-   independent fixed offsets that drift apart on mobile. */
 .alert-banner {
   position: fixed;
   top: 0;
@@ -151,7 +142,7 @@ body {
 
 nav{
   position:fixed;
-  top: var(--alert-h); /* sits directly under the alert banner */
+  top: var(--alert-h); 
   left:0;
   right:0;
   z-index:100;
@@ -226,8 +217,7 @@ nav.scrolled{
   justify-content:center;
   position:relative;
   overflow:hidden;
-  /* FIX 1 (cont.): top padding accounts for banner + nav stacked height
-     so hero content never starts underneath them, on load or on resize. */
+
   padding: calc(var(--alert-h) + var(--nav-h) + 40px) 48px 80px;
 }
 
@@ -425,8 +415,7 @@ section{
   position:relative;
 }
 
-/* FIX 2 (cont.): scroll-margin-top so anchored sections land below the
-   fixed banner + nav stack instead of being hidden underneath them. */
+
 section[id]{
   scroll-margin-top: calc(var(--alert-h) + var(--nav-h) + 16px);
 }
@@ -519,37 +508,17 @@ section[id]{
 }
 
 .depth-section {
-  height: 400vh;
-  position: relative;
-  padding: 0; 
-}
-
-.depth-sticky{
-  position:sticky;
-  top:0;
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-}
-
-.depth-text-wrap {
-  perspective: 1200px;
-  transform-style: preserve-3d;
+  padding: 160px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  display: grid;
-  place-items: center;
-  width: 100%;
 }
 
 .depth-line {
-  grid-area: 1 / 1;
-  opacity: 0;
-  font-size: clamp(32px, 5vw, 72px);
+  font-size: clamp(28px, 5vw, 64px);
   letter-spacing: -.03em;
-  transform-origin: center center -200px;
-  backface-visibility: hidden;
+  max-width: 900px;
 }
 
 .cards-grid{
@@ -698,10 +667,11 @@ section[id]{
 }
 
 .team-grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:48px 32px;
+  display:flex;
+  justify-content:center;
+  gap:64px;
   margin-top:72px;
+  flex-wrap:wrap;
 }
 
 .team-card{
@@ -711,6 +681,7 @@ section[id]{
   text-align:center;
   text-decoration:none;
   color:inherit;
+  width:240px;
 }
 
 .avatar-ring{
@@ -841,16 +812,75 @@ section[id]{
   max-width:220px;
 }
 
-@media(max-width:900px){
-  .team-grid{
-    grid-template-columns:repeat(2,1fr);
-    gap:48px 24px;
-  }
+.team-tags{
+  display:flex;
+  gap:8px;
+  margin-top:14px;
+  flex-wrap:wrap;
+  justify-content:center;
 }
 
-@media(max-width:560px){
-  .team-grid{
-    grid-template-columns:1fr;
+.team-tag-chip{
+  font-family:var(--font-mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--white-50);
+  border:1px solid var(--white-10);
+  padding:4px 10px;
+}
+
+.backing-layout{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:60px;
+  flex-wrap:wrap;
+}
+
+.backing-content{
+  flex:1 1 480px;
+}
+
+.backing-visual{
+  flex:1 1 300px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  min-height:320px;
+}
+
+.backing-logo-glow{
+  position:absolute;
+  width:340px;
+  height:340px;
+  background:radial-gradient(circle,rgba(244,166,66,.18),transparent 70%);
+  animation:pulseGlow 5s ease-in-out infinite;
+}
+
+.backing-logo{
+  width:200px;
+  position:relative;
+  z-index:2;
+  filter:drop-shadow(0 0 40px rgba(244,166,66,.2));
+  animation:floatLogo 6s ease-in-out infinite;
+}
+
+@keyframes floatLogo{
+  0%,100%{ transform:translateY(0); }
+  50%{ transform:translateY(-14px); }
+}
+
+@keyframes pulseGlow{
+  0%,100%{ opacity:.5; transform:scale(1); }
+  50%{ opacity:.9; transform:scale(1.1); }
+}
+
+@media(max-width:900px){
+  .backing-layout{
+    flex-direction:column;
+    text-align:center;
   }
 }
 
@@ -939,17 +969,13 @@ section[id]{
     border-bottom:1px solid var(--border);
   }
 
-  /* FIX 1 (cont.): on mobile the banner text wraps to 2 lines, so it
-     grows taller than --alert-h. Let it size naturally and recalc the
-     offset with a CSS var so nav/hero/scroll-margin stay in sync
-     instead of drifting apart like in the original. */
   .alert-banner {
     height: auto;
     padding: 8px 16px;
     flex-direction: column;
     gap: 8px;
     text-align: center;
-    --alert-h: 64px; /* approximate stacked height on small screens */
+    --alert-h: 64px;
   }
 
   .alert-text {
@@ -994,7 +1020,7 @@ section[id]{
   <div class="hero-content">
 
     <div class="hero-eyebrow">
-      Adaptive UAV Platform — Made In Uae, Built For The World
+      One of UAE's first youth-led initiatives in autonomous fixed-wing aerospace
     </div>
 
     <h1 class="hero-title">
@@ -1005,12 +1031,12 @@ section[id]{
     </h1>
 
     <p class="hero-subtitle">
-      Project Phantom is a single-propeller VTOL platform designed for maximum aerodynamic efficiency and zero-emission flight. By combining low-profile vertical lift pods with an optimized fixed-wing frame, the aircraft achieves complete runway independence while maintaining a low-drag profile during cruise. Powered by a high-efficiency electric propulsion system and supported by surface-embedded solar cells, the platform delivers zero-carbon operational range over vast spatial scales without sacrificing payload capacity or deployment speed.
+      Project Phantom is a single-rotor VTOL aircraft that takes off and lands vertically, then transitions to fixed-wing flight for efficient cruise. No runway is required. Solar cells integrated into the wing extend endurance, and the platform runs entirely on electric propulsion.
     </p>
 
     <div class="hero-actions">
-      <a href="technology.html" class="btn-primary">Explore Platform</a>
-      <a href="mercury.html" class="btn-secondary">Mercury AI</a>
+      <a href="technology.html" class="btn-primary">Inside Phantom</a>
+      <a href="mercury.html" class="btn-secondary">Meet Mercury</a>
     </div>
 
   </div>
@@ -1033,7 +1059,7 @@ section[id]{
   </div>
 
   <div class="hero-scroll-hint">
-    <span>Scroll</span>
+    <span>↓</span>
     <div class="scroll-line"></div>
   </div>
 
@@ -1044,20 +1070,7 @@ section[id]{
 </div>
 
 <section class="depth-section" id="depthSection">
-
-  <div class="depth-sticky">
-
-    <div class="depth-text-wrap">
-
-      <span class="depth-line" id="dl1">MODULAR CORE</span>
-      <span class="depth-line" id="dl2">SOLAR ELECTRIC</span>
-      <span class="depth-line" id="dl3">AI INTELLIGENCE</span>
-      <span class="depth-line" id="dl4">UNLIMITED ENDURANCE</span>
-
-    </div>
-
-  </div>
-
+  <span class="depth-line reveal" id="dl1">THE FUTURE OF UAVS, ENGINEERED TODAY</span>
 </section>
 
 <section id="overview">
@@ -1067,12 +1080,11 @@ section[id]{
   </div>
 
   <h2 class="section-title reveal">
-    Architecture of Convergence
+    How Phantom Works
   </h2>
 
   <p class="section-desc reveal reveal-delay-1">
-    Traditional unmanned systems force compromise.
-    Phantom eliminates this through modular architecture.
+    Most UAVs force a tradeoff between range, payload, and versatility. Phantom's modular architecture removes that tradeoff.
   </p>
 
   <div class="cards-grid">
@@ -1086,16 +1098,16 @@ section[id]{
     </div>
 
     <div class="card reveal reveal-delay-1">
-      <div class="card-title">Single-Prop VTOL</div>
+      <div class="card-title">Single-Engine VTOL</div>
       <div class="card-text">
-        Zero runway required, maximizing aerodynamic glide.
+        Vertical takeoff and landing with zero runway required, transitioning to efficient fixed-wing glide for cruise.
       </div>
     </div>
 
     <div class="card reveal reveal-delay-2">
       <div class="card-title">Solar Integration</div>
       <div class="card-text">
-        High-efficiency solar wing architecture yielding 40% Less Energy drain.
+        Solar cells integrated into the wing surface reduce battery drain during cruise.
       </div>
     </div>
 
@@ -1112,15 +1124,16 @@ section[id]{
   <div style="margin-top:80px">
 
     <div class="section-label reveal">
-      QRAM Wing Modules
+      Configurable Wing System
     </div>
 
     <h2 class="section-title reveal">
-      Modular Swappable Wings
+      One architecture adapted for every environment.
     </h2>
 
     <p class="section-desc reveal reveal-delay-1">
-      One architecture adapted for every environment.
+      Interchangeable wing modules let a single fuselage operate across
+  fundamentally different conditions, without redesigning the aircraft.
     </p>
 
   </div>
@@ -1129,28 +1142,31 @@ section[id]{
 
     <div class="config-card reveal">
       <div class="config-letter">A</div>
-      <div class="config-name">Desert Hawk</div>
+      <div class="config-name">Arid Range</div>
       <div class="config-region">Arabian Peninsula</div>
       <div class="config-desc">
-        High thermal tolerance and maximum solar exposure.
+        Reinforced thermal shielding and maximized solar exposure for
+        sustained high-heat, high-sun operation.
       </div>
     </div>
 
     <div class="config-card reveal reveal-delay-1">
       <div class="config-letter">B</div>
-      <div class="config-name">Maritime Patrol</div>
+      <div class="config-name">Coastal Range</div>
       <div class="config-region">Coastal Operations</div>
       <div class="config-desc">
-        Salt resistant composites and over-water range.
+         Salt-resistant composites and extended range for sustained
+         flight over open water.
       </div>
     </div>
 
     <div class="config-card reveal reveal-delay-2">
       <div class="config-letter">C</div>
-      <div class="config-name">Alpine Soar</div>
+      <div class="config-name">Alpine Range</div>
       <div class="config-region">High Altitude</div>
       <div class="config-desc">
-        Extended span optimized for thin-air operations.
+        Extended wingspan and low-density optimization for thin-air,
+        high-altitude flight.
       </div>
     </div>
 
@@ -1171,11 +1187,11 @@ section[id]{
     </div>
 
     <h2 class="section-title reveal">
-      Platform for Infinite Good
+      Engineered for Impact
     </h2>
 
     <p class="section-desc reveal reveal-delay-1">
-      Built for global environmental intelligence and sustainability.
+      Designed to support global environmental monitoring and climate research.
     </p>
 
   </div>
@@ -1202,15 +1218,15 @@ section[id]{
       <div class="sdg-num">SDG 15</div>
       <div class="sdg-title">Life on Land</div>
       <div class="sdg-text">
-        Reforestation and anti-poaching operations.
+        Reforestation tracking and anti-poaching support.
       </div>
     </div>
 
     <div class="sdg-card reveal reveal-delay-3">
       <div class="sdg-num">SDG 9</div>
-      <div class="sdg-title">Innovation</div>
+      <div class="sdg-title">Industry, Innovation and Infrastructure</div>
       <div class="sdg-text">
-        Sovereign enterprise-grade environmental sensing architecture.
+        Enterprise-grade environmental sensing infrastructure.
       </div>
     </div>
 
@@ -1230,10 +1246,10 @@ section[id]{
     </h2>
 
     <p class="section-desc reveal reveal-delay-1">
-      UAE's first youth-led initiative for autonomous fixed-wing aerospace research.
+      Two teenagers based in UAE, designing and building autonomous aircraft most professionals haven't attempted.
     </p>
 
-    <div class="team-tag reveal reveal-delay-1">UAE &middot; Founded by Students, Built for the Sky</div>
+    <div class="team-tag reveal reveal-delay-1">Youth-Led Aerospace Initiative</div>
   </div>
 
   <div class="team-grid">
@@ -1249,8 +1265,12 @@ section[id]{
         </div>
       </div>
       <div class="team-name">Rithish Dharanidharan</div>
-      <div class="team-role">Founder & Aerospace Lead</div>
-      <div class="team-desc">Leads overall UAV engineering, system architecture, and platform direction.</div>
+      <div class="team-role">Founder</div>
+      <div class="team-desc">Leads overall UAV development and platform direction.</div>
+      <div class="team-tags">
+        <span class="team-tag-chip">Flight Systems</span>
+        <span class="team-tag-chip">Aerospace</span>
+      </div>
     </a>
 
     <a href="https://www.linkedin.com/in/meherab-hossain-mokter/" target="_blank" rel="noopener" class="team-card reveal reveal-delay-1">
@@ -1264,14 +1284,18 @@ section[id]{
         </div>
       </div>
       <div class="team-name">Meherab Hossain Mokter</div>
-      <div class="team-role">Co-Founder & Operations Lead</div>
-      <div class="team-desc">Leads strategic communications, ecosystem partnerships, and cross-team coordination.</div>
+      <div class="team-role">Co-Founder</div>
+      <div class="team-desc">Leads communications and assist development.</div>
+      <div class="team-tags">
+        <span class="team-tag-chip">Communications</span>
+        <span class="team-tag-chip">Outreach</span>
+      </div>
     </a>
 
     <a href="https://www.linkedin.com/in/mufeed-kakkidi-021368397/" target="_blank" rel="noopener" class="team-card reveal reveal-delay-2">
       <div class="avatar-ring">
         <div class="avatar-photo">
-          <img src="https://media.licdn.com/dms/image/v2/D4D03AQFDC0Jx4Owf2Q/profile-displayphoto-crop_800_800/B4DZu725sbJMAI-/0/1768383290895?e=1784160000&v=beta&t=lUP4IVKx4dMJKD6hdBv4hi_r5RGth_Li1lxcsltrUZY" alt="Mufeed Kakkidi" loading="lazy" onerror="this.style.display='none'; this.parentElement.querySelector('.avatar-initials').style.display='flex';">
+          <img src="PASTE_MUFEED_PHOTO_URL_HERE" alt="Mufeed Kakkidi" loading="lazy" onerror="this.style.display='none'; this.parentElement.querySelector('.avatar-initials').style.display='flex';">
           <span class="avatar-initials" style="display:none;">MK</span>
         </div>
         <div class="avatar-linkedin-badge">
@@ -1279,24 +1303,64 @@ section[id]{
         </div>
       </div>
       <div class="team-name">Mufeed Kakkidi</div>
-      <div class="team-role">Co-Founder & AI Architect</div>
+      <div class="team-role">Co-Founder &amp; AI Architect</div>
       <div class="team-desc">Leads autonomous flight intelligence, deep learning integration, and core software development.</div>
+      <div class="team-tags">
+        <span class="team-tag-chip">AI</span>
+        <span class="team-tag-chip">Software</span>
+      </div>
     </a>
 
-    <a href="https://www.linkedin.com/in/ashwin-krishnakumar-074a973a7/" target="_blank" rel="noopener" class="team-card reveal reveal-delay-3">
-      <div class="avatar-ring">
-        <div class="avatar-photo">
-          <img src="https://media.licdn.com/dms/image/v2/D4E03AQHYRnBx_5Sy4Q/profile-displayphoto-scale_400_400/B4EZvr1gr1GoAg-/0/1769188236848?e=1784160000&v=beta&t=JkIdQGzTCC_bbODAC3fM8piltHbqHs7-iFlWwxNl2vc" alt="Ashwin Krishnakumar" loading="lazy" onerror="this.style.display='none'; this.parentElement.querySelector('.avatar-initials').style.display='flex';">
-          <span class="avatar-initials" style="display:none;">AK</span>
-        </div>
-        <div class="avatar-linkedin-badge">
-          <svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
-        </div>
+  </div>
+
+</section>
+
+<section id="backing">
+
+  <div class="backing-layout">
+
+    <div class="backing-content">
+
+      <div class="section-label reveal">
+        Backed By
       </div>
-      <div class="team-name">Ashwin Krishnakumar</div>
-      <div class="team-role">Co-Founder & Communications Lead</div>
-      <div class="team-desc">Leads project pitch strategy, presentation delivery, and visual branding assets.</div>
-    </a>
+
+      <h2 class="section-title reveal">
+        Funded &amp; Backed by Unipreneur Inc.
+      </h2>
+
+      <p class="section-desc reveal reveal-delay-1">
+        Project Phantom is proud to be funded and backed by Unipreneur Inc.,
+        the UAE's leading youth entrepreneurship and innovation platform,
+        empowering young founders aged 15–30 to turn ambitious ideas into
+        industry-grade ventures.
+      </p>
+
+      <p class="section-desc reveal reveal-delay-2" style="margin-top:20px;">
+        This partnership marks a defining step for Phantom, moving us from
+        prototype to a scalable, deep-tech aerospace platform. We're deeply
+        grateful to Mohammed Mukhtar (CEO, Unipreneur) and Reem AlMusabbah
+        (Co-Founder, Unipreneur) for believing in our vision and giving us
+        the platform to build at the level this project deserves.
+      </p>
+
+      <div class="strategic-ops-actions" style="margin-top:40px; justify-content:flex-start;">
+        <a href="https://www.linkedin.com/company/unipreneur-inc/" target="_blank" rel="noopener" class="btn-secondary">
+          Visit Unipreneur Inc.
+        </a>
+        <a href="https://www.linkedin.com/posts/mohammedmukhtarj_dubaiit-share-7485697531440435200-HURC/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAGBAxMgBcZF9B4uP7fpV_qOoPytKNPcIiYQ" target="_blank" rel="noopener" class="btn-primary">
+          See the Announcement
+        </a>
+      </div>
+
+    </div>
+
+    <div class="backing-visual reveal reveal-delay-1">
+      <div class="backing-logo-glow"></div>
+      <img src="https://lh5.googleusercontent.com/proxy/MbvQ1XQZ9D8LrA4bgbmP0CC8N8OzJePIsNt0Jw4zHKX-YHUjO1udVgADbwj36B5F9eVBI4__iPWP9xrCC1yX"
+           alt="Unipreneur Inc. logo"
+           class="backing-logo">
+    </div>
 
   </div>
 
@@ -1304,16 +1368,42 @@ section[id]{
 
 <section class="strategic-ops-section" id="contact">
   <div class="strategic-ops-container">
-    <div class="section-label">Strategic Operations</div>
-    <h2 class="section-title">SYSTEM INTEGRATION &amp; COLLABORATION</h2>
+    <div class="section-label">Get in Touch</div>
+    <h2 class="section-title">LET'S CONNECT</h2>
     <p class="section-desc" style="margin:0 auto;">
-      Initialize direct channels for enterprise deployments, open research collaboration, or technical inquiries. Whether you are looking to integrate custom sensing hardware, explore architectural applications, or connect with our engineering roadmap, our ecosystem is open for development.
+      Have a question, an idea, or just want to know more about Phantom?
+  Whether it's a technical doubt, a collaboration idea, or you just
+  want to say hi, we'd love to hear from you. Shoot us a message,
+  we're always happy to help.
     </p>
     <div class="strategic-ops-actions">
-      <a href="https://www.linkedin.com/company/projectphantom/" target="_blank" class="btn-primary">Connect via LinkedIn</a>
-      <a href="https://www.instagram.com/projectphantom.ae/" target="_blank" class="btn-secondary">Follow on Instagram</a>
-    </div>
-  </div>
+
+  <a href="https://www.linkedin.com/company/projectphantom/" target="_blank" rel="noopener" class="btn-secondary" aria-label="LinkedIn" style="display:flex; align-items:center; gap:8px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+    LinkedIn
+  </a>
+
+  <a href="https://x.com/PhantomUAV" target="_blank" rel="noopener" class="btn-secondary" aria-label="X" style="display:flex; align-items:center; gap:8px;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.6 8.7L23.3 22h-7.2l-5.6-6.9L4 22H1l8.2-9.3L0.8 2h7.4l5 6.2L18.9 2zm-1.3 18h2L6.5 4h-2l13.1 16z"/></svg>
+    X
+  </a>
+
+  <a href="https://www.youtube.com/@projectphantomuav" target="_blank" rel="noopener" class="btn-secondary" aria-label="YouTube" style="display:flex; align-items:center; gap:8px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.8zM9.6 15.5V8.5L15.8 12l-6.2 3.5z"/></svg>
+    YouTube
+  </a>
+
+  <a href="https://www.instagram.com/projectphantom.ae/" target="_blank" rel="noopener" class="btn-secondary" aria-label="Instagram" style="display:flex; align-items:center; gap:8px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 3.3.15 4.8 1.7 5 5 .06 1.3.07 1.6.07 4.8s0 3.5-.07 4.8c-.15 3.3-1.7 4.8-5 5-1.3.06-1.6.07-4.9.07s-3.6 0-4.9-.07c-3.3-.15-4.8-1.7-5-5-.06-1.3-.07-1.6-.07-4.8s0-3.5.07-4.8c.15-3.3 1.7-4.8 5-5C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.15 0-3.5 0-4.75.07-2.5.11-3.5 1.1-3.6 3.6C3.6 8.7 3.6 9.05 3.6 12s0 3.3.06 4.35c.1 2.5 1.1 3.5 3.6 3.6C8.5 20 8.85 20 12 20s3.5 0 4.75-.06c2.5-.1 3.5-1.1 3.6-3.6.06-1.05.06-1.4.06-4.35s0-3.3-.06-4.35c-.1-2.5-1.1-3.5-3.6-3.6C15.5 4 15.15 4 12 4zm0 3.4a4.6 4.6 0 1 1 0 9.2 4.6 4.6 0 0 1 0-9.2zm0 1.8a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6zm5.8-2a1.1 1.1 0 1 1-2.2 0 1.1 1.1 0 0 1 2.2 0z"/></svg>
+    Instagram
+  </a>
+
+  <a href="mailto:rithishwork@gmail.com" class="btn-primary" style="display:flex; align-items:center; gap:8px;">
+    Email Us
+  </a>
+
+</div>
+</div>
 </section>
 
 <script>
@@ -1322,8 +1412,6 @@ section[id]{
 const curDot = document.getElementById('cur-dot');
 const curRing = document.getElementById('cur-ring');
 
-// Guard against touch devices where these elements are hidden via CSS
-// but the script would otherwise still run pointless RAF/listener work.
 const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 if(hasFinePointer){
@@ -1372,12 +1460,12 @@ if(hasFinePointer){
 }
 
 const items = [
-  'Persistent Core',
-  'QRAM Interface',
+  'Modular Core',
+  'Configurable Wings',
   'Solar Electric',
-  'Mercury AI',
-  'UAE Origin',
-  'Swarm Control'
+  'Single-Engine VTOL',
+  'Youth-Led',
+  'UAE Origin'
 ];
 
 const mi = document.getElementById('marqueeInner');
@@ -1412,15 +1500,6 @@ const revealObs = new IntersectionObserver((entries) => {
 
 revealEls.forEach(el => revealObs.observe(el));
 
-const depthSection = document.getElementById('depthSection');
-
-const depthLines = [
-  document.getElementById('dl1'),
-  document.getElementById('dl2'),
-  document.getElementById('dl3'),
-  document.getElementById('dl4')
-];
-
 let scrollPos = 0;
 
 window.addEventListener('scroll', () => {
@@ -1446,45 +1525,6 @@ function animate(){
       `translate3d(${scrollPos * .06}px,0,0)`;
   }
 
-  if(depthSection){
-
-    const rect = depthSection.getBoundingClientRect();
-
-    const progress =
-      Math.min(
-        Math.max(
-          (-rect.top) / (rect.height - window.innerHeight),
-          0
-        ),
-        1
-      );
-
-    depthLines.forEach((line,i) => {
-
-      const start = i * .22;
-      const end = start + .28;
-
-      let p = (progress - start) / (end - start);
-
-      p = Math.max(0,Math.min(1,p));
-
-      const opacity =
-        p < .5
-          ? p * 2
-          : (1 - p) * 2;
-
-      const z = -250 + (p * 250);
-      const scale = .8 + (p * .2);
-
-      line.style.opacity = opacity;
-
-      line.style.transform =
-        `translate3d(0,0,${z}px) scale(${scale})`;
-
-    });
-
-  }
-
   requestAnimationFrame(animate);
 }
 
@@ -1492,6 +1532,5 @@ animate();
 
 })();
 </script>
-
 </body>
 </html>
