@@ -138,7 +138,6 @@
   @keyframes solarRing{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
   @keyframes solarSweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
   @keyframes logoGlow{0%,100%{filter:drop-shadow(0 0 20px rgba(255,255,255,0.08))}50%{filter:drop-shadow(0 0 36px rgba(255,255,255,0.18))}}
-  .solar-info{}
   .solar-gen{display:flex;flex-direction:column;gap:1px;background:var(--border);}
   .solar-gen-row{background:var(--bg);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;transition:background 0.2s;}
   .solar-gen-row:hover{background:var(--bg-2);}
@@ -150,7 +149,6 @@
   .battery-gen{background:var(--bg);padding:28px 32px;display:grid;grid-template-columns:120px 1fr 160px;gap:32px;align-items:center;transition:background 0.2s;}
   .battery-gen:hover{background:var(--bg-2);}
   .battery-year{font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--white-30);}
-  .battery-info{}
   .battery-name{font-size:16px;font-weight:600;margin-bottom:4px;}
   .battery-desc{font-size:13px;color:var(--white-40);}
   .battery-stat{text-align:right;}
@@ -233,8 +231,7 @@
   <div class="page-hero-label">Engineering Deep Dive</div>
   <h1>Platform<br>Technology</h1>
   <p class="page-hero-desc">
-    Persistent Core architecture, QRAM rapid-swap interface, variable-geometry propulsion, 
-    and solar-structural energy systems — engineered for 10-year service life in extreme environments.
+    The design is built around a simple idea: keep the important parts fixed, and make the rest easy to swap when the job changes.
   </p>
 </div>
 
@@ -252,15 +249,14 @@
   <div class="section-label reveal">Core Architecture</div>
   <h2 class="section-title reveal">Persistent Core</h2>
   <p class="section-desc reveal reveal-delay-1">
-    The Core contains everything that does not change: flight control, power management, computing, 
-    thermal regulation, communication. Standardized, hardened, mass-producible.
+    This is the part that stays the same from one mission to the next: flight control, power, computing, heat handling, and communication.
   </p>
 
   <div class="feat-grid">
     <div class="feat-cell reveal">
       <div class="feat-num">STRUCTURE</div>
       <div class="feat-title">Load-Bearing Carbon Fiber</div>
-      <div class="feat-text">Not a container — a structural member. Carbon fiber shear webs carry wing bending moments through the Core. FEA-validated to 6g ultimate load factor with 3g operational limit.</div>
+      <div class="feat-text">It is not just a box for parts. The core also carries loads and helps the wing structure stay strong under stress.</div>
       <div class="feat-metric">
         <div class="metric-box"><span class="metric-val">6g</span><span class="metric-label">Ultimate Load</span></div>
         <div class="metric-box"><span class="metric-val">3g</span><span class="metric-label">Operational</span></div>
@@ -270,17 +266,17 @@
     <div class="feat-cell reveal reveal-delay-1">
       <div class="feat-num">COMPUTING</div>
       <div class="feat-title">Integrated Intelligence</div>
-      <div class="feat-text">Flight controller, MERCURY AI processor, power management unit, thermal regulation, and mesh communication — all housed in the standardized Core chassis. Mission modules connect; intelligence stays resident.</div>
+      <div class="feat-text">The flight controller, onboard processor, power system, cooling, and communications all live in the same core so the aircraft stays dependable.</div>
     </div>
     <div class="feat-cell reveal">
       <div class="feat-num">PRODUCTION</div>
       <div class="feat-title">Mass Production Ready</div>
-      <div class="feat-text">Identical Core across all units. Standardized SKU wings. Modular payload accessories. Production sequence from raw prepreg to flight-ready in defined assembly stages with repeatability targets.</div>
+      <div class="feat-text">The same core can be used across versions, while wings and payload pieces can be changed as needed without reworking the whole aircraft.</div>
     </div>
     <div class="feat-cell reveal reveal-delay-1">
       <div class="feat-num">REPAIR</div>
       <div class="feat-title">Field Maintainable</div>
-      <div class="feat-text">10+ year service life with field repair capability. Individual component replacement without depot-level maintenance. Single-technician configuration swap in under three minutes.</div>
+      <div class="feat-text">It is meant to last and to be repaired in the field. A single technician can make a configuration change without a long setup process.</div>
       <div class="feat-metric">
         <div class="metric-box"><span class="metric-val">10yr</span><span class="metric-label">Service Life</span></div>
         <div class="metric-box"><span class="metric-val">1</span><span class="metric-label">Technician</span></div>
@@ -294,30 +290,29 @@
   <div class="section-label reveal">Mission Interface</div>
   <h2 class="section-title reveal">QRAM System</h2>
   <p class="section-desc reveal reveal-delay-1">
-    Quick-Release Aerodynamic Mount: the mechanical, electrical, and data interface between Persistent Core 
-    and mission modules. Field reconfiguration without tools, without calibration, without ground support equipment.
+    The QRAM system is the connection point between the core and the parts that change with each mission. It is built to be swapped out quickly without needing a lot of setup.
   </p>
 
   <div class="feat-grid">
     <div class="feat-cell reveal">
       <div class="feat-num">MECHANICAL</div>
       <div class="feat-title">Tool-Free Interface</div>
-      <div class="feat-text">Precision-machined aluminum alloy alignment pins with spring-loaded retention. Structural load transfer via shear lug interface. 500N·m torque capacity. Self-aligning within 0.1mm positional tolerance.</div>
+      <div class="feat-text">The interface uses simple mechanical alignment so the parts lock in place cleanly and stay secure when mounted.</div>
     </div>
     <div class="feat-cell reveal reveal-delay-1">
       <div class="feat-num">ELECTRICAL</div>
       <div class="feat-title">48V Power Bus</div>
-      <div class="feat-text">48V/30A primary power, 5V/3A auxiliary logic. Automatic polarity protection. Hot-swap capable with <100ms reconnection. Laser-welded connector-less cell strings for solar integration.</div>
+      <div class="feat-text">The power connection is simple and robust, with protection built in so it can be changed over without much trouble.</div>
     </div>
     <div class="feat-cell reveal">
       <div class="feat-num">DATA</div>
       <div class="feat-title">Gigabit + CAN Bus</div>
-      <div class="feat-text">Gigabit Ethernet for MERCURY sensor data. CAN bus for control surface actuation. USB 3.0 for high-bandwidth payload. Automatic parameter adaptation on wing recognition — no manual calibration.</div>
+      <div class="feat-text">The system carries data and control signals in a simple way so the aircraft can recognize each wing setup and adapt without a manual reset.</div>
     </div>
     <div class="feat-cell reveal reveal-delay-1">
       <div class="feat-num">PNEUMATIC</div>
       <div class="feat-title">Mission-Ready Interface</div>
-      <div class="feat-text">Coaxial propulsion and gimbal vectoring are built into the Persistent Core, so every wing swap keeps full VTOL capability by default. The QRAM channel carries mission-specific sensor and payload variants — same swap procedure, same interface, no separate VTOL retrofit required.</div>
+      <div class="feat-text">The core keeps the lifting system intact even when the wings change, so the aircraft does not lose its basic VTOL capability during a swap.</div>
       <div class="feat-metric">
         <div class="metric-box"><span class="metric-val">&lt;3min</span><span class="metric-label">Full Swap</span></div>
         <div class="metric-box"><span class="metric-val">6</span><span class="metric-label">Wing Configs</span></div>
@@ -356,42 +351,39 @@
   <div class="section-label reveal">Propulsion Architecture</div>
   <h2 class="section-title reveal">Coaxial Propulsion</h2>
   <p class="section-desc reveal reveal-delay-1">
-    Dual counter-rotating motors on a single thrust axis, mounted on a 2-axis gimbal with continuously 
-    variable-pitch blades. Pitch vectors ±15–25°, yaw vectors ±10–15° for hover stability and transition 
-    control. Counter-rotation cancels reactive torque without a tail rotor — fewer single-point failures, 
-    less mechanical complexity, more usable thrust per watt than an equivalent single-rotor system.
+    The propulsion setup is built to be simple and useful. It can lift the aircraft directly, then shift into forward flight without a lot of extra hardware.
   </p>
 
   <div class="prop-grid">
     <div class="prop-cell reveal">
       <div class="prop-icon pulse">01°</div>
       <div class="prop-title">Coaxial Counter-Rotating Drive</div>
-      <div class="prop-detail">Dual brushless motors on a shared thrust axis, contra-rotating to cancel reactive torque. Eliminates the need for a tail rotor or reaction wheel, reduces drag relative to side-by-side multi-rotor layouts, and concentrates thrust on a single, structurally simpler axis.</div>
+      <div class="prop-detail">Two motors spin in opposite directions so the aircraft can keep its balance without relying on a tail rotor or extra balancing hardware.</div>
     </div>
     <div class="prop-cell reveal reveal-delay-1">
       <div class="prop-icon">02<span class="spin-arrow">⟳</span></div>
       <div class="prop-title">Variable-Pitch Propellers</div>
-      <div class="prop-detail">Carbon propeller blades rotate continuously about their root axis in flight. Low pitch for hover gives maximum static thrust and lift; higher pitch in cruise cuts motor load and extends range. One propulsion set, tuned in real time for whichever flight phase it's in.</div>
+      <div class="prop-detail">The propellers can change their pitch to suit hover or cruise, which helps the aircraft stay efficient in both modes.</div>
     </div>
     <div class="prop-cell reveal reveal-delay-2">
       <div class="prop-icon pulse">03↑</div>
       <div class="prop-title">Vertical Launch Sequence</div>
-      <div class="prop-detail">Spool to commanded thrust, gimbal to vertical, ascend under low-pitch blade settings for maximum lift. At transition altitude the gimbal sweeps toward horizontal as blade pitch increases, carrying the aircraft smoothly from hover into fixed-wing cruise.</div>
+      <div class="prop-detail">The system can lift the aircraft straight up first, then gradually move into forward flight once the aircraft has enough speed.</div>
     </div>
     <div class="prop-cell reveal">
       <div class="prop-icon pulse">04↓</div>
       <div class="prop-title">Controlled Vertical Landing</div>
-      <div class="prop-detail">Hover capability is preserved throughout descent — throttle margin is never fully committed. Gimbal and pitch authority allow touchdown on sloped or uneven, substrate-independent surfaces within defined wind and gust limits.</div>
+      <div class="prop-detail">It can keep its hover ability during descent, which makes landing in uneven places more practical.</div>
     </div>
     <div class="prop-cell reveal reveal-delay-1">
       <div class="prop-icon">05<span class="spin-arrow">⟲</span></div>
       <div class="prop-title">Hover Stabilization</div>
-      <div class="prop-detail">Propeller wash from the coaxial drive passes directly over the X-tail ruddervators, giving pitch, yaw, and roll correction in hover without auxiliary lift motors. Combined with gimbal authority, this holds position and attitude through crosswinds and gusts.</div>
+      <div class="prop-detail">The airflow from the propellers helps with stability while the aircraft is hovering, especially in gusty conditions.</div>
     </div>
     <div class="prop-cell reveal reveal-delay-1">
       <div class="prop-icon pulse">06⚡</div>
       <div class="prop-title">Transition Control</div>
-      <div class="prop-detail">Control authority blends progressively between thrust vectoring (hover, low airspeed) and aerodynamic surfaces — ailerons and X-tail ruddervators (cruise, high airspeed) — through a gain-scheduled transition region, keeping the aircraft stable across the full flight envelope.</div>
+      <div class="prop-detail">The aircraft shifts smoothly between lift-based control and wing-based control as it moves between hover and cruise.</div>
     </div>
   </div>
 
@@ -419,8 +411,7 @@
   <div class="section-label reveal">Power Architecture</div>
   <h2 class="section-title reveal">Energy & Solar Systems</h2>
   <p class="section-desc reveal reveal-delay-1">
-    Solar-electric architecture with photovoltaic cells laminated directly into wing skin. 
-    Theoretically unlimited daylight endurance. Night operations bridged by 222Wh structural battery.
+    The wings can help capture energy from the sun, which supports longer flights during the day and gives the aircraft a backup for the night.
   </p>
 
   <div class="solar-split">
@@ -474,7 +465,7 @@
         <div class="battery-year">2024</div>
         <div class="battery-info">
           <div class="battery-name">NMC 811 Lithium-Ion</div>
-          <div class="battery-desc">Separate module, 2.1kg. Standard energy storage architecture.</div>
+          <div class="battery-desc">A simple battery module that gives the aircraft a practical energy reserve.</div>
         </div>
         <div class="battery-stat">
           <span class="battery-stat-val">222 Wh</span>
@@ -485,7 +476,7 @@
         <div class="battery-year">2026</div>
         <div class="battery-info">
           <div class="battery-name">Solid-State Lithium</div>
-          <div class="battery-desc">Higher energy density, improved thermal stability, QRAM-compatible module.</div>
+          <div class="battery-desc">A lighter and more efficient option that still fits the aircraft layout.</div>
         </div>
         <div class="battery-stat">
           <span class="battery-stat-val">300 Wh</span>
@@ -496,7 +487,7 @@
         <div class="battery-year">2028</div>
         <div class="battery-info">
           <div class="battery-name">Semi-Structural Battery</div>
-          <div class="battery-desc">Battery integrated into non-load-bearing wing skin panels. Partial mass elimination.</div>
+          <div class="battery-desc">A version that begins to share some of the wing structure instead of sitting as a separate block.</div>
         </div>
         <div class="battery-stat">
           <span class="battery-stat-val">350 Wh</span>
@@ -507,7 +498,7 @@
         <div class="battery-year" style="color:var(--white-50);">2030</div>
         <div class="battery-info">
           <div class="battery-name">Full Structural Battery Wing</div>
-          <div class="battery-desc">Carbon fiber serves as electrode. Polymer matrix is electrolyte. The wing IS the battery. 90% structural performance of pure CFRP.</div>
+          <div class="battery-desc">A more ambitious future version where the wing structure itself helps store energy.</div>
         </div>
         <div class="battery-stat">
           <span class="battery-stat-val">420 Wh</span>
@@ -523,8 +514,7 @@
   <div class="section-label reveal">Structural Analysis</div>
   <h2 class="section-title reveal">Load Paths<br>& Margins</h2>
   <p class="section-desc reveal reveal-delay-1">
-    QRAM-wing assembly validated for ultimate loads without permanent deformation, and operational loads 
-    without fatigue degradation over 1,000 flight hours. No flutter predicted below 1.5× dive speed.
+    The wing and its mounting system are designed to stay strong through repeated use and to handle the loads that come with real flying.
   </p>
 
   <table class="spec-table reveal">
@@ -545,12 +535,12 @@
     <div class="feat-cell reveal">
       <div class="feat-num">DEFLECTION</div>
       <div class="feat-title">Wing Tip Limits</div>
-      <div class="feat-text">Maximum wingtip deflection under operational load within elastic limit. No plastic deformation at limit loads. Flutter speed exceeds 1.5× maximum dive speed. Divergence speed >2.0× Vne for all configurations.</div>
+      <div class="feat-text">The wing stays within safe limits under normal use, and it is built to avoid instability even when things get rough.</div>
     </div>
     <div class="feat-cell reveal reveal-delay-1">
       <div class="feat-num">MATERIALS</div>
       <div class="feat-title">Material Allowables</div>
-      <div class="feat-text">Carbon fiber prepreg primary structure. Epoxy resin matrix with aerospace-grade void fraction &lt;1%. Tensile allowable 800 MPa (structural battery wing: 1,200 MPa at 90% pure CFRP). All allowables include environmental degradation factors.</div>
+      <div class="feat-text">The structure uses strong composite materials that are chosen to stay reliable in different conditions and over time.</div>
     </div>
   </div>
 </section>
